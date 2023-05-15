@@ -4,6 +4,6 @@
 
 3) condensed abelian groups satisfy same ab cat axioms as abelian groups
 
-4) Johan's problem sheet [ask for URL]
+4) Johan's problem sheets (see bottom of https://math.commelin.net/2023/condensed/ )
 
 5) Deficiencies of category of top spaces: not Cartesian closed (Hom(X,Y) not a top space). Does CHaus embed fully faithfully into condensed sets? Is condensed sets a cartesian closed category? (IIRC it is)
