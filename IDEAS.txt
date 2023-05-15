@@ -1,0 +1,7 @@
+1) Definitions of condensed set as functor on extremally disconnected / profinite / CHaus are all the same
+
+2) Example of {closed point, open point} showing set-theoretic issues?
+
+3) condensed abelian groups satisfy same ab cat axioms as abelian groups
+
+4) Johan's problem sheet [ask for URL]
