@@ -5,7 +5,6 @@ Authors: Adam Topaz
 -/
 import ExtrDisc.Basic
 import Mathlib.Topology.Category.CompHaus.EffectiveEpi
-import FindWithGpt
 
 /-!
 # The coverage on extremally disconnected spaces
