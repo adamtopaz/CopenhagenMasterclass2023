@@ -40,7 +40,7 @@ open CategoryTheory
 /-- `ExtrDisc` is the category of extremally disconnected spaces. -/
 structure ExtrDisc where
   compHaus : CompHaus.{u}
-  projective : Projective compHaus
+  [projective : Projective compHaus]
 
 -- the fields of the structure don't need docstrings
 attribute [nolint docBlame] ExtrDisc.compHaus ExtrDisc.projective
@@ -65,12 +65,45 @@ def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
   obj X := { toCompHaus := X.compHaus }
   map f := f
 
+/-- The functor from extremally disconnecred spaces to profinite spaces is full. -/
+instance : Full toProfinite := sorry
+instance : Faithful toProfinite := sorry
+
 /-- The (forgetful) functor from extremally disconnected spaces to compact Hausdorff spaces. -/
 @[simps!]
 def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
   inducedFunctor _
 
+instance : Full toCompHaus := sorry
+instance : Faithful toCompHaus := sorry
+
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus := 
   rfl
 
+instance (X : ExtrDisc) : Projective X.compHaus := X.projective
+
 end ExtrDisc
+
+namespace CompHaus
+
+noncomputable
+def presentation (X : CompHaus) : ExtrDisc where
+  compHaus := (projectivePresentation X).p
+
+noncomputable
+def presentationπ  (X : CompHaus) : X.presentation.compHaus ⟶ X :=   
+  (projectivePresentation X).f
+
+noncomputable
+instance epiPresentπ (X : CompHaus) : Epi X.presentationπ :=   
+  (projectivePresentation X).epi
+
+noncomputable
+def lift {X Y : CompHaus} (f : X ⟶ Y) [Epi f] : Y.presentation.compHaus ⟶ X :=
+  Projective.factorThru Y.presentationπ f 
+
+@[simp, reassoc]
+lemma lift_lifts {X Y : CompHaus} (f : X ⟶ Y) [Epi f] :
+    lift f ≫ f  = Y.presentationπ := by simp [lift]
+
+end CompHaus
