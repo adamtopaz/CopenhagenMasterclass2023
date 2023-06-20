@@ -91,7 +91,7 @@ def presentation (X : CompHaus) : ExtrDisc where
   compHaus := (projectivePresentation X).p
 
 noncomputable
-def presentationπ  (X : CompHaus) : X.presentation.compHaus ⟶ X :=   
+def presentationπ (X : CompHaus) : X.presentation.compHaus ⟶ X :=   
   (projectivePresentation X).f
 
 noncomputable
@@ -99,11 +99,11 @@ instance epiPresentπ (X : CompHaus) : Epi X.presentationπ :=
   (projectivePresentation X).epi
 
 noncomputable
-def lift {X Y : CompHaus} (f : X ⟶ Y) [Epi f] : Y.presentation.compHaus ⟶ X :=
-  Projective.factorThru Y.presentationπ f 
+def lift {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [Epi f] : Z.compHaus ⟶ X :=
+  Projective.factorThru e f 
 
 @[simp, reassoc]
-lemma lift_lifts {X Y : CompHaus} (f : X ⟶ Y) [Epi f] :
-    lift f ≫ f  = Y.presentationπ := by simp [lift]
+lemma lift_lifts {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [Epi f] :
+    lift e f ≫ f = e := by simp [lift]
 
 end CompHaus
