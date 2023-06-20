@@ -20,7 +20,7 @@ lake exe cache get
 lake build
 ```
 
-Finally, open the root directory of the project folder in VS Code. You can now open the Lean files in the
+Finally, open the root directory of the project folder in VS Code (for example by typing `code .`, or by opening VS Code and then clicking `File -> Open Folder` and opening the `CopenhagenMasterclass2023` folder). You can now open the Lean files in the
 repository and Lean should run on them automatically.
 
 ## Schedule
