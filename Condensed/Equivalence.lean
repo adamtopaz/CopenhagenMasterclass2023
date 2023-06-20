@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Adam Topaz
 -/
 import Profinite.Coherent
-import ExtrDisc.Coherent
+import ExtrDisc.Site
 import Mathlib.Condensed.Basic
 import Mathlib.CategoryTheory.Sites.DenseSubsite
 /-!
@@ -35,24 +35,22 @@ namespace Condensed
 
 universe u w
 
-#check Sieve.coverByImage
-
 namespace ExtrDiscCompHaus
 
 theorem coverDense : CoverDense (coherentTopology _) ExtrDisc.toCompHaus := 
   sorry
     
 theorem coverPreserving : 
-    CoverPreserving (coherentTopology _) (coherentTopology _) ExtrDisc.toCompHaus := 
+    CoverPreserving ExtrDisc.grothendieckTopology (coherentTopology _) ExtrDisc.toCompHaus := 
   sorry
 
 theorem coverLifting : 
-    CoverLifting (coherentTopology _) (coherentTopology _) ExtrDisc.toCompHaus := 
+    CoverLifting ExtrDisc.grothendieckTopology (coherentTopology _) ExtrDisc.toCompHaus := 
   sorry
 
 noncomputable
 def equivalence (A : Type _) [Category.{u+1} A] [HasLimits A] : 
-    Sheaf (coherentTopology ExtrDisc) A ≌ Condensed.{u} A := 
+    Sheaf ExtrDisc.grothendieckTopology A ≌ Condensed.{u} A := 
   CoverDense.sheafEquivOfCoverPreservingCoverLifting coverDense coverPreserving coverLifting
 
 end ExtrDiscCompHaus

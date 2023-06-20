@@ -74,6 +74,9 @@ instance : Faithful toProfinite := sorry
 def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
   inducedFunctor _
 
+instance {X Y : ExtrDisc.{u}} : CoeFun (X ⟶ Y) (fun _ => X → Y) where
+  coe f := ExtrDisc.toCompHaus.map f
+
 instance : Full toCompHaus := sorry
 instance : Faithful toCompHaus := sorry
 
