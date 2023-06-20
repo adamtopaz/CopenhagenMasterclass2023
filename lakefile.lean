@@ -12,3 +12,15 @@ require mathlib from git
 lean_lib «CopenhagenMasterclass2023» {
   -- add any library configuration options here
 }
+
+lean_lib «Condensed» where
+  roots := #[`Condensed]
+
+lean_lib «Profinite» where
+  roots := #[`Profinite]
+
+lean_lib «ExtrDisc» where
+  roots := #[`ExtrDisc]
+
+lean_lib «CompHaus» where
+  roots := #[`CompHaus]
