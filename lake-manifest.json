@@ -8,9 +8,27 @@
     "name": "proofwidgets",
     "inputRev?": "v0.0.11"}},
   {"git":
+   {"url": "https://github.com/adamtopaz/lean_gpt.git",
+    "subDir?": null,
+    "rev": "cf4e7577dc187c775fd951f94c8db51f020bd132",
+    "name": "gpt",
+    "inputRev?": null}},
+  {"git":
+   {"url": "https://github.com/adamtopaz/lean_pinecone.git",
+    "subDir?": null,
+    "rev": "43b43e0e1e12e92b406fdb618a6e43aae5f5d7e5",
+    "name": "pinecone",
+    "inputRev?": null}},
+  {"git":
+   {"url": "https://github.com/adamtopaz/find_with_gpt.git",
+    "subDir?": null,
+    "rev": "d56aad187b0cd9839d1ba6b84ea6ccc4db2b1e5a",
+    "name": "find_with_gpt",
+    "inputRev?": null}},
+  {"git":
    {"url": "https://github.com/leanprover-community/mathlib4.git",
     "subDir?": null,
-    "rev": "5f2c0b7475d9b4d5a792adc2dc7b799d044819ae",
+    "rev": "e6dcb5445cacb4f329ab8faa078f746368bc5d3b",
     "name": "mathlib",
     "inputRev?": null}},
   {"git":
@@ -30,4 +48,10 @@
     "subDir?": null,
     "rev": "e68aa8f5fe47aad78987df45f99094afbcb5e936",
     "name": "std",
-    "inputRev?": "main"}}]}
+    "inputRev?": "main"}},
+  {"git":
+   {"url": "https://github.com/adamtopaz/lean_embedding.git",
+    "subDir?": null,
+    "rev": "2c15847aade391ce6cc82b52d396a7acc0b8b030",
+    "name": "embeddings",
+    "inputRev?": null}}]}

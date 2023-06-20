@@ -8,6 +8,9 @@ package «copenhagenMasterclass2023» {
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
+require find_with_gpt from git
+  "https://github.com/adamtopaz/find_with_gpt.git"
+
 @[default_target]
 lean_lib «CopenhagenMasterclass2023» {
   -- add any library configuration options here
