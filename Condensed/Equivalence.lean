@@ -54,6 +54,21 @@ def equivalence (A : Type _) [Category.{u+1} A] [HasLimits A] :
   CoverDense.sheafEquivOfCoverPreservingCoverLifting 
     coverDense coverPreserving coverLifting
 
+-- This example explains that the inverse of the above equivalence is just given
+-- by composition with `ExtrDisc.toCompHaus` on the level of presheaves.
+example (A : Type _) [Category.{u+1} A] [HasLimits A] (F : Condensed.{u} A) :
+    ((equivalence A).inverse.obj F).val = 
+    ExtrDisc.toCompHaus.op ⋙ F.val := 
+  rfl
+
+-- This example explains that the functor of the above equivalence is given
+-- by right Kan extensions along `ExtrDisc.toCompHaus` on the level of presheaves.
+example (A : Type _) [Category.{u+1} A] [HasLimits A] 
+    (F : Sheaf (coherentTopology ExtrDisc) A) :
+    ((equivalence A).functor.obj F).val = 
+    (ran ExtrDisc.toCompHaus.op).obj F.val := 
+  rfl
+
 end ExtrDiscCompHaus
 
 end Condensed
