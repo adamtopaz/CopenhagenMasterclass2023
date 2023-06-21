@@ -50,35 +50,43 @@ namespace ExtrDisc
 instance : LargeCategory ExtrDisc.{u} :=  
   show Category (InducedCategory CompHaus (·.compHaus)) from inferInstance
 
-instance : CoeSort ExtrDisc.{u} (Type u) where
-  coe X := X.compHaus
-
-example (X : ExtrDisc.{u}) : TopologicalSpace X := inferInstance
-example (X : ExtrDisc.{u}) : CompactSpace X := inferInstance
-example (X : ExtrDisc.{u}) : T2Space X := inferInstance
-
-instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := sorry
-
-/-- The functor from extremally disconnected spaces to profinite spaces. -/
-@[simps]
-def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
-  obj X := { toCompHaus := X.compHaus }
-  map f := f
-
-/-- The functor from extremally disconnecred spaces to profinite spaces is full. -/
-instance : Full toProfinite := sorry
-instance : Faithful toProfinite := sorry
-
 /-- The (forgetful) functor from extremally disconnected spaces to compact Hausdorff spaces. -/
 @[simps!]
 def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
   inducedFunctor _
 
-instance {X Y : ExtrDisc.{u}} : CoeFun (X ⟶ Y) (fun _ => X → Y) where
-  coe f := ExtrDisc.toCompHaus.map f
-
 instance : Full toCompHaus := sorry
 instance : Faithful toCompHaus := sorry
+
+instance : ConcreteCategory ExtrDisc where
+  forget := toCompHaus ⋙ forget _
+
+instance : CoeSort ExtrDisc.{u} (Type u) := ConcreteCategory.hasCoeToSort _
+instance {X Y : ExtrDisc.{u}} : FunLike (X ⟶ Y) X (fun _ => Y) := ConcreteCategory.funLike
+
+instance (X : ExtrDisc.{u}) : TopologicalSpace X := 
+  show TopologicalSpace X.compHaus from inferInstance
+
+instance (X : ExtrDisc.{u}) : CompactSpace X := 
+  show CompactSpace X.compHaus from inferInstance
+
+instance (X : ExtrDisc.{u}) : T2Space X := 
+  show T2Space X.compHaus from inferInstance
+
+instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := 
+  sorry
+
+/-- The functor from extremally disconnected spaces to profinite spaces. -/
+@[simps]
+def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
+  obj X := { 
+    toCompHaus := X.compHaus, 
+    IsTotallyDisconnected := show TotallyDisconnectedSpace X from inferInstance }
+  map f := f
+
+/-- The functor from extremally disconnecred spaces to profinite spaces is full. -/
+instance : Full toProfinite := sorry
+instance : Faithful toProfinite := sorry
 
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus := 
   rfl
