@@ -35,6 +35,11 @@ Each day is split in two, with lectures by KB and AT in the morning, and time fo
 The general plan for each day is listed below.
 
 ### Monday
+
+- Overview and logistics.
+- Category theory in Lean4.
+- Condensed objects in Lean4.
+
 ### Tuesday
 ### Wednesday
 ### Thursday
