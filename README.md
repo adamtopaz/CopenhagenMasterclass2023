@@ -23,6 +23,12 @@ lake build
 Finally, open the root directory of the project folder in VS Code (for example by typing `code .`, or by opening VS Code and then clicking `File -> Open Folder` and opening the `CopenhagenMasterclass2023` folder). Say that you trust the authors of the code -- 
 and you can now open the Lean files in the repository and Lean should run on them automatically.
 
+### Codespaces
+
+This repository is configured for use with github's codespaces.
+To get started with codespaces in this repo, just click the green "code" icon to create a new codespace.
+More detailed instructions can be found [here](https://docs.github.com/en/codespaces/developing-in-codespaces/creating-a-codespace-for-a-repository).
+
 ## Schedule
 
 Each day is split in two, with lectures by KB and AT in the morning, and time for group work and discussions in the afternoon.
