@@ -109,4 +109,9 @@ def lift {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [E
 lemma lift_lifts {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [Epi f] :
     lift e f ≫ f = e := by simp [lift]
 
+instance : Limits.HasCoproducts ExtrDisc.{u} := sorry
+
+instance : Limits.HasFiniteCoproducts ExtrDisc.{u} := 
+  Limits.hasFiniteCoproducts_of_hasCoproducts.{u} ExtrDisc.{u}
+
 end CompHaus
