@@ -34,7 +34,7 @@ More detailed instructions can be found [here](https://docs.github.com/en/codesp
 ## Schedule
 
 Each day is split in two, with lectures by KB and AT in the morning, and time for group work and discussions in the afternoon.
-The general plan for each day is listed below.
+The general plan for each day is listed below. 
 
 ### Monday
 
@@ -42,20 +42,12 @@ The general plan for each day is listed below.
 - Category theory in Lean4.
 - Condensed objects in Lean4.
 
-### Tuesday
+### Tuesday and Wednesday
 
 - Sheaves on `CompHaus`, `Profinite` and `ExtrDisc`.
 - Equivalences between the three categories of sheaves.
 
-### Wednesday
+### Thursday and Friday
 
-- Abelian Categories, Grothendieck's AB axioms
+- Abelian Categories, Grothendieck's AB axioms.
 - AB axioms for condensed abelian groups.
-
-### Thursday
-
-TBD
-
-### Friday
-
-TBD
