@@ -9,7 +9,7 @@ This is the central repository for the [2023 masterclass](https://www.math.ku.dk
 This is the best way; you can edit files and experiment, and you won't lose them.
 It's also the hardest way: it involves typing stuff in on the command line. 
 
-In brief: first install Lean 4 following the instructions [here](https://leanprover.github.io/lean4/doc/quickstart.html).
+In brief: first install Lean 4 following the installation instructions from the community webpage [here](https://leanprover-community.github.io/get_started.html#regular-install).
 
 Then download and install this project by typing
 
@@ -22,6 +22,8 @@ lake build
 
 Finally, open the root directory of the project folder in VS Code (for example by typing `code .`, or by opening VS Code and then clicking `File -> Open Folder` and opening the `CopenhagenMasterclass2023` folder). Say that you trust the authors of the code -- 
 and you can now open the Lean files in the repository and Lean should run on them automatically.
+
+Additional instructions for working on an existing Lean4 project can be found [here](https://leanprover-community.github.io/install/project.html#working-on-an-existing-project). 
 
 ### Codespaces
 
