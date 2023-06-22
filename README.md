@@ -43,7 +43,19 @@ The general plan for each day is listed below.
 - Condensed objects in Lean4.
 
 ### Tuesday
+
+- Sheaves on `CompHaus`, `Profinite` and `ExtrDisc`.
+- Equivalences between the three categories of sheaves.
+
 ### Wednesday
+
+- Abelian Categories, Grothendieck's AB axioms
+- AB axioms for condensed abelian groups.
+
 ### Thursday
+
+TBD
+
 ### Friday
 
+TBD
