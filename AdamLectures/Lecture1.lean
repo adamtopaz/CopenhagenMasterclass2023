@@ -74,3 +74,28 @@ example (X Y : Profinite) : (X ⟶ Y) = C(X,Y) := rfl
 example (X Y : ExtrDisc) : (X ⟶ Y) = C(X,Y) := rfl
 
 end section2
+
+section section3
+
+/-!
+
+# Effective Epimorphisms and the coherent topology
+
+TODO: 
+- Recall the definitions.
+- `Precoherent`
+- In `CompHaus`, `EffectiveEpiFamily` iff jointly surjective.
+
+-/
+
+end section3
+
+section section4
+
+/-!
+
+# Condensed Objects
+
+-/
+
+end section4
