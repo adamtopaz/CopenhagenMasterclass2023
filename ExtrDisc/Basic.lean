@@ -6,6 +6,7 @@ Authors: Adam Topaz
 import Mathlib.CategoryTheory.Sites.Coherent
 import Mathlib.Topology.Category.CompHaus.Projective
 import Mathlib.Topology.Category.Profinite.Basic
+import Mathlib.Topology.ExtremallyDisconnected
 /-!
 # Extremally disconnected sets
 
@@ -18,8 +19,10 @@ disconnected spaces, and gives it the structure of a large category.
 
 The Lean implementation: a term of type `ExtrDisc` is a pair, considering of 
 a term of type `CompHaus` (i.e. a compact Hausdorff topological space) plus
-a proof that the term is projective in `CompHaus`, in the sense of category theory
-(i.e., such that morphisms out of the object can be lifted along epimorphisms).
+a proof that the space is extremally disconnected.
+This is equivalent to the assertion that the term is projective in `CompHaus`, 
+in the sense of category theory (i.e., such that morphisms out of the object 
+can be lifted along epimorphisms).
 
 This file defines the type of all extremally disconnected spaces, gives it the
 structure of a large category, and proves some basic observations about this
@@ -36,6 +39,8 @@ category and various functors from it.
 
 The following proofs need to be filled in: 
 
+* Gleason's theorem: a compact Hausdorff space is extrDisc if and 
+  only if it is projective (one direction is in `mathlib4`).
 * If `X` is extremally disconnected then it is totally disconnected.
 * The forgetful functor `toCompHaus : ExtrDisc ⥤ CompHaus` is full and faithful.
 * The functor `toProfinite : ExtrDisc ⥤ Profinite` is full and faithful.
@@ -49,10 +54,10 @@ open CategoryTheory
 /-- `ExtrDisc` is the category of extremally disconnected spaces. -/
 structure ExtrDisc where
   compHaus : CompHaus.{u}
-  [projective : Projective compHaus]
+  [extrDisc : ExtremallyDisconnected compHaus]
 
 -- the fields of the structure don't need docstrings
-attribute [nolint docBlame] ExtrDisc.compHaus ExtrDisc.projective
+attribute [nolint docBlame] ExtrDisc.compHaus ExtrDisc.extrDisc
 
 namespace ExtrDisc
 
@@ -90,6 +95,9 @@ instance (X : ExtrDisc.{u}) : CompactSpace X :=
 instance (X : ExtrDisc.{u}) : T2Space X := 
   show T2Space X.compHaus from inferInstance
 
+instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X := 
+  X.2
+
 /-- Extremally disconnected spaces are totally disconnected. -/
 instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := 
   sorry
@@ -109,7 +117,8 @@ instance : Faithful toProfinite := sorry
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus := 
   rfl
 
-instance (X : ExtrDisc) : Projective X.compHaus := X.projective
+-- TODO: Gleason's theorem.
+instance (X : ExtrDisc) : Projective X.compHaus := sorry
 
 end ExtrDisc
 
@@ -121,6 +130,7 @@ namespace CompHaus
 noncomputable
 def presentation (X : CompHaus) : ExtrDisc where
   compHaus := (projectivePresentation X).p
+  extrDisc := sorry 
 
 /-- The morphism from `presentation X` to `X`. -/
 noncomputable
