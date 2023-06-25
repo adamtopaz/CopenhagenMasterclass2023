@@ -9,7 +9,7 @@ noncomputable section -- the default implementation of polynomials is noncomputa
 
 /-!
 Hints:
-* use `polynomial.map_ring_hom`
+* use `Polynomial.mapRingHom`
 -/
 
 def RingCat.polynomial : RingCat ⥤ RingCat :=
@@ -25,11 +25,5 @@ def commutes :
   CommRingCat.polynomial ⋙ (forget₂ CommRingCat RingCat) :=
 -- Hint: You can do this in two lines, ≤ 33 columns!
 sorry
-
-
-/-!
-There are some further hints in
-`hints/category_theory/exercise2/`
--/
 
 end section
