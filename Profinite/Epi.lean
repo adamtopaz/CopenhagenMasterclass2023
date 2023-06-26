@@ -7,7 +7,7 @@ namespace Profinite
 
 universe u
 
-set_option autoImplicit false
+--set_option autoImplicit false
 
 /-!
 This section is copied from
@@ -169,27 +169,58 @@ lemma ιFun_surjective : (ιFun π).Surjective := by
 
 lemma ιFun_bijective : (ιFun π).Bijective := ⟨ιFun_injective π, ιFun_surjective π surj⟩
 
--- TODO
-example (X Y : CompHaus) [TotallyDisconnectedSpace X] (f : X ≅ Y) :
+#check CompHaus.isIso_of_bijective
+/--
+
+TODO: I would define `QB` as a `CompHaus` then use the above to construct an iso, which
+can then be used to get an instance `TotallyDisconnectedSpace`.
+
+-/
+
+lemma isOpen_iso {X Y : TopCat} {U : Set X} (f : X ≅ Y) (h : IsOpen U) : IsOpen (f.hom '' U) := by
+  let ff := TopCat.homeoOfIso f
+  rw [← Homeomorph.isOpen_image ff] at h
+  assumption
+
+lemma _root_.TotallyDisconnectedSpace_ofIsIso
+    {X Y : TopCat} [k : TotallyDisconnectedSpace X] (f : X ≅ Y) :
     TotallyDisconnectedSpace Y := by
+
+  have surj' : Function.Surjective f.hom
+  · apply (TopCat.homeoOfIso f).surjective
+
+  have inj' : Function.Injective f.hom
+  · apply (TopCat.homeoOfIso f).injective
+
   constructor
   unfold _root_.IsTotallyDisconnected
   intro t ht ht₂
-  intro x hx y hy
-  sorry
-  done
+
+  apply Set.subsingleton_of_preimage surj'
+
+  replace k := k.isTotallyDisconnected_univ
+  unfold _root_.IsTotallyDisconnected at k
+
+  apply k
+
+  tauto
+
+  apply IsPreconnected.preimage_of_open_map
+  assumption
+  assumption
+  · unfold IsOpenMap
+    intro U hU
+    apply isOpen_iso _ hU
+  tauto
+
 
 #check Set.preimage_inter
 #check CompHaus.EffectiveEpiFamily.ι
 
-
 -- TODO: need this as an instance
 instance : TotallyDisconnectedSpace (Quotient (relation π)) := by
-
-  constructor
-  unfold _root_.IsTotallyDisconnected
+  -- apply TotallyDisconnectedSpace_ofIsIso
   sorry
-  done
 
 
 /--
