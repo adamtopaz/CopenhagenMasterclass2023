@@ -15,11 +15,17 @@ def π₁ : D φ f → A := fun x ↦ x.val.fst
 
 def π₂ : D φ f → B := fun x ↦ x.val.snd
 
-variable {φ} {f} (hφ : Continuous φ) (hφ' : φ.Surjective) (hf : Continuous f)
+variable {φ} {f} (hφ : Continuous φ) (hf : Continuous f) (hf' : f.Surjective)
 
-lemma one : CompactSpace (D φ f) := sorry
+lemma one : CompactSpace (D φ f) :=
+isCompact_iff_compactSpace.mp (IsClosed.isCompact
+  (isClosed_eq (Continuous.comp hφ continuous_fst) (Continuous.comp hf continuous_snd )))
 
-lemma two : (π₁ φ f).Surjective := sorry -- '' (Set.univ) = Set.univ := this does not work!
+lemma two : (π₁ φ f).Surjective := by
+  intro a
+  obtain ⟨b, hb⟩ := hf' (φ a)
+  use ⟨(a,b), hb.symm⟩
+  rfl
 
 
 
@@ -81,9 +87,9 @@ def ρ : (E A B) ≃ₜ A where
 lemma five : Continuous (E.restrict (π₂ φ f) ∘ ρ.invFun) ∧
   f ∘ ((E φ f).restrict (π₂ φ f) ∘ ρ.invFun) = φ := sorry
 
--- #check five A B
-
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
-    sorry
+    use ⟨_, (@five A B _ C _ f φ).left⟩
+    ext
+    exact congr_fun (@five A B _ C _ f φ).right _
