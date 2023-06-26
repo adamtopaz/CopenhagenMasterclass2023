@@ -51,19 +51,60 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
         dsimp at N_comp
         rw [←isCompact_iff_compactSpace] at N_comp
         exact IsCompact.isClosed N_comp
-      · ext x
-        refine' ⟨ fun _ => trivial , fun _ => _ ⟩
-        rw [Set.mem_image]
-        change Set.Nonempty {x_1 : D φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
-        -- suffices Set.Nonempty (sInter {f⁻¹'})
-        -- have := IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed
-        -- have := IsChain
-        -- --let Ch_x := {X ∩ f⁻¹' (Set.singleton x) : Set (D φ f), X : Ch  }
-        -- have : ∀ X : Set (D φ f), X ∈ Ch → IsClosed X := by sorry
-        sorry
-    · exact fun s a => Set.sInter_subset_of_mem a
-
-
+      --Next, we need to show that the image of M is all of A
+      · by_cases h₂ : Nonempty Ch
+        rotate_left 1
+        -- Case that `Ch` is empty
+        · simp at h₂
+          rw [←Set.eq_empty_iff_forall_not_mem] at h₂
+          revert M
+          rw [h₂, Set.sInter_empty]
+          simp
+          have : (π₁ φ f).Surjective := two hf'
+          exact Iff.mpr Set.range_iff_surjective this
+        -- Now we assume that `Ch` is nonempty
+        · ext x
+          refine' ⟨ fun _ => trivial , fun hx => _ ⟩
+          rw [Set.mem_image]
+          change Set.Nonempty {x_1 : D φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
+          let Z : Ch → Set (D φ f) := fun X => X ∩ (π₁ _ _)⁻¹' {x}
+          suffices Set.Nonempty <| ⋂ (X : Ch), (X: Set (D φ f)) ∩ (π₁ _ _)⁻¹' {x} by
+            convert this
+            rw [← Set.iInter_inter, ←  Set.sInter_eq_iInter]
+            rw [←Set.setOf_inter_eq_sep, Set.inter_comm]
+            congr
+          -- Using this result `nonempty_iInter_of_...` introduces a lot of unnecessary checks
+          apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z
+        -- Need to show the `Directed` assumption for the inclusion, which is annoying...
+          · intro X Y
+            have hCh₂ := hCh X.2 Y.2
+            by_cases X.1 = Y.1
+            · use X
+              simp
+              rw [h]
+              simp
+            replace hCh₂ := hCh₂ h
+            apply Or.elim hCh₂
+            · intro h_left
+              use X
+              simp
+              apply ((Set.inter_subset_left _ _).trans h_left)
+            · intro h_right
+              use Y
+              simp
+              apply ((Set.inter_subset_left _ _).trans h_right)
+          --Show the fiber is nonempty
+          · intro X
+            have h₃ := (h (Subtype.mem X)).2
+            sorry
+          -- Show each fiber is compact
+          · intro X
+            have := (h (Subtype.mem X)).1
+            sorry
+          --Show each fiber is closed
+          · sorry
+    · intro X hX
+      exact Set.sInter_subset_of_mem hX
   have := zorn_superset S chain_cond
   rcases this with ⟨E, ⟨⟨hE₁,hE₂⟩, hE₃⟩⟩
   use E
@@ -82,7 +123,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
 def E : (Set (D φ f)) := (three).choose
 
 lemma gleason21 (X Y : Type _) [TopologicalSpace X] [TopologicalSpace Y] [T2Space X] [T2Space Y]
-  {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ → 
+  {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ →
   IsClosed E₀ → ¬ (g '' E₀ = ⊤)) : ∀ U : Set X, IsOpen U → (g '' U) ⊆ closure ((g '' (Uᶜ))ᶜ) :=
 sorry
 
@@ -97,9 +138,9 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
     intros x y h_eq_im
     by_contra h
     rcases t2_separation h with ⟨G₁, G₂, hG₁, hG₂, hxG₁, hyG₂, hG⟩
-    have open1 : IsOpen (r '' (G₁ᶜ))ᶜ 
+    have open1 : IsOpen (r '' (G₁ᶜ))ᶜ
     · sorry
-    have open2 : IsOpen (r '' (G₂ᶜ))ᶜ 
+    have open2 : IsOpen (r '' (G₂ᶜ))ᶜ
     · sorry
     have disj : Disjoint ((r '' (G₁ᶜ))ᶜ) ((r '' (G₂ᶜ))ᶜ)
     · sorry
@@ -116,7 +157,7 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
 
 lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
   (hr_surj: r.Surjective) (hE : CompactSpace E)
-  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : 
+  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) :
   Continuous (Function.Embedding.equivOfSurjective ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := sorry
 
 def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
