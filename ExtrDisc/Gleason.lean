@@ -79,7 +79,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
     exact (ne_of_ssubset h₁) hE₃
 
 
-def E : (Set (D φ f)) := (three).choose
+def E : (Set (D φ f)) := (three hφ hf).choose
 
 lemma gleason21 (X Y : Type _) [TopologicalSpace X] [TopologicalSpace Y] [T2Space X] [T2Space Y]
     {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ → 
@@ -134,26 +134,26 @@ lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A
     Continuous (Function.Embedding.equivOfSurjective 
     ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := hr
 
+noncomputable
 def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
   (hr_surj: r.Surjective) (hE : CompactSpace E)
-  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : E ≃ₜ A where
+  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : E ≃ₜ A := 
 Continuous.homeoOfEquivCompactToT2 (gleason23_cont E hr hr_surj hE h_subsets)
 
-
-def ρ : @E _ _ _ _ _ φ f ≃ₜ A where
-  toFun := (@E _ _ _ _ _ φ f).restrict (π₁ φ f)
+def ρ : (E hφ hf) ≃ₜ A where
+  toFun := (E hφ hf).restrict (π₁ φ f)
   invFun := sorry
   left_inv := sorry
   right_inv := sorry
   continuous_toFun := sorry
-  continuous_invFun := sorry
+  continuous_invFun := sorry 
 
-lemma five : Continuous (E.restrict (π₂ φ f) ∘ ρ.invFun) ∧
-  f ∘ (E.restrict (π₂ φ f) ∘ ρ.invFun) = φ := sorry
+lemma five : Continuous ((E hφ hf).restrict (π₂ φ f) ∘ (ρ hφ hf).invFun) ∧
+  f ∘ ((E hφ hf).restrict (π₂ φ f) ∘ (ρ hφ hf).invFun) = φ := sorry
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
-    use ⟨_, (@five A _ B C _ φ f).left⟩
+    use ⟨_, (five φ.continuous f.continuous).left⟩
     ext
-    exact congr_fun (@five A _ B C _ φ f).right _
+    exact congr_fun (five φ.continuous f.continuous).right _
