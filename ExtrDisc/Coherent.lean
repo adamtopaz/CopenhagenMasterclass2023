@@ -25,8 +25,10 @@ open CategoryTheory
 
 namespace ExtrDisc
 
-def EffectiveEpiStruct.toCompHaus {X Y : ExtrDisc.{u}} {f : X ⟶ Y} (eff : EffectiveEpiStruct f) :
-  EffectiveEpiStruct (ExtrDisc.toCompHaus.map f) := sorry
+def EffectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} 
+    (X : α → ExtrDisc.{u})
+    (π : (a : α) → (X a ⟶ B)) : α → CompHaus := sorry 
+
 
 instance : Precoherent ExtrDisc.{u} := by
   constructor
