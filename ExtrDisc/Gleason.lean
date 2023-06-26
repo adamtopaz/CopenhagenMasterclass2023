@@ -2,7 +2,7 @@ import ExtrDisc.Basic
 import Mathlib.Topology.Constructions
 import Mathlib.Order.Zorn
 
-open CategoryTheory TopologicalSpace
+open CategoryTheory
 
 variable {A : Type _} [TopologicalSpace A] [T2Space A] [CompactSpace A] [ExtremallyDisconnected A]
 variable {B C : Type _} [TopologicalSpace B] [TopologicalSpace C] [T2Space B] [T2Space C]
@@ -100,18 +100,30 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
     by_contra h
     rcases t2_separation h with ⟨G₁, G₂, hG₁, hG₂, hxG₁, hyG₂, hG⟩
     have open1 : IsOpen ((r '' (G₁ᶜ))ᶜ) 
-    · sorry
+    · simp only [isOpen_compl_iff]
+      apply IsCompact.isClosed 
+      refine' IsCompact.image (IsClosed.isCompact _) hr 
+      simpa only [isClosed_compl_iff] 
     have open2 : IsOpen ((r '' (G₂ᶜ))ᶜ) 
-    · sorry
+    · simp only [isOpen_compl_iff]
+      apply IsCompact.isClosed 
+      refine' IsCompact.image (IsClosed.isCompact _) hr 
+      simpa only [isClosed_compl_iff]
     have disj : Disjoint ((r '' (G₁ᶜ))ᶜ) ((r '' (G₂ᶜ))ᶜ)
-    · sorry
+    · rw [Set.disjoint_compl_left_iff_subset]
+      refine' subset_trans (Set.subset_image_compl hr_surj) _
+      simp only [compl_compl, Set.image_subset_iff]
+      refine' subset_trans _ (Set.subset_preimage_image _ _)
+      rw [← Set.disjoint_compl_left_iff_subset]
+      simpa only [compl_compl]
     replace disj := gleason22 disj open1 open2
     have oups₁ := gleason21 E A hr hr_surj h_subsets G₁ hG₁
     have oups₂ := gleason21 E A hr hr_surj h_subsets G₂ hG₂
     have mem₁ : r x ∈ r '' G₁
-    · sorry
+    · exact Set.mem_image_of_mem _ hxG₁
     have mem₂ : r x ∈ r '' G₂
-    · sorry
+    · rw [h_eq_im]
+      exact Set.mem_image_of_mem _ hyG₂
     have mem : r x ∈ (closure ((r '' G₁ᶜ)ᶜ)) ∩ (closure ((r '' G₂ᶜ)ᶜ)) := ⟨oups₁ mem₁, oups₂ mem₂⟩
     exact (disj.ne_of_mem mem.1 mem.2) rfl
 
