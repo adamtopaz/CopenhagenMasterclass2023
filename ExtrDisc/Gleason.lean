@@ -27,6 +27,7 @@ lemma two : (π₁ φ f).Surjective := by
   use ⟨(a,b), hb.symm⟩
   rfl
 
+
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
     E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
   -- Define the set of closed subsets of D for which the map onto A is surjective
@@ -117,7 +118,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
     exact (ne_of_ssubset h₁) hE₃
 
 
-def E : (Set (D φ f)) := (three hφ hf).choose
+def E : (Set (D φ f)) := (three hφ hf hf').choose
 
 lemma gleason21 (X Y : Type _) [TopologicalSpace X] [TopologicalSpace Y] [T2Space X] [T2Space Y]
     {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ →
@@ -163,9 +164,9 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
     have mem : r x ∈ (closure ((r '' G₁ᶜ)ᶜ)) ∩ (closure ((r '' G₂ᶜ)ᶜ)) := ⟨oups₁ mem₁, oups₂ mem₂⟩
     exact (disj.ne_of_mem mem.1 mem.2) rfl
 
-lemma gleason23_surj : ((E hφ hf).restrict (π₁ φ f)).Surjective := by
+lemma gleason23_surj : ((E hφ hf hf').restrict (π₁ φ f)).Surjective := by
   intro a
-  have := (three hφ hf).choose_spec.2.1
+  have := (three hφ hf hf').choose_spec.2.1
   have ha : a ∈ Set.univ := by tauto
   rw [← this] at ha
   obtain ⟨c,hc⟩ := ha
@@ -178,7 +179,7 @@ lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A
     Continuous (Function.Embedding.equivOfSurjective
     ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := hr
 
-lemma gleason23_cont' : Continuous ((E hφ hf).restrict (π₁ φ f)) :=
+lemma gleason23_cont' : Continuous ((E hφ hf hf').restrict (π₁ φ f)) :=
 ContinuousOn.restrict (Continuous.continuousOn (Continuous.comp continuous_fst
   continuous_subtype_val))
 
@@ -189,9 +190,9 @@ def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (
 Continuous.homeoOfEquivCompactToT2 (gleason23_cont E hr hr_surj hE h_subsets)
 
 noncomputable
-def ρ : (E hφ hf) ≃ₜ A := by
-  refine' gleason23_def (E hφ hf) (gleason23_cont' hφ hf) (gleason23_surj hφ hf)
-    (three hφ hf).choose_spec.1 _
+def ρ : (E hφ hf hf') ≃ₜ A := by
+  refine' gleason23_def (E hφ hf hf') (gleason23_cont' hφ hf hf') (gleason23_surj hφ hf hf')
+    (three hφ hf hf').choose_spec.1 _
   sorry -- we need to decide what to do with `three` etc. to resolve this
 -- where
 --   toFun := (E hφ hf).restrict (π₁ φ f)
@@ -201,13 +202,13 @@ def ρ : (E hφ hf) ≃ₜ A := by
 --   continuous_toFun := sorry
 --   continuous_invFun := sorry
 
-lemma five : Continuous ((E hφ hf).restrict (π₂ φ f) ∘ (ρ hφ hf).invFun) ∧
-  f ∘ ((E hφ hf).restrict (π₂ φ f) ∘ (ρ hφ hf).invFun) = φ := sorry
+lemma five : Continuous ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) ∧
+  f ∘ ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) = φ := sorry
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
     haveI : ExtremallyDisconnected A.compHaus.toTop := A.extrDisc
-    use ⟨_, (five φ.continuous f.continuous).left⟩
+    use ⟨_, (five φ.continuous f.continuous sorry).left⟩
     ext
-    exact congr_fun (five φ.continuous f.continuous).right _
+    exact congr_fun (five φ.continuous f.continuous sorry).right _
