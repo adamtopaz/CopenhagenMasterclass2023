@@ -44,7 +44,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
     constructor
     · constructor
       · rw [←isCompact_iff_compactSpace]
-        apply @IsClosed.isCompact _ _ one
+        apply @IsClosed.isCompact _ _ (one hφ hf)
         apply isClosed_sInter
         intro N hN
         have N_comp := (h hN).1
@@ -52,8 +52,16 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
         rw [←isCompact_iff_compactSpace] at N_comp
         exact IsCompact.isClosed N_comp
       · ext x
+        refine' ⟨ fun _ => trivial , fun _ => _ ⟩
+        rw [Set.mem_image]
+        change Set.Nonempty {x_1 : D φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
+        -- suffices Set.Nonempty (sInter {f⁻¹'})
+        -- have := IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed
+        -- have := IsChain
+        -- --let Ch_x := {X ∩ f⁻¹' (Set.singleton x) : Set (D φ f), X : Ch  }
+        -- have : ∀ X : Set (D φ f), X ∈ Ch → IsClosed X := by sorry
         sorry
-    · sorry
+    · exact fun s a => Set.sInter_subset_of_mem a
 
 
   have := zorn_superset S chain_cond
