@@ -23,7 +23,16 @@ lemma three : ∃ (E : Set (D A B)), CompactSpace E ∧ (π₁ A B) '' E = Set.u
 
 def E : (Set (D A B)) := (three A B).choose
 
-def ρ : (E A B) ≃ₜ A := sorry
+def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r) :
+  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → CompactSpace E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := sorry
+
+def ρ : (E A B) ≃ₜ A where
+  toFun := (E A B).restrict (π₁ A B)
+  invFun := sorry
+  left_inv := sorry
+  right_inv := sorry
+  continuous_toFun := sorry
+  continuous_invFun := sorry
 
 lemma five : Continuous ((E A B).restrict (π₂ A B) ∘ (ρ A B).invFun) ∧ 
   f ∘ ((E A B).restrict (π₂ A B) ∘ (ρ A B).invFun) = φ := sorry
