@@ -45,17 +45,32 @@ instance : Precoherent ExtrDisc.{u} := by
   intro B₁ B₂ f α _ X₁ π₁ h₁
   refine' ⟨α, inferInstance, fun a => (CompHaus.pullback f (π₁ a)).presentation, fun a => 
     ExtrDisc.toCompHaus.preimage (CompHaus.presentationπ (CompHaus.pullback f (π₁ a)) ≫ (CompHaus.pullback.fst _ _) :
-      toCompHaus.obj (CompHaus.presentation (CompHaus.pullback f (π₁ a))) ⟶ toCompHaus.obj B₂), _, _⟩
+      toCompHaus.obj (CompHaus.presentation (CompHaus.pullback f (π₁ a))) ⟶ toCompHaus.obj B₂), _, id, fun a =>
+      ExtrDisc.toCompHaus.preimage (CompHaus.presentationπ (CompHaus.pullback f (π₁ a)) ≫ (CompHaus.pullback.snd _ _ )),
+      fun a => _⟩
   · refine' ((effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
     have h₁' := effectiveEpiFamily.toCompHaus h₁
     have := (CompHaus.effectiveEpiFamily_tfae _ (Family.toCompHaus' π₁)).out 0 2 ; rw [this] at h₁' ; clear this
     obtain ⟨a,x,h⟩ := h₁' (f b)
-    set foo : CompHaus.pullback f (π₁ a) := ⟨⟨b, x⟩, h.symm⟩ with foodef
+    let foo : CompHaus.pullback f (π₁ a) := ⟨⟨b, x⟩, h.symm⟩
     obtain ⟨bar, hbar⟩ := (CompHaus.epi_iff_surjective _).1 (CompHaus.epiPresentπ (CompHaus.pullback f (π₁ a))) foo
     refine' ⟨a, bar, _⟩
+    change ExtrDisc.toCompHaus.map (ExtrDisc.toCompHaus.preimage (_ : ExtrDisc.toCompHaus.obj _ ⟶ ExtrDisc.toCompHaus.obj _)) _ = _
+    simp only [CategoryTheory.Functor.image_preimage, toCompHaus_obj, comp_apply, hbar, Set.mem_setOf_eq]
+    rfl
+  · apply CategoryTheory.Functor.map_injective ExtrDisc.toCompHaus
+    change toCompHaus.map (toCompHaus.preimage ((_ : ExtrDisc.toCompHaus.obj _ ⟶ ExtrDisc.toCompHaus.obj _)) ≫
+      _) = toCompHaus.map (toCompHaus.preimage ((_ : ExtrDisc.toCompHaus.obj _ ⟶ ExtrDisc.toCompHaus.obj _)) ≫ _)
+    rw [Functor.map_comp, Functor.map_comp, CategoryTheory.Functor.image_preimage,
+      CategoryTheory.Functor.image_preimage, Category.assoc, Category.assoc]
+    congr 1
+    dsimp
+    ext ⟨⟨_, _⟩, h⟩
+    exact h.symm
 
-    change ExtrDisc.toCompHaus.map (Full.preimage (_ : ExtrDisc.toCompHaus.obj _ ⟶ ExtrDisc.toCompHaus.obj _)) _ = _
     
+
+
 
     
 
