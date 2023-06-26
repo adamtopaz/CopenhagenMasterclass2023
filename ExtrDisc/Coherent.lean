@@ -25,16 +25,24 @@ open CategoryTheory
 
 namespace ExtrDisc
 
-def EffectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} 
+def Family.toCompHaus {α : Type} (X : α → ExtrDisc.{u}) : α → CompHaus :=
+  fun a => toCompHaus.obj (X a) 
+
+def Family.toCompHaus' {α : Type} {B : ExtrDisc.{u}} 
     (X : α → ExtrDisc.{u})
-    (π : (a : α) → (X a ⟶ B)) : α → CompHaus := sorry 
+    (π : (a : α) → (X a ⟶ B)) : (a : α) → (Family.toCompHaus X) a ⟶ ExtrDisc.toCompHaus.obj B :=
+  fun a => ExtrDisc.toCompHaus.map (π a)
 
+theorem effectiveEpiFamily.toCompHaus {α : Type} {B : ExtrDisc.{u}} (X : α → ExtrDisc.{u})
+    (π : (a : α) → (X a ⟶ B)) (H : EffectiveEpiFamily X π) :
+    EffectiveEpiFamily (Family.toCompHaus X) (Family.toCompHaus' X π ) :=
+  sorry
 
-instance : Precoherent ExtrDisc.{u} := by
-  constructor
-  intro B₁ B₂ f α _ X₁ π₁ h₁
-  refine' ⟨α, inferInstance, fun a => _, _, _⟩
-  · 
+-- instance : Precoherent ExtrDisc.{u} := by
+--   constructor
+--   intro B₁ B₂ f α _ X₁ π₁ h₁
+--   refine' ⟨α, inferInstance, fun a => _, _, _⟩
+--   · 
   -- refine ⟨α, inferInstance, fun a => pullback f (π₁ a), fun a => pullback.fst _ _, ?_,
   --   id, fun a => pullback.snd _ _, ?_⟩
   -- · have := (effectiveEpiFamily_tfae _ π₁).out 0 2 ; rw [this] at h₁ ; clear this
