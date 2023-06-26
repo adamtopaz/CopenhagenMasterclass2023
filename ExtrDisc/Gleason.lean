@@ -15,13 +15,17 @@ def π₁ : D φ f → A := fun x ↦ x.val.fst
 
 def π₂ : D φ f → B := fun x ↦ x.val.snd
 
-variable {φ} {f} (hφ : Continuous φ) (hφ' : φ.Surjective) (hf : Continuous f)
+variable {φ} {f} (hφ : Continuous φ) (hf : Continuous f) (hf' : f.Surjective) 
 
 lemma one : CompactSpace (D φ f) :=
 isCompact_iff_compactSpace.mp (IsClosed.isCompact 
   (isClosed_eq (Continuous.comp hφ continuous_fst) (Continuous.comp hf continuous_snd )))
 
-lemma two : (π₁ φ f).Surjective := sorry -- '' (Set.univ) = Set.univ := this does not work!
+lemma two : (π₁ φ f).Surjective := by
+  intro a 
+  obtain ⟨b, hb⟩ := hf' (φ a) 
+  use ⟨(a,b), hb.symm⟩ 
+  rfl 
 
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
  E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
