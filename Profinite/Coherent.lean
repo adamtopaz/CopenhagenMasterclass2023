@@ -21,6 +21,34 @@ open CategoryTheory
 
 universe u
 
-instance : Precoherent Profinite.{u} := sorry
+variable {X Y B : Profinite.{u}} (f : X ⟶ B) (g : Y ⟶ B)
+
+/--
+The pullback of two morphisms `f,g` in `Profinite`, constructed explicitly as the set of
+pairs `(x,y)` such that `f x = g y`, with the topology induced by the product.
+-/
+def pullback : Profinite.{u} :=
+  letI set := { xy : X × Y | f xy.fst = g xy.snd }
+  haveI : CompactSpace set := by
+    rw [← isCompact_iff_compactSpace]
+    apply IsClosed.isCompact
+    exact isClosed_eq (f.continuous.comp continuous_fst) (g.continuous.comp continuous_snd)
+  Profinite.of set
+
+instance : Precoherent Profinite.{u} := by
+  constructor
+  intro B₁ B₂ f α _ X₁ π₁ h₁
+  refine ⟨α, inferInstance, fun a => pullback f (π₁ a), fun a => pullback.fst _ _, ?_,
+    id, fun a => pullback.snd _ _, ?_⟩
+  · have := (effectiveEpiFamily_tfae _ π₁).out 0 2 ; rw [this] at h₁ ; clear this
+    have := (effectiveEpiFamily_tfae _ (fun a => pullback.fst f (π₁ a))).out 0 2
+    rw [this] ; clear this
+    intro b₂
+    obtain ⟨a,x,h⟩ := h₁ (f b₂)
+    refine ⟨a, ⟨⟨b₂, x⟩, h.symm⟩, rfl⟩
+  · intro a
+    dsimp
+    ext ⟨⟨_,_⟩,h⟩
+    exact h.symm
 
 end Profinite
