@@ -46,13 +46,41 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
 
 def E : (Set (D φ f)) := (three).choose
 
-def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r) :
-  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → CompactSpace E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := by
-  let := Continuous.homeoOfEquivCompactToT2
+lemma gleason21 (X Y : Type _) [TopologicalSpace X] [TopologicalSpace Y] [T2Space X] [T2Space Y]
+  {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ → 
+  IsClosed E₀ → ¬ (g '' E₀ = ⊤)) : ∀ U : Set X, IsOpen U → (g '' U) ⊆ closure ((g '' (Uᶜ))ᶜ) :=
+sorry
 
+#check gleason21
 
-    sorry
-    done
+lemma gleason22 {E₁ E₂ : Set A} (h : Disjoint E₁ E₂) : Disjoint (closure E₁) (closure E₂) := sorry
+
+def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
+  (hr_surj: r.Surjective) : 
+  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := by
+  intros hE h_subsets
+  have hr_inj : r.Injective
+  · rw [Function.Injective]
+    intros x y h
+    by_contra h
+    rcases t2_separation h with ⟨G₁, G₂, hG₁, hG₂, hxG₁, hyG₂, hG⟩
+    have open1 : IsOpen (r '' (G₁ᶜ))ᶜ 
+    · sorry
+    have open2 : IsOpen (r '' (G₂ᶜ))ᶜ 
+    · sorry
+    have disj : Disjoint ((r '' (G₁ᶜ))ᶜ) ((r '' (G₂ᶜ))ᶜ)
+    · sorry
+    replace disj := gleason22 disj
+    have oups := gleason21 E A hr hr_surj h_subsets
+
+  let r' := Function.Embedding.equivOfSurjective ⟨r, hr_inj⟩ hr_surj
+  have hr' : Continuous r'
+  · sorry
+  -- haveI := hE
+  let j := Continuous.homeoOfEquivCompactToT2 hr'
+  intros H
+  exact j
+
 
 def ρ : (E A B) ≃ₜ A where
   toFun := (E A B).restrict (π₁ A B)
