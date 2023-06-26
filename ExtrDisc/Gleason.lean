@@ -82,11 +82,9 @@ sorry
 
 lemma gleason22 {E₁ E₂ : Set A} (h : Disjoint E₁ E₂) : Disjoint (closure E₁) (closure E₂) := sorry
 
-def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
-  (hr_surj: r.Surjective) : 
-  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := by
-  intros hE h_subsets
-  have hr_inj : r.Injective
+lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
+  (hr_surj: r.Surjective) (hE : CompactSpace E)
+  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : r.Injective := by
   · rw [Function.Injective]
     intros x y h_eq_im
     by_contra h
@@ -106,14 +104,18 @@ def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr :
     · sorry
     have mem : r x ∈ (closure ((r '' G₁ᶜ)ᶜ)) ∩ (closure ((r '' G₂ᶜ)ᶜ)) := ⟨oups₁ mem₁, oups₂ mem₂⟩
     exact (disj.ne_of_mem mem.1 mem.2) rfl
-  let r' := Function.Embedding.equivOfSurjective ⟨r, hr_inj⟩ hr_surj
-  have hr' : Continuous r'
-  · sorry
-  -- haveI := hE
-  let j := Continuous.homeoOfEquivCompactToT2 hr'
-  exact j
 
--- #check gleason23 E
+
+lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
+  (hr_surj: r.Surjective) (hE : CompactSpace E)
+  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : 
+  Continuous (Function.Embedding.equivOfSurjective ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := sorry
+
+def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
+  (hr_surj: r.Surjective) (hE : CompactSpace E)
+  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : E ≃ₜ A where
+Continuous.homeoOfEquivCompactToT2 (gleason23_cont E hr hr_surj hE h_subsets)
+
 
 def ρ : @E _ _ _ _ _ φ f ≃ₜ A where
   toFun := (@E _ _ _ _ _ φ f).restrict (π₁ φ f)
