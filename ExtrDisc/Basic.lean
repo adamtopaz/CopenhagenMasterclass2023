@@ -74,7 +74,11 @@ def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
 instance : Full toCompHaus := sorry
 
 /-- The forgetful functor `ExtrDisc ⥤ CompHaus` is faithful. -/
-instance : Faithful toCompHaus := sorry
+instance : Faithful toCompHaus where
+  map_injective := by
+    intro X Y a b h
+    simp only [inducedFunctor_obj, inducedFunctor_map] at h
+    exact h
 
 /-- Extremally disconnected spaces are a concrete category. -/
 instance : ConcreteCategory ExtrDisc where
@@ -99,8 +103,26 @@ instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X :=
   X.2
 
 /-- Extremally disconnected spaces are totally disconnected. -/
-instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := 
-  sorry
+instance (X : ExtrDisc.{u}) : TotallySeparatedSpace X := 
+{ isTotallySeparated_univ := by 
+    intro x _ y _ hxy 
+    obtain ⟨U, V, hUV⟩ := T2Space.t2 x y hxy
+    use closure U 
+    use (closure U)ᶜ 
+    refine ⟨ExtremallyDisconnected.open_closure U hUV.1,
+      by simp only [isOpen_compl_iff, isClosed_closure], subset_closure hUV.2.2.1, ?_, 
+      by simp only [Set.union_compl_self, Set.subset_univ], disjoint_compl_right⟩ 
+    simp only [Set.mem_compl_iff]
+    rw [mem_closure_iff] 
+    push_neg 
+    use V 
+    refine' ⟨hUV.2.1,hUV.2.2.2.1,_⟩
+    rw [Set.nonempty_iff_ne_empty]
+    simp only [not_not]
+    rw [← Set.disjoint_iff_inter_eq_empty, disjoint_comm]
+    exact hUV.2.2.2.2 }
+
+instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := inferInstance
 
 /-- The functor from extremally disconnected spaces to profinite spaces. -/
 @[simps]
