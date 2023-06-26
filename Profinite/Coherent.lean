@@ -5,6 +5,7 @@ Authors: Adam Topaz
 -/
 import Mathlib.CategoryTheory.Sites.Coherent
 import Mathlib.Topology.Category.Profinite.Basic
+import Profinite.Epi
 /-!
 
 # The category of profinite spaces is precoherent
@@ -34,6 +35,21 @@ def pullback : Profinite.{u} :=
     apply IsClosed.isCompact
     exact isClosed_eq (f.continuous.comp continuous_fst) (g.continuous.comp continuous_snd)
   Profinite.of set
+
+/--
+The projection from the pullback to the first component.
+-/
+def pullback.fst : pullback f g ⟶ X where
+  toFun := fun ⟨⟨x,_⟩,_⟩ => x
+  continuous_toFun := Continuous.comp continuous_fst continuous_subtype_val
+
+/--
+The projection from the pullback to the second component.
+-/
+def pullback.snd : pullback f g ⟶ Y where
+  toFun := fun ⟨⟨_,y⟩,_⟩ => y
+  continuous_toFun := Continuous.comp continuous_snd continuous_subtype_val
+
 
 instance : Precoherent Profinite.{u} := by
   constructor
