@@ -40,22 +40,17 @@ theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}
   exact (((ExtrDisc.effectiveEpiFamily_tfae _ _).out 0 2).1 H : ∀ _, ∃ _, _) _
 
 
--- instance : Precoherent ExtrDisc.{u} := by
---   constructor
---   intro B₁ B₂ f α _ X₁ π₁ h₁
---   refine' ⟨α, inferInstance, fun a => _, _, _⟩
---   · 
-  -- refine ⟨α, inferInstance, fun a => pullback f (π₁ a), fun a => pullback.fst _ _, ?_,
-  --   id, fun a => pullback.snd _ _, ?_⟩
-  -- · have := (effectiveEpiFamily_tfae _ π₁).out 0 2 ; rw [this] at h₁ ; clear this
-  --   have := (effectiveEpiFamily_tfae _ (fun a => pullback.fst f (π₁ a))).out 0 2
-  --   rw [this] ; clear this
-  --   intro b₂
-  --   obtain ⟨a,x,h⟩ := h₁ (f b₂)
-  --   refine ⟨a, ⟨⟨b₂, x⟩, h.symm⟩, rfl⟩
-  -- · intro a
-  --   dsimp
-  --   ext ⟨⟨_,_⟩,h⟩
-  --   exact h.symm
+instance : Precoherent ExtrDisc.{u} := by
+  constructor
+  intro B₁ B₂ f α _ X₁ π₁ h₁
+  refine' ⟨α, inferInstance, fun a => _, _, _⟩
+  · let h₁' := effectiveEpiFamily.toCompHaus X₁ π₁ h₁
+    let H := CompHaus.precoherent.pullback (ExtrDisc.toCompHaus.map f) α (Family.toCompHaus X₁)
+      (Family.toCompHaus' X₁ π₁) h₁'
+    
+
+
+
+
 
 end ExtrDisc
