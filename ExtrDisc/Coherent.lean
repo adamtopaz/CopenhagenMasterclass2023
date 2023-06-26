@@ -43,12 +43,9 @@ theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}
 instance : Precoherent ExtrDisc.{u} := by
   constructor
   intro B₁ B₂ f α _ X₁ π₁ h₁
-  refine' ⟨α, inferInstance, fun a => _, _, _⟩
-  · let h₁' := effectiveEpiFamily.toCompHaus X₁ π₁ h₁
-    let H := CompHaus.precoherent.pullback (ExtrDisc.toCompHaus.map f) α (Family.toCompHaus X₁)
-      (Family.toCompHaus' X₁ π₁) h₁'
-    
-
+  refine' ⟨α, inferInstance, fun a => (CompHaus.pullback f (π₁ a)).presentation, fun a => 
+    ExtrDisc.toCompHaus.preimage (CompHaus.presentationπ (CompHaus.pullback f (π₁ a)) ≫ (CompHaus.pullback.fst _ _) :
+      toCompHaus.obj (CompHaus.presentation (CompHaus.pullback f (π₁ a))) ⟶ toCompHaus.obj B₂), sorry, sorry⟩
 
 
 
