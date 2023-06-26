@@ -45,7 +45,12 @@ lemma three : ∃ (E : Set (D A B)), CompactSpace E ∧ (π₁ A B) '' E = Set.u
 def E : (Set (D φ f)) := (three).choose
 
 def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r) :
-  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → CompactSpace E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := sorry
+  CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → CompactSpace E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := by
+  let := Continuous.homeoOfEquivCompactToT2
+
+
+    sorry
+    done
 
 def ρ : (E A B) ≃ₜ A where
   toFun := (E A B).restrict (π₁ A B)
