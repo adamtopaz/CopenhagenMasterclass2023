@@ -1,5 +1,7 @@
 import Mathlib.Condensed.Basic
 import Mathlib.Topology.ExtremallyDisconnected
+
+import FindWithGpt
 import ExtrDisc.Basic
 
 /-!
@@ -77,6 +79,8 @@ end section2
 
 section section3
 
+open CategoryTheory
+
 /-!
 
 # Effective Epimorphisms and the coherent topology
@@ -87,6 +91,8 @@ TODO:
 - In `CompHaus`, `EffectiveEpiFamily` iff jointly surjective.
 
 -/
+
+#check EffectiveEpi
 
 end section3
 

@@ -13,9 +13,16 @@ require find_with_gpt from git
 
 @[default_target]
 lean_lib «CopenhagenMasterclass2023» {
+  globs := #[
+    .andSubmodules `Condensed, 
+    .andSubmodules `Profinite,
+    .andSubmodules `ExtrDisc,
+    .andSubmodules `CompHaus
+    ]
   -- add any library configuration options here
 }
 
+/-
 lean_lib «Condensed» where
   roots := #[`Condensed]
 
@@ -27,3 +34,4 @@ lean_lib «ExtrDisc» where
 
 lean_lib «CompHaus» where
   roots := #[`CompHaus]
+-/
