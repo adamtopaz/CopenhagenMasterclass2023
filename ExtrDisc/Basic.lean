@@ -100,7 +100,26 @@ instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X :=
 
 /-- Extremally disconnected spaces are totally disconnected. -/
 instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := 
-  sorry
+{ isTotallyDisconnected_univ := by 
+    apply IsTotallySeparated.isTotallyDisconnected
+    intro x _ y _ hxy 
+    have hXT2 : T2Space X := inferInstance
+    obtain ⟨U, V, hUV⟩ := hXT2.t2 x y hxy
+    use closure U 
+    use (closure U)ᶜ 
+    refine' ⟨ExtremallyDisconnected.open_closure U hUV.1,
+      by simp only [isOpen_compl_iff, isClosed_closure], subset_closure hUV.2.2.1, _, 
+      by simp only [Set.union_compl_self, Set.subset_univ], disjoint_compl_right⟩ 
+    simp only [Set.mem_compl_iff]
+    rw [mem_closure_iff] 
+    push_neg 
+    use V 
+    refine' ⟨hUV.2.1,hUV.2.2.2.1,_⟩
+    rw [Set.nonempty_iff_ne_empty]
+    simp only [ne_eq, not_not]
+    rw [← Set.disjoint_iff_inter_eq_empty]
+    rw [disjoint_comm]
+    exact hUV.2.2.2.2 }
 
 /-- The functor from extremally disconnected spaces to profinite spaces. -/
 @[simps]
