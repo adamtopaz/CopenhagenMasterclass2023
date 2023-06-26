@@ -33,9 +33,12 @@ def Family.toCompHaus' {α : Type} {B : ExtrDisc.{u}}
     (π : (a : α) → (X a ⟶ B)) : (a : α) → (Family.toCompHaus X) a ⟶ ExtrDisc.toCompHaus.obj B :=
   fun a => ExtrDisc.toCompHaus.map (π a)
 
-theorem effectiveEpiFamily.toCompHaus {α : Type} {B : ExtrDisc.{u}} (X : α → ExtrDisc.{u})
+theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} (X : α → ExtrDisc.{u})
     (π : (a : α) → (X a ⟶ B)) (H : EffectiveEpiFamily X π) :
-    EffectiveEpiFamily (Family.toCompHaus X) (Family.toCompHaus' X π ) :=
+    EffectiveEpiFamily (Family.toCompHaus X) (Family.toCompHaus' X π) := by 
+  refine' ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
+  replace := ((ExtrDisc.effectiveEpiFamily_tfae _ _).out 0 2).1 H
+  
   sorry
 
 -- instance : Precoherent ExtrDisc.{u} := by
