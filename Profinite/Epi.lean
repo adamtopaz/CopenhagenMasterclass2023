@@ -1,6 +1,12 @@
 import Mathlib.Topology.Category.Profinite.Basic
 import Mathlib.Topology.Category.CompHaus.EffectiveEpi
 
+open CategoryTheory
+
+namespace Profinite
+
+universe u
+
 open List in
 theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}} 
     (X : α → Profinite.{u})
