@@ -37,9 +37,8 @@ theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}
     (π : (a : α) → (X a ⟶ B)) (H : EffectiveEpiFamily X π) :
     EffectiveEpiFamily (Family.toCompHaus X) (Family.toCompHaus' X π) := by 
   refine' ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
-  replace := ((ExtrDisc.effectiveEpiFamily_tfae _ _).out 0 2).1 H
-  
-  sorry
+  exact (((ExtrDisc.effectiveEpiFamily_tfae _ _).out 0 2).1 H : ∀ _, ∃ _, _) _
+
 
 -- instance : Precoherent ExtrDisc.{u} := by
 --   constructor
