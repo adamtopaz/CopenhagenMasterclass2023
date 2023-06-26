@@ -17,7 +17,9 @@ def π₂ : D φ f → B := fun x ↦ x.val.snd
 
 variable {φ} {f} (hφ : Continuous φ) (hφ' : φ.Surjective) (hf : Continuous f)
 
-lemma one : CompactSpace (D φ f) := sorry
+lemma one : CompactSpace (D φ f) :=
+isCompact_iff_compactSpace.mp (IsClosed.isCompact 
+  (isClosed_eq (Continuous.comp hφ continuous_fst) (Continuous.comp hf continuous_snd )))
 
 lemma two : (π₁ φ f).Surjective := sorry -- '' (Set.univ) = Set.univ := this does not work!
 
@@ -43,6 +45,8 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
 
 
 def E : (Set (D φ f)) := (three).choose
+
+#exit
 
 def gleason23 (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r) :
   CompactSpace E → (∀ (E₀ : Set E), ¬ E₀ = ⊤ → CompactSpace E₀ → ¬ (r '' E₀ = ⊤)) → E ≃ₜ A := sorry
