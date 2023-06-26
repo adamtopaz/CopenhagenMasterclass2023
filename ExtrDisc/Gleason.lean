@@ -15,21 +15,48 @@ def π₁ : D φ f → A := fun x ↦ x.val.fst
 
 def π₂ : D φ f → B := fun x ↦ x.val.snd
 
-variable {φ} {f} (hφ : Continuous φ) (hφ' : φ.Surjective) (hf : Continuous f)
+variable {φ} {f} (hφ : Continuous φ) (hf : Continuous f) (hf' : f.Surjective)
 
 lemma one : CompactSpace (D φ f) :=
-isCompact_iff_compactSpace.mp (IsClosed.isCompact 
+isCompact_iff_compactSpace.mp (IsClosed.isCompact
   (isClosed_eq (Continuous.comp hφ continuous_fst) (Continuous.comp hf continuous_snd )))
 
-lemma two : (π₁ φ f).Surjective := sorry -- '' (Set.univ) = Set.univ := this does not work!
+lemma two : (π₁ φ f).Surjective := by
+  intro a
+  obtain ⟨b, hb⟩ := hf' (φ a)
+  use ⟨(a,b), hb.symm⟩
+  rfl
+
+
+
 
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
  E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
  -- Define the set of closed subsets of D for which the map onto A is surjective
   let S := { E : Set (D φ f) | CompactSpace E ∧ (π₁ φ f) '' E = Set.univ}
-  have : (∀ (c : Set (Set ↑(D φ f))),
-    c ⊆ S → IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D φ f)), s ∈ c → lb ⊆ s) := by sorry
-  have := zorn_superset S this
+  -- Checking the Chain condition
+  have chain_cond : (∀ (c : Set (Set ↑(D φ f))),
+      c ⊆ S →
+      IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D φ f)), s ∈ c → lb ⊆ s) := by
+    intro Ch h hCh
+    let M := Set.sInter Ch
+    use M
+    constructor
+    · constructor
+      · rw [←isCompact_iff_compactSpace]
+        apply @IsClosed.isCompact _ _ one
+        apply isClosed_sInter
+        intro N hN
+        have N_comp := (h hN).1
+        dsimp at N_comp
+        rw [←isCompact_iff_compactSpace] at N_comp
+        exact IsCompact.isClosed N_comp
+      · ext x
+        sorry
+    · sorry
+
+
+  have := zorn_superset S chain_cond
   rcases this with ⟨E, ⟨⟨hE₁,hE₂⟩, hE₃⟩⟩
   use E
   constructor
@@ -93,9 +120,9 @@ def ρ : (E A B) ≃ₜ A where
 lemma five : Continuous (E.restrict (π₂ φ f) ∘ ρ.invFun) ∧
   f ∘ ((E φ f).restrict (π₂ φ f) ∘ ρ.invFun) = φ := sorry
 
--- #check five A B
-
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
-    sorry
+    use ⟨_, (@five A B _ C _ f φ).left⟩
+    ext
+    exact congr_fun (@five A B _ C _ f φ).right _
