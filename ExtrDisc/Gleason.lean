@@ -31,8 +31,8 @@ lemma two : (π₁ φ f).Surjective := by
 
 
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
- E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
- -- Define the set of closed subsets of D for which the map onto A is surjective
+    E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
+  -- Define the set of closed subsets of D for which the map onto A is surjective
   let S := { E : Set (D φ f) | CompactSpace E ∧ (π₁ φ f) '' E = Set.univ}
   -- Checking the Chain condition
   have chain_cond : (∀ (c : Set (Set ↑(D φ f))),
@@ -82,14 +82,16 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
 def E : (Set (D φ f)) := (three).choose
 
 lemma gleason21 (X Y : Type _) [TopologicalSpace X] [TopologicalSpace Y] [T2Space X] [T2Space Y]
-  {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ → 
-  IsClosed E₀ → ¬ (g '' E₀ = ⊤)) : ∀ U : Set X, IsOpen U → (g '' U) ⊆ closure ((g '' (Uᶜ))ᶜ) :=
+    {g : X → Y} (hg_cong : Continuous g) (hg_surj : g.Surjective) (hg : ∀ (E₀ : Set X), ¬ E₀ = ⊤ → 
+    IsClosed E₀ → ¬ (g '' E₀ = ⊤)) : ∀ U : Set X, IsOpen U → (g '' U) ⊆ closure ((g '' (Uᶜ))ᶜ) :=
 sorry
 
 #check gleason21
 
-lemma gleason22 {E₁ E₂ : Set A} (h : Disjoint E₁ E₂) : Disjoint (closure E₁) (closure E₂) := sorry
-
+lemma gleason22 {E₁ E₂ : Set A} (h : Disjoint E₁ E₂) (h₁ : IsOpen E₁) (h₂ : IsOpen E₂) : 
+    Disjoint (closure E₁) (closure E₂) := 
+  Disjoint.closure_left (Disjoint.closure_right h h₁) (ExtremallyDisconnected.open_closure E₂ h₂) 
+  
 lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
   (hr_surj: r.Surjective) (hE : CompactSpace E)
   (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : r.Injective := by
@@ -97,13 +99,13 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
     intros x y h_eq_im
     by_contra h
     rcases t2_separation h with ⟨G₁, G₂, hG₁, hG₂, hxG₁, hyG₂, hG⟩
-    have open1 : IsOpen (r '' (G₁ᶜ))ᶜ 
+    have open1 : IsOpen ((r '' (G₁ᶜ))ᶜ) 
     · sorry
-    have open2 : IsOpen (r '' (G₂ᶜ))ᶜ 
+    have open2 : IsOpen ((r '' (G₂ᶜ))ᶜ) 
     · sorry
     have disj : Disjoint ((r '' (G₁ᶜ))ᶜ) ((r '' (G₂ᶜ))ᶜ)
     · sorry
-    replace disj := gleason22 disj
+    replace disj := gleason22 disj open1 open2
     have oups₁ := gleason21 E A hr hr_surj h_subsets G₁ hG₁
     have oups₂ := gleason21 E A hr hr_surj h_subsets G₂ hG₂
     have mem₁ : r x ∈ r '' G₁
