@@ -25,20 +25,25 @@ open CategoryTheory
 
 namespace ExtrDisc
 
+def EffectiveEpiStruct.toCompHaus {X Y : ExtrDisc.{u}} {f : X ⟶ Y} (eff : EffectiveEpiStruct f) :
+  EffectiveEpiStruct (ExtrDisc.toCompHaus.map f) := sorry
+
 instance : Precoherent ExtrDisc.{u} := by
   constructor
   intro B₁ B₂ f α _ X₁ π₁ h₁
-  refine ⟨α, inferInstance, fun a => pullback f (π₁ a), fun a => pullback.fst _ _, ?_,
-    id, fun a => pullback.snd _ _, ?_⟩
-  · have := (effectiveEpiFamily_tfae _ π₁).out 0 2 ; rw [this] at h₁ ; clear this
-    have := (effectiveEpiFamily_tfae _ (fun a => pullback.fst f (π₁ a))).out 0 2
-    rw [this] ; clear this
-    intro b₂
-    obtain ⟨a,x,h⟩ := h₁ (f b₂)
-    refine ⟨a, ⟨⟨b₂, x⟩, h.symm⟩, rfl⟩
-  · intro a
-    dsimp
-    ext ⟨⟨_,_⟩,h⟩
-    exact h.symm
+  refine' ⟨α, inferInstance, fun a => _, _, _⟩
+  · 
+  -- refine ⟨α, inferInstance, fun a => pullback f (π₁ a), fun a => pullback.fst _ _, ?_,
+  --   id, fun a => pullback.snd _ _, ?_⟩
+  -- · have := (effectiveEpiFamily_tfae _ π₁).out 0 2 ; rw [this] at h₁ ; clear this
+  --   have := (effectiveEpiFamily_tfae _ (fun a => pullback.fst f (π₁ a))).out 0 2
+  --   rw [this] ; clear this
+  --   intro b₂
+  --   obtain ⟨a,x,h⟩ := h₁ (f b₂)
+  --   refine ⟨a, ⟨⟨b₂, x⟩, h.symm⟩, rfl⟩
+  -- · intro a
+  --   dsimp
+  --   ext ⟨⟨_,_⟩,h⟩
+  --   exact h.symm
 
 end ExtrDisc
