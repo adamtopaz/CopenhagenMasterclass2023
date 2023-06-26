@@ -133,16 +133,8 @@ def ρ : @E _ _ _ _ _ φ f ≃ₜ A where
   continuous_toFun := sorry
   continuous_invFun := sorry
 
-lemma five : Continuous (E.restrict (π₂ φ f) ∘ ρ.invFun) ∧ f ∘ (E.restrict (π₂ φ f) ∘ ρ.invFun) = φ := by
-  constructor
-  · exact Continuous.comp (ContinuousOn.restrict <| Continuous.continuousOn <|
-      Continuous.snd continuous_subtype_val) ρ.continuous_invFun
-  · ext a
-    convert_to φ (E.restrict (π₁ φ f) <| ρ.invFun a) = φ a
-    · simp only [π₁, π₂, Function.comp_apply, Set.restrict_apply]
-      rcases ρ.invFun a with ⟨⟨_, ha⟩, _⟩
-      exact ha.symm
-    sorry
+lemma five : Continuous (E.restrict (π₂ φ f) ∘ ρ.invFun) ∧
+  f ∘ (E.restrict (π₂ φ f) ∘ ρ.invFun) = φ := sorry
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
