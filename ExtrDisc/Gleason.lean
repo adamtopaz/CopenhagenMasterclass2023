@@ -129,9 +129,10 @@ lemma gleason23_inj (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A}
 
 
 lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
-  (hr_surj: r.Surjective) (hE : CompactSpace E)
-  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : 
-  Continuous (Function.Embedding.equivOfSurjective ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := sorry
+    (hr_surj: r.Surjective) (hE : CompactSpace E)
+    (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : 
+    Continuous (Function.Embedding.equivOfSurjective 
+    ⟨r, gleason23_inj E hr hr_surj hE h_subsets⟩ hr_surj) := hr
 
 def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
   (hr_surj: r.Surjective) (hE : CompactSpace E)
