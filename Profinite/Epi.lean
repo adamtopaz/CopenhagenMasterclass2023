@@ -77,6 +77,34 @@ def finiteCoproduct.isColimit : Limits.IsColimit (finiteCoproduct.cocone X) wher
 
 end FiniteCoproducts
 
+variable {X Y B : Profinite.{u}} (f : X ⟶ B) (g : Y ⟶ B)
+
+/--
+The pullback of two morphisms `f,g` in `Profinite`, constructed explicitly as the set of
+pairs `(x,y)` such that `f x = g y`, with the topology induced by the product.
+-/
+def pullback : Profinite.{u} :=
+  let set := { xy : X × Y | f xy.fst = g xy.snd }
+  have : CompactSpace set := by
+    rw [← isCompact_iff_compactSpace]
+    apply IsClosed.isCompact
+    exact isClosed_eq (f.continuous.comp continuous_fst) (g.continuous.comp continuous_snd)
+  Profinite.of set
+
+/--
+The projection from the pullback to the first component.
+-/
+def pullback.fst : pullback f g ⟶ X where
+  toFun := fun ⟨⟨x,_⟩,_⟩ => x
+  continuous_toFun := Continuous.comp continuous_fst continuous_subtype_val
+
+/--
+The projection from the pullback to the second component.
+-/
+def pullback.snd : pullback f g ⟶ Y where
+  toFun := fun ⟨⟨_,y⟩,_⟩ => y
+  continuous_toFun := Continuous.comp continuous_snd continuous_subtype_val
+
 namespace EffectiveEpiFamily
 
 variable {α : Type} [Fintype α] {B : Profinite.{u}}
@@ -133,6 +161,36 @@ lemma ιFun_injective : (ιFun π).Injective := by
   apply Quotient.sound'
   refine ⟨pullback (π a) (π b), ⟨⟨x,y⟩,h⟩, pullback.fst _ _, pullback.snd _ _, ?_, rfl, rfl⟩
   ext ⟨_, h⟩ ; exact h
+
+lemma ιFun_surjective : (ιFun π).Surjective := by
+  intro b
+  obtain ⟨a,x,h⟩ := surj b
+  refine ⟨Quotient.mk _ ⟨a,x⟩, h⟩
+
+lemma ιFun_bijective : (ιFun π).Bijective := ⟨ιFun_injective π, ιFun_surjective π surj⟩
+
+-- TODO
+example (X Y : CompHaus) [TotallyDisconnectedSpace X] (f : X ≅ Y) :
+    TotallyDisconnectedSpace Y := by
+  constructor
+  unfold _root_.IsTotallyDisconnected
+  intro t ht ht₂
+  intro x hx y hy
+  sorry
+  done
+
+#check Set.preimage_inter
+#check CompHaus.EffectiveEpiFamily.ι
+
+
+-- TODO: need this as an instance
+instance : TotallyDisconnectedSpace (Quotient (relation π)) := by
+
+  constructor
+  unfold _root_.IsTotallyDisconnected
+  sorry
+  done
+
 
 /--
 Implementation: The quotient of `relation π`, considered as an object of `Profinite`.
@@ -232,7 +290,7 @@ theorem effectiveEpiFamily_of_jointly_surjective
     {α : Type} [Fintype α] {B : Profinite.{u}}
     (X : α → Profinite.{u}) (π : (a : α) → (X a ⟶ B))
     (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b) :
-    EffectiveEpiFamily X π := by
+    EffectiveEpiFamily X π :=
   ⟨⟨Profinite.EffectiveEpiFamily.struct π surj⟩⟩
 
 
