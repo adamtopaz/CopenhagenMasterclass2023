@@ -5,7 +5,7 @@ open CategoryTheory TopologicalSpace
 
 variable (A B: Type _) [TopologicalSpace A] [T2Space A] [CompactSpace A] [ExtremallyDisconnected A]
 variable {C : Type _} [TopologicalSpace B] [TopologicalSpace C] [T2Space B] [T2Space C]
-  [CompactSpace B] [CompactSpace C] 
+  [CompactSpace B] [CompactSpace C]
 variable {f : B → C} {φ : A → C} (hf : Continuous f) (hφ : Continuous φ) (hφ' : φ.Surjective)
 
 def D : Set (A × B) := sorry
@@ -25,12 +25,12 @@ def E : (Set (D A B)) := (three A B).choose
 
 def ρ : (E A B) ≃ₜ A := sorry
 
-lemma five : Continuous ((E A B).restrict (π₂ A B) ∘ (ρ A B).invFun) ∧ 
+lemma five : Continuous ((E A B).restrict (π₂ A B) ∘ (ρ A B).invFun) ∧
   f ∘ ((E A B).restrict (π₂ A B) ∘ (ρ A B).invFun) = φ := sorry
-
--- #check five A B
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
-    sorry
+    use ⟨_, (@five A B _ C _ f φ).left⟩
+    ext
+    exact congr_fun (@five A B _ C _ f φ).right _
