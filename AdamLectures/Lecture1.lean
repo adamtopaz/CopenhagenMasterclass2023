@@ -32,7 +32,6 @@ it is projective in the category of compact Hausdorff spaces.
 #check Profinite
 #check ExtrDisc
 
-globs := #[.andSubmodules `ECTate]example (X : CompHaus) : TopologicalSpace X := inferInstance
 example (X : CompHaus) : CompactSpace X := inferInstance
 example (X : CompHaus) : T2Space X := inferInstance
 
