@@ -5,6 +5,7 @@ Authors: Adam Topaz
 -/
 import Profinite.Coherent
 import ExtrDisc.Coherent
+import ExtrDisc.Epi
 import Mathlib.Condensed.Basic
 import Mathlib.CategoryTheory.Sites.DenseSubsite
 import Mathlib.CategoryTheory.Sites.InducedTopology
@@ -66,7 +67,6 @@ universe u w
 
 namespace ExtrDiscCompHaus
 
-#check Sieve.coverByImage
 lemma coverDense : 
     CoverDense (coherentTopology _) ExtrDisc.toCompHaus := by
   constructor
@@ -101,7 +101,29 @@ lemma coherentTopology_is_induced :
     coherentTopology ExtrDisc.{u} = coverDense.inducedTopology := by
   rw [CategoryTheory.topology_eq_iff_same_sheaves]
   intro P 
-  sorry
+  constructor
+  · sorry
+  · intro h
+    erw [Presieve.isSheaf_coverage]
+    intro B S hS
+    rw [Presieve.isSheafFor_iff_generate]
+    apply h
+    change _ ∈ coherentTopology _ _
+    obtain ⟨α, _, X, π, rfl, h⟩ := hS 
+    have : (Sieve.generate <| Presieve.ofArrows X π).functorPushforward ExtrDisc.toCompHaus = 
+      Sieve.generate 
+        (Presieve.ofArrows (fun a : α => (X a).compHaus) 
+        (fun a => ExtrDisc.toCompHaus.map (π a))) := sorry
+    rw [this]
+    apply Coverage.saturate.of
+    dsimp
+    refine ⟨α, inferInstance, _, _, rfl, ?_⟩
+    apply (CompHaus.effectiveEpiFamily_tfae 
+      (fun a => (X a).compHaus)
+      (fun a => ExtrDisc.toCompHaus.map (π a))).out 0 2 |>.mpr
+    replace h := 
+      (ExtrDisc.effectiveEpiFamily_tfae X π).out 0 2 |>.mp <| h
+    exact h
 
 lemma coverPreserving : 
   CoverPreserving 
