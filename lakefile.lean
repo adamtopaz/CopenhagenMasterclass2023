@@ -17,7 +17,8 @@ lean_lib «CopenhagenMasterclass2023» {
     .andSubmodules `Condensed, 
     .andSubmodules `Profinite,
     .andSubmodules `ExtrDisc,
-    .andSubmodules `CompHaus
+    .andSubmodules `CompHaus,
+    .andSubmodules `Sieves
     ]
   -- add any library configuration options here
 }
