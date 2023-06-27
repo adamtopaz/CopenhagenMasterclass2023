@@ -26,32 +26,38 @@ lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
 def e {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X) : 
-    F.obj (op X) ⟶ (∀ {Y : ExtrDisc} {s : Y ⟶ X} (hs : S s), F.obj (op Y)) := sorry
+    F.obj (op X) ⟶ (∀ (Y : ExtrDisc) (s : Y ⟶ X) (_ : S s), F.obj (op Y)) := 
+  fun x _ s _ ↦ F.map s.op x 
 
+noncomputable
 def p₁ {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
     (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
     S s → S s' → HasPullback s s') : 
-    (∀ {Y : ExtrDisc} {s : Y ⟶ X} (hs : S s), F.obj (op Y)) ⟶ 
-    (∀ {Y : ExtrDisc} {s : Y ⟶ X} (hs : S s) {Z : ExtrDisc} {s' : Z ⟶ X} (hs' : S s'), 
-    F.obj (op (@Limits.pullback _ _ _ _ _ s s' (hS s s' hs hs')))) := sorry
+    (∀ (Y : ExtrDisc) (s : Y ⟶ X) (_ : S s), F.obj (op Y)) ⟶ 
+    (∀ (Y : ExtrDisc) (s : Y ⟶ X) (hs : S s) (Z : ExtrDisc) (s' : Z ⟶ X) (hs' : S s'), 
+    F.obj (op (@Limits.pullback _ _ _ _ _ s s' (hS s s' hs hs')))) := 
+  fun x Y s hs _ s' hs' ↦ 
+  F.map (@pullback.fst _ _ _ _ _ s s' (hS s s' hs hs')).op (x Y s hs)
 
+noncomputable
 def p₂ {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
     (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
     S s → S s' → HasPullback s s') : 
-    (∀ {Y : ExtrDisc} {s : Y ⟶ X} (hs : S s), F.obj (op Y)) ⟶ 
-    (∀ {Y : ExtrDisc} {s : Y ⟶ X} (hs : S s) {Z : ExtrDisc} {s' : Z ⟶ X} (hs' : S s'), 
-    F.obj (op (@Limits.pullback _ _ _ _ _ s s' (hS s s' hs hs')))) := sorry
+    (∀ (Y : ExtrDisc) (s : Y ⟶ X) (_ : S s), F.obj (op Y)) ⟶ 
+    (∀ (Y : ExtrDisc) (s : Y ⟶ X) (hs : S s) (Z : ExtrDisc) (s' : Z ⟶ X) (hs' : S s'), 
+    F.obj (op (@Limits.pullback _ _ _ _ _ s s' (hS s s' hs hs')))) := 
+  fun x _ s hs Z s' hs' ↦ 
+  F.map (@pullback.snd _ _ _ _ _ s s' (hS s s' hs hs')).op (x Z s' hs')
 
-def e_p₁_p₂_Fork {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
+variable {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
     (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
-    S s → S s' → HasPullback s s') : Fork (p₁ F S hS) (p₂ F S hS) where
-  pt := F.obj (op X)
-  π := sorry 
+    S s → S s' → HasPullback s s')
 
 def IsEqualizerDiagram_vi_to_sheaf {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) 
     (S : Presieve X) (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
-    S s → S s' → HasPullback s s') : Prop := sorry --IsLimit (e_p₁_p₂_Fork F S hS)
-
+    S s → S s' → HasPullback s s') : Prop := 
+  ∀ y, (p₁ F S hS) y = (p₂ F S hS) y → ∃! x, (e F S) x = y 
+  
 lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : Presieve X)
     (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
     S s → S s' → HasPullback s s') : 
