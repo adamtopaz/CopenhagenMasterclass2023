@@ -236,6 +236,8 @@ lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
     haveI : ExtremallyDisconnected A.compHaus.toTop := A.extrDisc
-    use ⟨_, (five φ.continuous f.continuous sorry).left⟩
+    have hf : f.1.Surjective 
+    · rwa [CompHaus.epi_iff_surjective] at *
+    use ⟨_, (five φ.continuous f.continuous hf).left⟩
     ext
-    exact congr_fun (five φ.continuous f.continuous sorry).right _
+    exact congr_fun (five φ.continuous f.continuous hf).right _
