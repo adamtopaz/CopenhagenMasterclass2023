@@ -31,7 +31,6 @@ theorem _root_.CategoryTheory.EffectiveEpiFamily.toCompHaus {α : Type} [Fintype
   refine' ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
   exact (((effectiveEpiFamily_tfae _ _).out 0 2).1 H : ∀ _, ∃ _, _) _
 
-
 instance : Precoherent ExtrDisc.{u} := by
   constructor
   intro B₁ B₂ f α _ X₁ π₁ h₁
