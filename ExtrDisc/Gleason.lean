@@ -1,8 +1,8 @@
 import ExtrDisc.Basic
 
-variable {A E : Type _} [TopologicalSpace A] [TopologicalSpace E]
+variable {A D : Type _} {E : Set D} [TopologicalSpace A] [TopologicalSpace D]
   {ρ : E → A} (ρ_cont : Continuous ρ) (ρ_surj : ρ.Surjective)
-  (image_ne_top : ∀ E₀ : Set E, E₀ ≠ ⊤ → IsClosed E₀ → ρ '' E₀ ≠ ⊤)
+  (image_ne_top : ∀ E₀ : Set E, IsClosed E₀ → ρ '' E₀ ≠ ⊤)
 
 open Set
 
@@ -14,11 +14,9 @@ lemma image_subset_closure_compl_image_compl {G : Set E} (hG : IsOpen G) :
   · intro a ha
     rw [mem_closure_iff]
     intro N hN ha'
-    rcases (G.mem_image ρ a).mp ha with ⟨e, he, rfl⟩
-    have non_empty : Set.Nonempty (G ∩ ρ⁻¹' N) := ⟨e, mem_inter he <| mem_preimage.mpr ha'⟩
+    rcases (G.mem_image ρ a).mp ha with ⟨e, _, rfl⟩
     have is_open : IsOpen <| G ∩ ρ⁻¹' N := hG.inter <| hN.preimage ρ_cont
-    have ne_top : ρ '' (G ∩ ρ⁻¹' N)ᶜ ≠ ⊤ := image_ne_top _ (compl_ne_univ.mpr non_empty)
-                                              is_open.isClosed_compl
+    have ne_top : ρ '' (G ∩ ρ⁻¹' N)ᶜ ≠ ⊤ := image_ne_top _ is_open.isClosed_compl
     rcases nonempty_compl.mpr ne_top with ⟨x, hx⟩
     have hx' : x ∈ (ρ '' Gᶜ)ᶜ := (compl_subset_compl.mpr <| image_subset ρ <|
                                     compl_subset_compl.mpr <| G.inter_subset_left _) hx
@@ -32,8 +30,7 @@ lemma disjoint_of_extremally_disconnected [ExtremallyDisconnected A] {U₁ U₂ 
     (h : Disjoint U₁ U₂) (hU₁ : IsOpen U₁) (hU₂ : IsOpen U₂) : Disjoint (closure U₁) (closure U₂) :=
   Disjoint.closure_left (h.closure_right hU₁) <| ExtremallyDisconnected.open_closure U₂ hU₂
 
-/-- Lemma 2.3 -/
-lemma compact_to_T2_injective [ExtremallyDisconnected A] [T2Space A] [T2Space E] [CompactSpace E] :
+lemma compact_to_T2_injective [T2Space A] [ExtremallyDisconnected A] [T2Space E] [CompactSpace E] :
     ρ.Injective := by
   intro x y h_eq_im
   by_contra h
@@ -66,20 +63,26 @@ lemma compact_to_T2_injective [ExtremallyDisconnected A] [T2Space A] [T2Space E]
   have mem : ρ x ∈ (closure ((ρ '' G₁ᶜ)ᶜ)) ∩ (closure ((ρ '' G₂ᶜ)ᶜ)) := ⟨oups₁ mem₁, oups₂ mem₂⟩
   exact (disj.ne_of_mem mem.1 mem.2) rfl
 
+/-- Lemma 2.3 -/
+noncomputable def compact_to_T2_homeomorph [T2Space A] [ExtremallyDisconnected A] [T2Space E]
+    [CompactSpace E] : E ≃ₜ A :=
+  Continuous.homeoOfEquivCompactToT2
+    (f := Equiv.ofBijective ρ ⟨compact_to_T2_injective ρ_cont ρ_surj image_ne_top, ρ_surj⟩) ρ_cont
+
 variable {A : Type _} [TopologicalSpace A] [T2Space A] [CompactSpace A] [ExtremallyDisconnected A]
 variable {B C : Type _} [TopologicalSpace B] [TopologicalSpace C] [T2Space B] [T2Space C]
   [CompactSpace B] [CompactSpace C]
 variable (φ : A → C) (f : B → C)
 
-def D : Set (A × B) := {x | φ x.fst = f x.snd}
+def D' : Set (A × B) := {x | φ x.fst = f x.snd}
 
-def π₁ : D φ f → A := fun x ↦ x.val.fst
+def π₁ : D' φ f → A := fun x ↦ x.val.fst
 
-def π₂ : D φ f → B := fun x ↦ x.val.snd
+def π₂ : D' φ f → B := fun x ↦ x.val.snd
 
 variable {φ} {f} (hφ : Continuous φ) (hf : Continuous f) (hf' : f.Surjective)
 
-instance one : CompactSpace (D φ f) :=
+instance one : CompactSpace (D' φ f) :=
 isCompact_iff_compactSpace.mp (IsClosed.isCompact
   (isClosed_eq (Continuous.comp hφ continuous_fst) (Continuous.comp hf continuous_snd )))
 
@@ -91,14 +94,16 @@ lemma two : (π₁ φ f).Surjective := by
 
 lemma two_half : Continuous (π₁ φ f) := Continuous.comp continuous_fst continuous_subtype_val
 
-lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = univ ∧ ∀ (E₀ : Set (D φ f)),
-    E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = univ := by
+lemma three : ∃ E : Set <| D' φ f,
+    CompactSpace E ∧
+    π₁ φ f '' E = univ ∧
+    ∀ E₀ : Set <| D' φ f, E₀ ⊂ E → CompactSpace E₀ → π₁ φ f '' E₀ ≠ univ := by
   -- Define the set of closed subsets of D for which the map onto A is surjective
-  let S := { E : Set (D φ f) | CompactSpace E ∧ (π₁ φ f) '' E = univ}
+  let S := { E : Set (D' φ f) | CompactSpace E ∧ (π₁ φ f) '' E = univ}
   -- Checking the Chain condition
-  have chain_cond : (∀ (c : Set (Set ↑(D φ f))),
+  have chain_cond : (∀ (c : Set (Set ↑(D' φ f))),
       c ⊆ S →
-      IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D φ f)), s ∈ c → lb ⊆ s) := by
+      IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D' φ f)), s ∈ c → lb ⊆ s) := by
     intro Ch h hCh
     let M := sInter Ch
     use M
@@ -126,9 +131,9 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = uni
         · ext x
           refine' ⟨ fun _ => trivial , fun _ => _ ⟩
           rw [mem_image]
-          change Set.Nonempty {x_1 : D φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
-          let Z : Ch → Set (D φ f) := fun X => X ∩ (π₁ _ _)⁻¹' {x}
-          suffices Set.Nonempty <| ⋂ (X : Ch), (X: Set (D φ f)) ∩ (π₁ _ _)⁻¹' {x} by
+          change Set.Nonempty {x_1 : D' φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
+          let Z : Ch → Set (D' φ f) := fun X => X ∩ (π₁ _ _)⁻¹' {x}
+          suffices Set.Nonempty <| ⋂ (X : Ch), (X: Set (D' φ f)) ∩ (π₁ _ _)⁻¹' {x} by
             convert this
             rw [← iInter_inter, ←  sInter_eq_iInter]
             rw [←setOf_inter_eq_sep, inter_comm]
@@ -151,7 +156,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = uni
           apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z _
               (fun X => (assumps X).1) (fun X => (assumps X).2.1) (fun X => (assumps X).2.2)
         -- Need to show the `Directed` assumption for the inclusion, which is annoying...
-          change Directed _ ((fun X => X ∩ _) ∘ (fun X => X: ↑Ch → Set (D φ f)))
+          change Directed _ ((fun X => X ∩ _) ∘ (fun X => X: ↑Ch → Set (D' φ f)))
           refine' Directed.mono_comp _ _ _
           · exact fun x y => x ⊇ y
           · exact fun ⦃x y⦄ a => inter_subset_inter_left _ a
@@ -175,11 +180,11 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = uni
     replace hE₃ := hE₃ (And.intro h₂ h₃) (subset_of_ssubset h₁)
     exact (ne_of_ssubset h₁) hE₃
 
-def E' : (Set (D φ f)) := (three hφ hf hf').choose
+def E' : (Set (D' φ f)) := (three hφ hf hf').choose
 
-instance : TopologicalSpace (D φ f) := inferInstance
+instance : TopologicalSpace (D' φ f) := inferInstance
 
-lemma compact_to_T2_surjective : ((E' hφ hf hf').restrict (π₁ φ f)).Surjective := by
+lemma compact_to_T2_surjective' : ((E' hφ hf hf').restrict (π₁ φ f)).Surjective := by
   intro a
   have := (three hφ hf hf').choose_spec.2.1
   have ha : a ∈ univ := by tauto
@@ -188,30 +193,18 @@ lemma compact_to_T2_surjective : ((E' hφ hf hf').restrict (π₁ φ f)).Surject
   use ⟨c,hc.1⟩
   exact hc.2
 
-lemma gleason23_cont (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
-    (hr_surj: r.Surjective) [CompactSpace E]
-    (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) :
-    Continuous (Function.Embedding.equivOfSurjective
-    ⟨r, compact_to_T2_injective hr hr_surj h_subsets⟩ hr_surj) := hr
-
-lemma gleason23_cont' : Continuous ((E' hφ hf hf').restrict (π₁ φ f)) :=
+lemma gleason23_cont : Continuous ((E' hφ hf hf').restrict (π₁ φ f)) :=
 ContinuousOn.restrict (Continuous.continuousOn (Continuous.comp continuous_fst
   continuous_subtype_val))
 
 noncomputable
-def gleason23_def (E : Type _ ) [TopologicalSpace E] [T2Space E] {r : E → A} (hr : Continuous r)
-  (hr_surj: r.Surjective) [CompactSpace E]
-  (h_subsets : ∀ (E₀ : Set E), ¬ E₀ = ⊤ → IsClosed E₀ → ¬ (r '' E₀ = ⊤)) : E ≃ₜ A :=
-Continuous.homeoOfEquivCompactToT2 (gleason23_cont E hr hr_surj h_subsets)
-
-noncomputable
 def ρ' : (E' hφ hf hf') ≃ₜ A := by
   haveI : CompactSpace <| E' hφ hf hf' := (three hφ hf hf').choose_spec.1
-  refine' gleason23_def (E' hφ hf hf') (gleason23_cont' hφ hf hf') (compact_to_T2_surjective hφ hf hf') _
+  refine' compact_to_T2_homeomorph (gleason23_cont hφ hf hf') (compact_to_T2_surjective' hφ hf hf') _
   have := (three hφ hf hf').choose_spec.2.2
   simp_rw [top_eq_univ, ← ne_eq, ← ssubset_univ_iff]
   intro E₀ hE₀ hE₀c
-  let E₀' : Set (D φ f) := Subtype.val '' E₀
+  let E₀' : Set (D' φ f) := Subtype.val '' E₀
   have hE₀' : E₀' ⊂ E' hφ hf hf'
   · rw [ssubset_iff_subset_ne]
     constructor
@@ -239,7 +232,7 @@ def ρ' : (E' hφ hf hf') ≃ₜ A := by
   rw [ssubset_univ_iff]
   have hE₀c' : CompactSpace E₀'
   · rw [← isCompact_iff_compactSpace]
-    haveI CD : CompactSpace (D φ f) := one hφ hf
+    haveI CD : CompactSpace (D' φ f) := one hφ hf
     apply IsClosed.isCompact
     dsimp
     refine Iff.mp (ClosedEmbedding.closed_iff_image_closed ?hE₀c'.h.hf) hE₀c
@@ -270,13 +263,13 @@ lemma five : Continuous ((E' hφ hf hf').restrict (π₂ φ f) ∘ (ρ' hφ hf h
         Homeomorph.self_comp_symm, Function.comp.right_id]
     ext x
     simp only [Function.comp_apply, restrict_apply, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv]
-    dsimp [π₂, ρ', gleason23_def, Continuous.homeoOfEquivCompactToT2_toEquiv,
+    dsimp [π₂, ρ', compact_to_T2_homeomorph, Continuous.homeoOfEquivCompactToT2_toEquiv,
       Continuous.homeoOfEquivCompactToT2, π₁]
     have := x.val.prop
     dsimp [D] at this
     exact this.symm
 
-lemma gleason (A : ExtrDisc) : CategoryTheory.Projective A.compHaus where
+instance (A : ExtrDisc) : CategoryTheory.Projective A.compHaus where
   factors := by
     intro B C φ f _
     haveI : ExtremallyDisconnected A.compHaus.toTop := A.extrDisc
