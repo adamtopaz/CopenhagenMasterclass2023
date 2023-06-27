@@ -25,7 +25,7 @@ open CategoryTheory CompHaus Functor
 
 namespace ExtrDisc
 
-theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} {X : α → ExtrDisc.{u}}
+theorem _root_.CategoryTheory.EffectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} {X : α → ExtrDisc.{u}}
     {π : (a : α) → (X a ⟶ B)} (H : EffectiveEpiFamily X π) :
     EffectiveEpiFamily (fun a => toCompHaus.obj (X a) ) (fun a => toCompHaus.map (π a)) := by 
   refine' ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
@@ -41,11 +41,9 @@ instance : Precoherent ExtrDisc.{u} := by
       toCompHaus.preimage (presentationπ _ ≫ (pullback.snd _ _ )),
       fun a => _⟩
   · refine' ((effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
-    have h₁' := ((CompHaus.effectiveEpiFamily_tfae _ (fun a => toCompHaus.map (π₁ a))).out 0 2).1
-      (effectiveEpiFamily.toCompHaus h₁)
+    have h₁' := ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).1 h₁.toCompHaus
     obtain ⟨a, x, h⟩ := h₁' (f b)
-    obtain ⟨c, hc⟩ := (CompHaus.epi_iff_surjective _).1 (epiPresentπ (pullback f (π₁ a)))
-      (⟨⟨b, x⟩, h.symm⟩ : pullback f (π₁ a))
+    obtain ⟨c, hc⟩ := (CompHaus.epi_iff_surjective _).1 (epiPresentπ (pullback f (π₁ a))) ⟨⟨b, x⟩, h.symm⟩
     refine' ⟨a, c, _⟩
     change toCompHaus.map (toCompHaus.preimage _) _ = _
     simp only [image_preimage, toCompHaus_obj, comp_apply, hc, Set.mem_setOf_eq]
