@@ -189,7 +189,51 @@ noncomputable
 def ρ : (E hφ hf hf') ≃ₜ A := by
   refine' gleason23_def (E hφ hf hf') (gleason23_cont' hφ hf hf') (gleason23_surj hφ hf hf')
     (three hφ hf hf').choose_spec.1 _
-  sorry -- we need to decide what to do with `three` etc. to resolve this
+  have := (three hφ hf hf').choose_spec.2.2
+  simp_rw [Set.top_eq_univ, ← ne_eq, ← Set.ssubset_univ_iff] 
+  intro E₀ hE₀ hE₀c
+  let E₀' : Set (D φ f) := Subtype.val '' E₀ 
+  have hE₀' : E₀' ⊂ E hφ hf hf'
+  · rw [ssubset_iff_subset_ne]
+    constructor 
+    · intro x hx
+      dsimp at hx 
+      obtain ⟨y,hy⟩ := hx 
+      rw [← hy.2]
+      exact y.prop
+    · rw [ssubset_iff_subset_ne] at hE₀
+      dsimp 
+      intro h 
+      apply hE₀.2 
+      ext x 
+      refine' ⟨by tauto, _⟩ 
+      intro _ 
+      have hx := x.prop 
+      simp_rw [← h] at hx 
+      obtain ⟨y,hy⟩ := hx 
+      have hxy : y = x
+      · ext1 
+        exact hy.2
+      rw [← hxy]
+      exact hy.1
+  specialize this E₀' hE₀'
+  rw [Set.ssubset_univ_iff] 
+  have hE₀c' : CompactSpace E₀'
+  · rw [← isCompact_iff_compactSpace]
+    haveI CD : CompactSpace (D φ f) := one hφ hf
+    apply IsClosed.isCompact 
+    dsimp 
+    refine Iff.mp (ClosedEmbedding.closed_iff_image_closed ?hE₀c'.h.hf) hE₀c
+    apply closedEmbedding_subtype_val 
+    apply IsCompact.isClosed 
+    rw [isCompact_iff_compactSpace]
+    exact (three hφ hf hf').choose_spec.1
+  have hπ : (E hφ hf hf').restrict (π₁ φ f) '' E₀ = π₁ φ f '' E₀' := sorry 
+  specialize this hE₀c' 
+  rwa [hπ]
+  --intro E₀ 
+
+    -- we need to decide what to do with `three` etc. to resolve this
 -- where
 --   toFun := (E hφ hf).restrict (π₁ φ f)
 --   invFun := sorry
@@ -226,6 +270,8 @@ lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
     intro B C φ f _
     haveI : ExtremallyDisconnected A.compHaus.toTop := A.extrDisc
-    use ⟨_, (five φ.continuous f.continuous sorry).left⟩
+    have hf : f.1.Surjective 
+    · rwa [CompHaus.epi_iff_surjective] at *
+    use ⟨_, (five φ.continuous f.continuous hf).left⟩
     ext
-    exact congr_fun (five φ.continuous f.continuous sorry).right _
+    exact congr_fun (five φ.continuous f.continuous hf).right _
