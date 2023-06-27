@@ -36,17 +36,15 @@ instance : Precoherent ExtrDisc.{u} := by
   constructor
   intro B₁ B₂ f α _ X₁ π₁ h₁
   refine' ⟨α, inferInstance, fun a => (pullback f (π₁ a)).presentation, fun a => 
-    toCompHaus.preimage (presentationπ _ ≫ (pullback.fst _ _) :
-      toCompHaus.obj (presentation _) ⟶ toCompHaus.obj B₂), _, id, fun a =>
-      toCompHaus.preimage (presentationπ _ ≫ (pullback.snd _ _ )),
-      fun a => _⟩
+    toCompHaus.preimage (presentationπ _ ≫ (pullback.fst _ _)), _, id, fun a =>
+    toCompHaus.preimage (presentationπ _ ≫ (pullback.snd _ _ )), fun a => _⟩
   · refine' ((effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
     have h₁' := ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).1 h₁.toCompHaus
     obtain ⟨a, x, h⟩ := h₁' (f b)
     obtain ⟨c, hc⟩ := (CompHaus.epi_iff_surjective _).1 (epiPresentπ (pullback f (π₁ a))) ⟨⟨b, x⟩, h.symm⟩
     refine' ⟨a, c, _⟩
     change toCompHaus.map (toCompHaus.preimage _) _ = _
-    simp only [image_preimage, toCompHaus_obj, comp_apply, hc, Set.mem_setOf_eq]
+    simp only [image_preimage, toCompHaus_obj, comp_apply, hc]
     rfl
   · apply map_injective toCompHaus
     simp only [map_comp, image_preimage, Category.assoc]
