@@ -199,7 +199,20 @@ noncomputable
 def ρ : (E hφ hf hf') ≃ₜ A := by
   refine' gleason23_def (E hφ hf hf') (gleason23_cont' hφ hf hf') (gleason23_surj hφ hf hf')
     (three hφ hf hf').choose_spec.1 _
-  sorry -- we need to decide what to do with `three` etc. to resolve this
+  have := (three hφ hf hf').choose_spec.2.2
+  simp_rw [Set.top_eq_univ, ← ne_eq, ← Set.ssubset_univ_iff] 
+  intro E₀ hE₀ hE₀c
+  let E₀' : Set (D φ f) := E hφ hf hf' ∩ E₀ 
+  have hE₀' : E₀' ⊂ E hφ hf hf' := sorry  
+  specialize this E₀' hE₀'
+  rw [Set.ssubset_univ_iff] 
+  have hE₀c' : CompactSpace E₀' := sorry 
+  have hπ : (E hφ hf hf').restrict (π₁ φ f) '' E₀ = π₁ φ f '' E₀' := sorry 
+  specialize this hE₀c' 
+  rwa [hπ]
+  --intro E₀ 
+
+    -- we need to decide what to do with `three` etc. to resolve this
 -- where
 --   toFun := (E hφ hf).restrict (π₁ φ f)
 --   invFun := sorry
