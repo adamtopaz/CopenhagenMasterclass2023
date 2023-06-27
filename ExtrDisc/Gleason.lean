@@ -209,7 +209,28 @@ def ρ : (E hφ hf hf') ≃ₜ A := by
 --   continuous_invFun := sorry
 
 lemma five : Continuous ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) ∧
-  f ∘ ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) = φ := sorry
+    f ∘ ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) = φ := by
+  constructor
+  · refine' Continuous.comp _ _
+    · refine' ContinuousOn.restrict _
+      apply Continuous.continuousOn 
+      exact Continuous.comp continuous_snd continuous_subtype_val
+    · exact (Homeomorph.continuous (Homeomorph.symm (ρ hφ hf hf')))
+  · suffices : f ∘ (E hφ hf hf').restrict (π₂ φ f) = φ ∘ (ρ hφ hf hf').toFun
+    · simp only [← Function.comp.assoc]
+      rw [this]
+      simp only [Function.comp.assoc, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv, 
+        Equiv.invFun_as_coe, Homeomorph.coe_symm_toEquiv,
+        Homeomorph.self_comp_symm, Function.comp.right_id]
+    ext x
+    simp only [Function.comp_apply, Set.restrict_apply, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv]
+    dsimp [π₂, ρ, gleason23_def, Continuous.homeoOfEquivCompactToT2_toEquiv, 
+      Continuous.homeoOfEquivCompactToT2, π₁]
+    have := x.val.prop 
+    dsimp [D] at this 
+    exact this.symm
+
+    
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
