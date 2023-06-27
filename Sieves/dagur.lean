@@ -16,7 +16,7 @@ variable {C}
 
 def dCoverage.toCoverage (F : dCoverage C) : Coverage C where
   covering := fun X => (arrows)'' (F.covering X)
-  pullback := fun _ _ f S hS => F.pullback f S hS
+  pullback := F.pullback
     
 
 end CategoryTheory
