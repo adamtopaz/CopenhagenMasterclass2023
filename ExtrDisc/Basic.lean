@@ -71,7 +71,10 @@ def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
   inducedFunctor _
 
 /-- The forgetful functor `ExtrDisc ⥤ CompHaus` is full. -/
-instance : Full toCompHaus := sorry
+instance : Full toCompHaus where
+  preimage := fun f => f
+  witness := fun f => by simp
+
 
 /-- The forgetful functor `ExtrDisc ⥤ CompHaus` is faithful. -/
 instance : Faithful toCompHaus where
