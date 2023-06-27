@@ -8,24 +8,24 @@ namespace ExtrDisc
 universe u
 
 lemma epi_iff_surjective {X Y : ExtrDisc.{u}} (f : X ⟶ Y) :
-    Epi f ↔ Function.Surjective f := 
+    Epi f ↔ Function.Surjective f :=
   sorry
 
 open List in
-theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : ExtrDisc.{u}} 
+theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : ExtrDisc.{u}}
     (X : α → ExtrDisc.{u})
     (π : (a : α) → (X a ⟶ B)) :
     TFAE [
       EffectiveEpiFamily X π,
       Epi (Limits.Sigma.desc π),
-      ∀ (b : B), ∃ (a : α) (x : X a), π a x = b 
+      ∀ (b : B), ∃ (a : α) (x : X a), π a x = b
     ] := by
-  tfae_have 1 → 2 
-  · intro ; infer_instance 
+  tfae_have 1 → 2
+  · intro ; infer_instance
   tfae_have 2 → 3
-  · sorry 
+  · sorry -- wip Jon & Sina
   tfae_have 3 → 1
-  · sorry
+  · sorry -- wip Jon & Sina
   tfae_finish
 
 end ExtrDisc
