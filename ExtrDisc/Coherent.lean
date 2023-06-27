@@ -14,10 +14,6 @@ spaces is precoherent. Precoherence is the claim that "effective epis pull back"
 and is the condition we'll use to define a *coverage* on `ExtrDisc`, which
 is a collection of covering presieves satisfying a pullback condition.
 
-## TODO
-
-Supply the proof!
-
 -/
 universe u
 

@@ -10,11 +10,6 @@ import Profinite.Epi
 
 # The category of profinite spaces is precoherent
 
-# TODO
-
-Prove the theorem that the category of profinite spaces
-is precoherent.
-
 -/
 namespace Profinite
 
