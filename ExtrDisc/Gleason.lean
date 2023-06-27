@@ -27,8 +27,7 @@ lemma two : (π₁ φ f).Surjective := by
   use ⟨(a,b), hb.symm⟩
   rfl
 
-lemma two_half : Continuous (π₁ φ f) := by
-  sorry
+lemma two_half : Continuous (π₁ φ f) := Continuous.comp continuous_fst continuous_subtype_val
 
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
     E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
