@@ -25,17 +25,9 @@ open CategoryTheory
 
 namespace ExtrDisc
 
-def Family.toCompHaus {α : Type} (X : α → ExtrDisc.{u}) : α → CompHaus :=
-  fun a => toCompHaus.obj (X a) 
-
-def Family.toCompHaus' {α : Type} {B : ExtrDisc.{u}} 
-    {X : α → ExtrDisc.{u}}
-    (π : (a : α) → (X a ⟶ B)) : (a : α) → (Family.toCompHaus X) a ⟶ ExtrDisc.toCompHaus.obj B :=
-  fun a => ExtrDisc.toCompHaus.map (π a)
-
 theorem effectiveEpiFamily.toCompHaus {α : Type} [Fintype α] {B : ExtrDisc.{u}} {X : α → ExtrDisc.{u}}
     {π : (a : α) → (X a ⟶ B)} (H : EffectiveEpiFamily X π) :
-    EffectiveEpiFamily (Family.toCompHaus X) (Family.toCompHaus' π) := by 
+    EffectiveEpiFamily (fun a => toCompHaus.obj (X a) ) (fun a => ExtrDisc.toCompHaus.map (π a)) := by 
   refine' ((CompHaus.effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
   exact (((ExtrDisc.effectiveEpiFamily_tfae _ _).out 0 2).1 H : ∀ _, ∃ _, _) _
 
@@ -50,10 +42,10 @@ instance : Precoherent ExtrDisc.{u} := by
       fun a => _⟩
   · refine' ((effectiveEpiFamily_tfae _ _).out 0 2).2 (fun b => _)
     have h₁' := effectiveEpiFamily.toCompHaus h₁
-    have := (CompHaus.effectiveEpiFamily_tfae _ (Family.toCompHaus' π₁)).out 0 2 ; rw [this] at h₁' ; clear this
+    have := (CompHaus.effectiveEpiFamily_tfae _ (fun a => ExtrDisc.toCompHaus.map (π₁ a))).out 0 2 ; rw [this] at h₁' ; clear this
     obtain ⟨a,x,h⟩ := h₁' (f b)
-    let foo : CompHaus.pullback f (π₁ a) := ⟨⟨b, x⟩, h.symm⟩
-    obtain ⟨bar, hbar⟩ := (CompHaus.epi_iff_surjective _).1 (CompHaus.epiPresentπ (CompHaus.pullback f (π₁ a))) foo
+    obtain ⟨bar, hbar⟩ := (CompHaus.epi_iff_surjective _).1 (CompHaus.epiPresentπ (CompHaus.pullback f (π₁ a)))
+      (⟨⟨b, x⟩, h.symm⟩ : CompHaus.pullback f (π₁ a))
     refine' ⟨a, bar, _⟩
     change ExtrDisc.toCompHaus.map (ExtrDisc.toCompHaus.preimage (_ : ExtrDisc.toCompHaus.obj _ ⟶ ExtrDisc.toCompHaus.obj _)) _ = _
     simp only [CategoryTheory.Functor.image_preimage, toCompHaus_obj, comp_apply, hbar, Set.mem_setOf_eq]
@@ -67,17 +59,5 @@ instance : Precoherent ExtrDisc.{u} := by
     dsimp
     ext ⟨⟨_, _⟩, h⟩
     exact h.symm
-
-    
-
-
-
-    
-
-
-
-
-
-
 
 end ExtrDisc
