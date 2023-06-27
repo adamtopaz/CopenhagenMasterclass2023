@@ -234,16 +234,6 @@ def ρ : (E hφ hf hf') ≃ₜ A := by
     simp only [Set.mem_image, Subtype.exists, exists_and_right, Prod.exists, exists_eq_right] 
   specialize this hE₀c' 
   rwa [hπ]
-  --intro E₀ 
-
-    -- we need to decide what to do with `three` etc. to resolve this
--- where
---   toFun := (E hφ hf).restrict (π₁ φ f)
---   invFun := sorry
---   left_inv := sorry
---   right_inv := sorry
---   continuous_toFun := sorry
---   continuous_invFun := sorry
 
 lemma five : Continuous ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) ∧
     f ∘ ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf').invFun) = φ := by
@@ -266,8 +256,6 @@ lemma five : Continuous ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf'
     have := x.val.prop
     dsimp [D] at this
     exact this.symm
-
-
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
