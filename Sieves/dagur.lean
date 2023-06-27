@@ -18,8 +18,7 @@ def DCoverage.toCoverage (F : DCoverage C) : Coverage C where
   covering := fun X => (arrows)'' (F.covering X)
   pullback := F.pullback
     
-
-def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
+def Coverage.to_dCoverage (F : Coverage C) : dCoverage C where
   covering := fun X ↦ generate '' (F.covering X)
   pullback := fun X Y f S hS ↦ by
     obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
