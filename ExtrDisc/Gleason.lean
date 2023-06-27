@@ -27,6 +27,8 @@ lemma two : (π₁ φ f).Surjective := by
   use ⟨(a,b), hb.symm⟩
   rfl
 
+lemma two_half : Continuous (π₁ φ f) := by
+  sorry
 
 lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set.univ ∧ ∀ (E₀ : Set (D φ f)),
     E₀ ⊂ E → CompactSpace E₀ → ¬ ((π₁ φ f)'' E₀) = Set.univ := by
@@ -94,13 +96,29 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
           --Show the fiber is nonempty
           · intro X
             have h₃ := (h (Subtype.mem X)).2
-            sorry
+            simp
+            rw [←Set.image_inter_nonempty_iff, h₃]
+            simp
           -- Show each fiber is compact
           · intro X
             have := (h (Subtype.mem X)).1
-            sorry
-          --Show each fiber is closed
-          · sorry
+            simp
+            --rw [←isCompact_iff_compactSpace]
+            apply @IsClosed.isCompact _ _ (one hφ hf)
+            refine IsClosed.inter ?_ ?_
+            · apply IsCompact.isClosed
+              exact Iff.mpr isCompact_iff_compactSpace this
+            · apply IsClosed.preimage two_half
+              exact T1Space.t1 x
+          --Show each fiber is closed --basically already shown in the last point
+          · intro X
+            have := (h (Subtype.mem X)).1
+            simp
+            refine IsClosed.inter ?_ ?_
+            · apply IsCompact.isClosed
+              exact Iff.mpr isCompact_iff_compactSpace this
+            · apply IsClosed.preimage two_half
+              exact T1Space.t1 x
     · intro X hX
       exact Set.sInter_subset_of_mem hX
   have := zorn_superset S chain_cond
