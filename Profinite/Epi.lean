@@ -35,6 +35,15 @@ def pullback.snd : pullback f g ⟶ Y where
   toFun := fun ⟨⟨_,y⟩,_⟩ => y
   continuous_toFun := Continuous.comp continuous_snd continuous_subtype_val
 
+open List in
+theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
+    (X : α → Profinite.{u})
+    (π : (a : α) → (X a ⟶ B)) :
+    TFAE [
+      EffectiveEpiFamily X π,
+      Epi (Limits.Sigma.desc π),
+      ∀ (b : B), ∃ (a : α) (x : X a), π a x = b
+    ] := by
   sorry
   -- WIP Jon & Sina
 
