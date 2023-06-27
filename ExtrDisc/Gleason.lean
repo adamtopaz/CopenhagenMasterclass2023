@@ -64,7 +64,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
           exact Iff.mpr Set.range_iff_surjective this
         -- Now we assume that `Ch` is nonempty
         · ext x
-          refine' ⟨ fun _ => trivial , fun hx => _ ⟩
+          refine' ⟨ fun _ => trivial , fun _ => _ ⟩
           rw [Set.mem_image]
           change Set.Nonempty {x_1 : D φ f | x_1 ∈ M ∧ π₁ φ f x_1 = x}
           let Z : Ch → Set (D φ f) := fun X => X ∩ (π₁ _ _)⁻¹' {x}
@@ -74,7 +74,22 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
             rw [←Set.setOf_inter_eq_sep, Set.inter_comm]
             congr
           -- Using this result `nonempty_iInter_of_...` introduces a lot of unnecessary checks
-          apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z
+          have assumps : ∀ (i : ↑Ch), Set.Nonempty (Z i) ∧ IsCompact (Z i) ∧ IsClosed (Z i) := by
+            intro X
+            -- `Z X` nonempty
+            simp
+            have h₃ := (h (Subtype.mem X)).2
+            rw [←Set.image_inter_nonempty_iff, h₃]
+            simp
+            -- `Z X` is Closed
+            have := (h (Subtype.mem X)).1
+            rw [←isCompact_iff_compactSpace] at this
+            have h_cl := IsClosed.inter (IsCompact.isClosed this)
+                (IsClosed.preimage two_half <| T1Space.t1 x)
+            exact And.intro (@IsClosed.isCompact _ _ (one hφ hf) _ h_cl) h_cl
+
+          apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z _
+              (fun X => (assumps X).1) (fun X => (assumps X).2.1) (fun X => (assumps X).2.2)
         -- Need to show the `Directed` assumption for the inclusion, which is annoying...
           · intro X Y
             have hCh₂ := hCh X.2 Y.2
@@ -93,32 +108,6 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
               use Y
               simp
               apply ((Set.inter_subset_left _ _).trans h_right)
-          --Show the fiber is nonempty
-          · intro X
-            have h₃ := (h (Subtype.mem X)).2
-            simp
-            rw [←Set.image_inter_nonempty_iff, h₃]
-            simp
-          -- Show each fiber is compact
-          · intro X
-            have := (h (Subtype.mem X)).1
-            simp
-            --rw [←isCompact_iff_compactSpace]
-            apply @IsClosed.isCompact _ _ (one hφ hf)
-            refine IsClosed.inter ?_ ?_
-            · apply IsCompact.isClosed
-              exact Iff.mpr isCompact_iff_compactSpace this
-            · apply IsClosed.preimage two_half
-              exact T1Space.t1 x
-          --Show each fiber is closed --basically already shown in the last point
-          · intro X
-            have := (h (Subtype.mem X)).1
-            simp
-            refine IsClosed.inter ?_ ?_
-            · apply IsCompact.isClosed
-              exact Iff.mpr isCompact_iff_compactSpace this
-            · apply IsClosed.preimage two_half
-              exact T1Space.t1 x
     · intro X hX
       exact Set.sInter_subset_of_mem hX
   have := zorn_superset S chain_cond
