@@ -59,8 +59,7 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
           revert M
           rw [h₂, Set.sInter_empty]
           simp
-          have : (π₁ φ f).Surjective := two hf'
-          exact Iff.mpr Set.range_iff_surjective this
+          exact Iff.mpr Set.range_iff_surjective (two hf')
         -- Now we assume that `Ch` is nonempty
         · ext x
           refine' ⟨ fun _ => trivial , fun _ => _ ⟩
@@ -90,23 +89,14 @@ lemma three : ∃ (E : Set (D φ f)), CompactSpace E ∧ (π₁ φ f) '' E = Set
           apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z _
               (fun X => (assumps X).1) (fun X => (assumps X).2.1) (fun X => (assumps X).2.2)
         -- Need to show the `Directed` assumption for the inclusion, which is annoying...
-          · intro X Y
-            have hCh₂ := hCh X.2 Y.2
-            by_cases X.1 = Y.1
-            · use X
-              simp
-              rw [h]
-              simp
-            replace hCh₂ := hCh₂ h
-            apply Or.elim hCh₂
-            · intro h_left
-              use X
-              simp
-              apply ((Set.inter_subset_left _ _).trans h_left)
-            · intro h_right
-              use Y
-              simp
-              apply ((Set.inter_subset_left _ _).trans h_right)
+          change Directed _ ((fun X => X ∩ _) ∘ (fun X => X: ↑Ch → Set (D φ f)))
+          refine' Directed.mono_comp _ _ _
+          · exact fun x y => x ⊇ y
+          · exact fun ⦃x y⦄ a => Set.inter_subset_inter_left _ a
+          refine Iff.mp directedOn_iff_directed ?_
+          refine IsChain.directedOn ?H
+          dsimp [IsChain, Set.Pairwise] at hCh ⊢
+          exact fun ⦃x⦄ a ⦃y⦄ a_1 a_2 =>  Or.comm.mp (hCh a a_1 a_2)
     · intro X hX
       exact Set.sInter_subset_of_mem hX
   have := zorn_superset S chain_cond
@@ -213,24 +203,24 @@ lemma five : Continuous ((E hφ hf hf').restrict (π₂ φ f) ∘ (ρ hφ hf hf'
   constructor
   · refine' Continuous.comp _ _
     · refine' ContinuousOn.restrict _
-      apply Continuous.continuousOn 
+      apply Continuous.continuousOn
       exact Continuous.comp continuous_snd continuous_subtype_val
     · exact (Homeomorph.continuous (Homeomorph.symm (ρ hφ hf hf')))
   · suffices : f ∘ (E hφ hf hf').restrict (π₂ φ f) = φ ∘ (ρ hφ hf hf').toFun
     · simp only [← Function.comp.assoc]
       rw [this]
-      simp only [Function.comp.assoc, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv, 
+      simp only [Function.comp.assoc, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv,
         Equiv.invFun_as_coe, Homeomorph.coe_symm_toEquiv,
         Homeomorph.self_comp_symm, Function.comp.right_id]
     ext x
     simp only [Function.comp_apply, Set.restrict_apply, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv]
-    dsimp [π₂, ρ, gleason23_def, Continuous.homeoOfEquivCompactToT2_toEquiv, 
+    dsimp [π₂, ρ, gleason23_def, Continuous.homeoOfEquivCompactToT2_toEquiv,
       Continuous.homeoOfEquivCompactToT2, π₁]
-    have := x.val.prop 
-    dsimp [D] at this 
+    have := x.val.prop
+    dsimp [D] at this
     exact this.symm
 
-    
+
 
 lemma gleason (A : ExtrDisc) : Projective A.compHaus where
   factors := by
