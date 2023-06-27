@@ -228,7 +228,16 @@ def ρ : (E hφ hf hf') ≃ₜ A := by
       exact hy.1
   specialize this E₀' hE₀'
   rw [Set.ssubset_univ_iff] 
-  have hE₀c' : CompactSpace E₀' := sorry 
+  have hE₀c' : CompactSpace E₀'
+  · rw [← isCompact_iff_compactSpace]
+    haveI CD : CompactSpace (D φ f) := one hφ hf
+    apply IsClosed.isCompact 
+    dsimp 
+    refine Iff.mp (ClosedEmbedding.closed_iff_image_closed ?hE₀c'.h.hf) hE₀c
+    apply closedEmbedding_subtype_val 
+    apply IsCompact.isClosed 
+    rw [isCompact_iff_compactSpace]
+    exact (three hφ hf hf').choose_spec.1
   have hπ : (E hφ hf hf').restrict (π₁ φ f) '' E₀ = π₁ φ f '' E₀' := sorry 
   specialize this hE₀c' 
   rwa [hπ]
