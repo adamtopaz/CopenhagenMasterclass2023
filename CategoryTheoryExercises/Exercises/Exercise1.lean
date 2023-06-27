@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.Iso
 import Mathlib.CategoryTheory.Yoneda
-set_option autoImplicit true
+set_option autoImplicit false
 
 open CategoryTheory
 open Opposite
@@ -18,7 +18,7 @@ variable {C : Type u} [Category C]
 If you have a natural isomorphism `α : F ≅ G`, you can access
 * the forward natural transformation as `α.hom`
 * the backwards natural transformation as `α.inv`
-* the component at `X`, as an isomorphism `F.obj X ≅ G.obj X` as `α.app X`.
+* the component at `Z`, as an isomorphism `F.obj Z ≅ G.obj X` as `α.app X`.
 -/
 
 def iso_of_hom_iso (X Y : C) (h : yoneda.obj X ≅ yoneda.obj Y) : X ≅ Y :=

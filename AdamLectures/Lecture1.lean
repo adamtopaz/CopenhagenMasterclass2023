@@ -1,5 +1,7 @@
 import Mathlib.Condensed.Basic
 import Mathlib.Topology.ExtremallyDisconnected
+
+import FindWithGpt
 import ExtrDisc.Basic
 
 /-!
@@ -30,7 +32,6 @@ it is projective in the category of compact Hausdorff spaces.
 #check Profinite
 #check ExtrDisc
 
-example (X : CompHaus) : TopologicalSpace X := inferInstance
 example (X : CompHaus) : CompactSpace X := inferInstance
 example (X : CompHaus) : T2Space X := inferInstance
 
@@ -77,6 +78,8 @@ end section2
 
 section section3
 
+open CategoryTheory
+
 /-!
 
 # Effective Epimorphisms and the coherent topology
@@ -87,6 +90,8 @@ TODO:
 - In `CompHaus`, `EffectiveEpiFamily` iff jointly surjective.
 
 -/
+
+#check EffectiveEpi
 
 end section3
 
