@@ -202,8 +202,30 @@ def ρ : (E hφ hf hf') ≃ₜ A := by
   have := (three hφ hf hf').choose_spec.2.2
   simp_rw [Set.top_eq_univ, ← ne_eq, ← Set.ssubset_univ_iff] 
   intro E₀ hE₀ hE₀c
-  let E₀' : Set (D φ f) := E hφ hf hf' ∩ E₀ 
-  have hE₀' : E₀' ⊂ E hφ hf hf' := sorry  
+  let E₀' : Set (D φ f) := Subtype.val '' E₀ 
+  have hE₀' : E₀' ⊂ E hφ hf hf'
+  · rw [ssubset_iff_subset_ne]
+    constructor 
+    · intro x hx
+      dsimp at hx 
+      obtain ⟨y,hy⟩ := hx 
+      rw [← hy.2]
+      exact y.prop
+    · rw [ssubset_iff_subset_ne] at hE₀
+      dsimp 
+      intro h 
+      apply hE₀.2 
+      ext x 
+      refine' ⟨by tauto, _⟩ 
+      intro _ 
+      have hx := x.prop 
+      simp_rw [← h] at hx 
+      obtain ⟨y,hy⟩ := hx 
+      have hxy : y = x
+      · ext1 
+        exact hy.2
+      rw [← hxy]
+      exact hy.1
   specialize this E₀' hE₀'
   rw [Set.ssubset_univ_iff] 
   have hE₀c' : CompactSpace E₀' := sorry 
