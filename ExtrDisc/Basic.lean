@@ -75,6 +75,7 @@ instance : Full toCompHaus where
   preimage := fun f => f
   witness := fun f => by simp
 
+
 /-- The forgetful functor `ExtrDisc ⥤ CompHaus` is faithful. -/
 instance : Faithful toCompHaus where
   map_injective := by
