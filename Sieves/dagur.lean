@@ -32,7 +32,6 @@ def Coverage.to_dCoverage (F : Coverage C) : dCoverage C where
     · dsimp [Presieve.FactorsThruAlong] at *  
       simp only [forall_exists_index, and_imp]
       intro Z φ K ψ τ hτ  
-      -- simp only [forall_exists_index, and_imp]
       have hR' := hR.2 hτ 
       obtain ⟨W_1, i, e, h⟩ := hR' 
       intro hh 
@@ -40,7 +39,12 @@ def Coverage.to_dCoverage (F : Coverage C) : dCoverage C where
       use ψ ≫ i
       use e 
       constructor
-      · sorry
+      · rw [← hT, ← hW.2]
+        simp only [generate_apply]
+        use W_1
+        use 𝟙 _ 
+        use e 
+        exact ⟨h.1, by simp⟩ 
       · rw [← hh] 
         simp only [Category.assoc]  
         rw [h.2]
