@@ -228,7 +228,10 @@ def ρ : (E hφ hf hf') ≃ₜ A := by
     apply IsCompact.isClosed 
     rw [isCompact_iff_compactSpace]
     exact (three hφ hf hf').choose_spec.1
-  have hπ : (E hφ hf hf').restrict (π₁ φ f) '' E₀ = π₁ φ f '' E₀' := sorry 
+  have hπ : (E hφ hf hf').restrict (π₁ φ f) '' E₀ = π₁ φ f '' E₀'
+  · simp only [Set.restrict_apply] 
+    ext a 
+    simp only [Set.mem_image, Subtype.exists, exists_and_right, Prod.exists, exists_eq_right] 
   specialize this hE₀c' 
   rwa [hπ]
   --intro E₀ 
