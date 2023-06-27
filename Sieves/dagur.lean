@@ -7,19 +7,19 @@ variable (C : Type _) [Category C]
 open Sieve
 
 @[ext]
-structure dCoverage where
+structure DCoverage where
   covering : ∀ (X : C), Set (Sieve X)
   pullback : ∀ ⦃X Y : C⦄ (f : Y ⟶ X) (S : Presieve X) (_ : S ∈ (arrows)'' (covering X)),
     ∃ (T : Presieve Y), T ∈ (arrows)'' (covering Y) ∧ T.FactorsThruAlong S f
 
 variable {C}
 
-def dCoverage.toCoverage (F : dCoverage C) : Coverage C where
+def DCoverage.toCoverage (F : DCoverage C) : Coverage C where
   covering := fun X => (arrows)'' (F.covering X)
   pullback := F.pullback
     
 
-def Coverage.to_dCoverage (F : Coverage C) : dCoverage C where
+def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
   covering := fun X ↦ generate '' (F.covering X)
   pullback := fun X Y f S hS ↦ by
     obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
