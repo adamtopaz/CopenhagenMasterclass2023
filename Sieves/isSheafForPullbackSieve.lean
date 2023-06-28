@@ -21,12 +21,20 @@ namespace Presieve
 
 def FamilyOfElements.PullbackCompatible' (x : FamilyOfElements P S) : Prop :=
   ∀ ⦃Y₁ Y₂⦄ ⦃f₁ : Y₁ ⟶ X⦄ ⦃f₂ : Y₂ ⟶ X⦄ (h₁ : S f₁) (h₂ : S f₂),
-    have : HasPullback f₁ f₂ := hS h₁ h₂
+    have := hS h₁ h₂
     P.map (pullback.fst : Limits.pullback f₁ f₂ ⟶ _).op (x f₁ h₁) = P.map pullback.snd.op (x f₂ h₂)
 
 theorem pullbackCompatible_iff' (x : FamilyOfElements P S) :
     x.Compatible ↔ x.PullbackCompatible' hS := by
-  sorry
+  constructor
+  · intro t Y₁ Y₂ f₁ f₂ hf₁ hf₂
+    apply t
+    have := hS hf₁ hf₂
+    apply pullback.condition
+  · intro t Y₁ Y₂ Z g₁ g₂ f₁ f₂ hf₁ hf₂ comm
+    have := hS hf₁ hf₂
+    rw [← pullback.lift_fst _ _ comm, op_comp, FunctorToTypes.map_comp_apply, t hf₁ hf₂,
+      ← FunctorToTypes.map_comp_apply, ← op_comp, pullback.lift_snd]
 
 end Presieve
 
