@@ -49,8 +49,9 @@ def dagurCoverage : Coverage C where
     sorry
 
 
-lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := by
-  ext X S  
+lemma one (X : ExtrDisc) (S : Sieve X) : 
+    S ∈ (dagurCoverage ExtrDisc).toDCoverage.covering X →  
+    S ∈ (coherentCoverage ExtrDisc).toDCoverage.covering X := by
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
   intro h 
   obtain ⟨T,⟨h,hT⟩⟩ := h 
