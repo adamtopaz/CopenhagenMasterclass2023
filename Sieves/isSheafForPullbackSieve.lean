@@ -52,7 +52,33 @@ theorem w' : forkMap P S ≫ firstMap' P hS = forkMap P S ≫ secondMap' P hS :=
   rw [← P.map_comp, ← op_comp, pullback.condition]
   simp
 
-theorem sheaf_condition' : Nonempty (IsLimit (Fork.ofι _ (w' P hS))) → S.IsSheafFor P := sorry
+/--
+The family of elements given by `x : FirstObj P S` is compatible iff `firstMap'` and `secondMap'`
+map it to the same point.
+-/
+theorem compatible_iff' (x : FirstObj P S) :
+    ((firstObjEqFamily P S).hom x).Compatible ↔ firstMap' P hS x = secondMap' P hS x := by
+  sorry
+
+/-- `P` is a sheaf for `R`, iff the fork given by `w` is an equalizer.
+See <https://stacks.math.columbia.edu/tag/00VM>.
+-/
+theorem sheaf_condition' : S.IsSheafFor P ↔ Nonempty (IsLimit (Fork.ofι _ (w' P hS))) := by
+  rw [Types.type_equalizer_iff_unique]
+  erw [← Equiv.forall_congr_left (firstObjEqFamily P S).toEquiv.symm]
+  simp_rw [← compatible_iff', ← Iso.toEquiv_fun, Equiv.apply_symm_apply]
+  apply ball_congr
+  intro x _
+  apply exists_unique_congr
+  intro t
+  rw [Equiv.eq_symm_apply]
+  constructor
+  · intro q
+    funext Y f hf
+    simpa [forkMap] using q _ _
+  · intro q Y f hf
+    rw [← q]
+    simp [forkMap]
 
 end Presieve
 
