@@ -104,12 +104,19 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
           simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
     | top Y => 
       · apply Coverage.saturate.top 
-    | transitive Y T R hT h ih₁ ih₂ => 
+    | transitive Y T => 
       · apply Coverage.saturate.transitive Y T
         · assumption
         · assumption  
-  · sorry  
-
+  · induction h with 
+    | of Y T hT => 
+      · sorry    
+    | top Y => 
+      · apply Coverage.saturate.top
+    | transitive Y T => 
+      · apply Coverage.saturate.transitive Y T
+        · assumption
+        · assumption   
 
 lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X)
   (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
