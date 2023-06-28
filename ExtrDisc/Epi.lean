@@ -15,6 +15,10 @@ variable {B : ExtrDisc.{u}}
   {X : α → ExtrDisc.{u}} (π : (a : α) → (X a ⟶ B))
   (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b)
 
+#check OrderDual.toDual
+
+lemma stupid : OrderDual.toDual a = a := rfl
+
 /-- Construct a term of `Profinite` from a type endowed with the structure of a
 compact, Hausdorff and totally disconnected topological space.
 -/
@@ -22,13 +26,51 @@ def of (X : Type _) [TopologicalSpace X] [CompactSpace X] [T2Space X]
     [ExtremallyDisconnected X] : ExtrDisc :=
   ⟨⟨⟨X, inferInstance⟩⟩⟩
 
-instance {π : ι → Type _} [∀ i, TopologicalSpace (π i)] [∀ i, ExtremallyDisconnected (π i)] :
+@[simp]
+theorem mem_sigma_iff {π : ι → Type _} [∀ i, TopologicalSpace (π i)]
+  {i : ι} {x : π i} {s : Set ((i : ι) × π i)}
+    : x ∈ Sigma.mk i ⁻¹' s ↔ ⟨i, x⟩ ∈ s :=
+  Iff.rfl
+
+lemma sigma_mk_preimage_image' (h : i ≠ j) : Sigma.mk j ⁻¹' (Sigma.mk i '' U) = ∅ := by
+  change Sigma.mk j ⁻¹' {⟨i, u⟩ | u ∈ U} = ∅
+  -- change { x | (Sigma.mk j) x ∈ {⟨i, u⟩ | u ∈ U}} = ∅
+  simp [h]
+
+lemma sigma_mk_preimage_image : Sigma.mk i ⁻¹' (Sigma.mk i '' U) = U := by
+  change Sigma.mk i ⁻¹' {⟨i, u⟩ | u ∈ U} = U
+  simp
+
+instance {π : ι → Type _} [∀ i, TopologicalSpace (π i)] [h₀ : ∀ i, ExtremallyDisconnected (π i)] :
     ExtremallyDisconnected (Σi, π i) := by
-  sorry
+  constructor
+  intro s hs
+  rw [isOpen_sigma_iff] at hs ⊢
+  intro i
+  rcases h₀ i with ⟨h₀⟩
+  have h₁ : IsOpen (closure (Sigma.mk i ⁻¹' s))
+  · apply h₀
+    exact hs i
+  suffices h₂ : Sigma.mk i ⁻¹' closure s = closure (Sigma.mk i ⁻¹' s)
+  · rwa [h₂]
+  apply IsOpenMap.preimage_closure_eq_closure_preimage
+  intro U _
+  · rw [isOpen_sigma_iff]
+    intro j
+    by_cases ij : i = j
+    · rw [← ij]
+      rw [sigma_mk_preimage_image]
+      assumption
+    · rw [sigma_mk_preimage_image' ij]
+      apply isOpen_empty
+
+  · continuity
 
 section FiniteCoproducts
 
 variable {α : Type} [Fintype α] (X : α → ExtrDisc.{u})
+
+set_option trace.Meta.synthInstance true in
 
 /--
 The coproduct of a finite family of objects in `ExtrDisc`, constructed as the disjoint
@@ -90,12 +132,71 @@ def finiteCoproduct.isColimit : Limits.IsColimit (finiteCoproduct.cocone X) wher
 end FiniteCoproducts
 
 #check CompHaus.epi_iff_surjective
+#check Profinite.epi_iff_surjective
+#check CategoryTheory.epi_iff_surjective
 
 abbrev F := ExtrDisc.toCompHaus
 
+example (X Y : CompHaus) (f g : X ⟶ Y) (h : f.toFun = g.toFun) : f = g := by
+  ext a
+  apply congrFun h
+
+example (U : Set (ULift <| Fin 2)) : IsOpen U := by
+  exact isOpen_discrete U
+
+def two : ExtrDisc.{u} where
+  compHaus := CompHaus.of <| ULift <| Fin 2
+  extrDisc := by
+    dsimp
+    constructor
+    intro U _
+    apply isOpen_discrete (closure U)
+
 lemma epi_iff_surjective {X Y : ExtrDisc.{u}} (f : X ⟶ Y) :
     Epi f ↔ Function.Surjective f := by
-  sorry
+  constructor
+  · dsimp [Function.Surjective]
+    contrapose!
+    rintro ⟨y,hy⟩ h
+    let C := Set.range f
+    have hC : IsClosed C := (isCompact_range f.continuous).isClosed
+    let U := Cᶜ
+    have hyU : y ∈ U := by
+      refine' Set.mem_compl _
+      rintro ⟨y', hy'⟩
+      exact hy y' hy'
+    have hUy : U ∈ nhds y := hC.compl_mem_nhds hyU
+    haveI : TotallyDisconnectedSpace ((forget CompHaus).obj (toCompHaus.obj Y)) :=
+      show TotallyDisconnectedSpace Y from inferInstance
+    obtain ⟨V, hV, hyV, hVU⟩ := isTopologicalBasis_clopen.mem_nhds_iff.mp hUy
+    classical
+    let g : Y ⟶ two :=  ⟨(LocallyConstant.ofClopen hV).map ULift.up, LocallyConstant.continuous _⟩
+    let h : Y ⟶ two := ⟨fun _ => ⟨1⟩, continuous_const⟩
+    have H : h = g := by
+      rw [← cancel_epi f]
+      apply ContinuousMap.ext ; intro x
+      apply ULift.ext
+      change 1 =  _
+      dsimp [LocallyConstant.ofClopen]
+      -- BUG: Should not have to provide instance `(ExtrDisc.instTopologicalSpace Y)` explicitely
+      rw [comp_apply, @ContinuousMap.coe_mk _ _ (ExtrDisc.instTopologicalSpace Y),
+      Function.comp_apply, if_neg]
+      refine' mt (fun α => hVU α) _
+      simp only [Set.mem_compl_iff, Set.mem_range, not_exists, not_forall, not_not]
+      exact ⟨x, rfl⟩
+    apply_fun fun e => (e y).down at H
+    dsimp [LocallyConstant.ofClopen] at H
+    change 1 = ite _ _ _ at H
+    rw [if_pos hyV] at H
+    exact top_ne_bot H
+  · intro (h : Function.Surjective (toCompHaus.map f))
+    rw [← CompHaus.epi_iff_surjective] at h
+    constructor
+    intro W a b h
+    apply Functor.map_injective toCompHaus
+    apply_fun toCompHaus.map at h
+    simp only [Functor.map_comp] at h
+    rwa [← cancel_epi (toCompHaus.map f)]
 
 namespace EffectiveEpiFamily
 

@@ -89,7 +89,7 @@ instance : CoeSort ExtrDisc.{u} (Type u) := ConcreteCategory.hasCoeToSort _
 instance {X Y : ExtrDisc.{u}} : FunLike (X ⟶ Y) X (fun _ => Y) := ConcreteCategory.funLike
 
 /-- Extremally disconnected spaces are topological spaces. -/
-instance (X : ExtrDisc.{u}) : TopologicalSpace X :=
+instance instTopologicalSpace (X : ExtrDisc.{u}) : TopologicalSpace X :=
   show TopologicalSpace X.compHaus from inferInstance
 
 /-- Extremally disconnected spaces are compact. -/
