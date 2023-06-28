@@ -16,11 +16,23 @@ def isPullbackPresieve : Prop :=
 
 variable (P : Cᵒᵖ ⥤ Type max v₁ u₁)
 
+variable (hS : isPullbackPresieve S) {S}
+namespace Presieve
+
+def FamilyOfElements.PullbackCompatible' (x : FamilyOfElements P S) : Prop :=
+  ∀ ⦃Y₁ Y₂⦄ ⦃f₁ : Y₁ ⟶ X⦄ ⦃f₂ : Y₂ ⟶ X⦄ (h₁ : S f₁) (h₂ : S f₂),
+    have : HasPullback f₁ f₂ := hS h₁ h₂
+    P.map (pullback.fst : Limits.pullback f₁ f₂ ⟶ _).op (x f₁ h₁) = P.map pullback.snd.op (x f₂ h₂)
+
+theorem pullbackCompatible_iff' (x : FamilyOfElements P S) :
+    x.Compatible ↔ x.PullbackCompatible' hS := by
+  sorry
+
+end Presieve
+
 namespace Equalizer
 
 namespace Presieve
-
-variable (hS : isPullbackPresieve S) {S}
 
 /-- The rightmost object of the fork diagram of https://stacks.math.columbia.edu/tag/00VM, which
 contains the data used to check a family of elements for a presieve is compatible.
@@ -58,7 +70,15 @@ map it to the same point.
 -/
 theorem compatible_iff' (x : FirstObj P S) :
     ((firstObjEqFamily P S).hom x).Compatible ↔ firstMap' P hS x = secondMap' P hS x := by
-  sorry
+  rw [Presieve.pullbackCompatible_iff' _ hS]
+  constructor
+  . intro t
+    apply Limits.Types.limit_ext.{max u₁ v₁, u₁}
+    rintro ⟨⟨Y, f, hf⟩, Z, g, hg⟩
+    simpa [firstMap', secondMap'] using t hf hg
+  · intro t Y Z f g hf hg
+    rw [Types.limit_ext_iff'] at t
+    simpa [firstMap', secondMap'] using t ⟨⟨⟨Y, f, hf⟩, Z, g, hg⟩⟩
 
 /-- `P` is a sheaf for `R`, iff the fork given by `w` is an equalizer.
 See <https://stacks.math.columbia.edu/tag/00VM>.
