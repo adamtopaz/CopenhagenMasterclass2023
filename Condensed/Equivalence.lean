@@ -7,6 +7,9 @@ import Profinite.Coherent
 import ExtrDisc.Coherent
 import Mathlib.Condensed.Basic
 import Mathlib.CategoryTheory.Sites.DenseSubsite
+import Mathlib.CategoryTheory.Sites.InducedTopology
+import Mathlib.CategoryTheory.Sites.Closed
+import FindWithGpt
 /-!
 # Sheaves on CompHaus are equivalent to sheaves on ExtrDisc
 
@@ -29,6 +32,32 @@ on the two sites.
 
 Prove the three main theorems!
 -/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 open CategoryTheory Limits
 
 namespace Condensed
@@ -37,37 +66,64 @@ universe u w
 
 namespace ExtrDiscCompHaus
 
-theorem coverDense : CoverDense (coherentTopology _) ExtrDisc.toCompHaus := 
-  sorry
-    
-theorem coverPreserving : 
-    CoverPreserving (coherentTopology _) (coherentTopology _) ExtrDisc.toCompHaus := 
+#check Sieve.coverByImage
+lemma coverDense : 
+    CoverDense (coherentTopology _) ExtrDisc.toCompHaus := by
+  constructor
+  intro B
+  let T := Presieve.singleton B.presentationπ
+  let S := Sieve.generate T
+  have hS : S ∈ coherentTopology CompHaus B := by
+    apply Coverage.saturate.of 
+    change ∃ _, _
+    refine ⟨Unit, inferInstance, 
+      fun _ => B.presentation.compHaus, fun _ => B.presentationπ, ?_ , ?_⟩   
+    · funext X f
+      ext
+      constructor
+      · rintro ⟨⟩
+        refine ⟨()⟩
+      · rintro ⟨⟩
+        simp
+    · have := CompHaus.effectiveEpiFamily_tfae
+        (fun (_ : Unit) => B.presentation.compHaus)
+        (fun (_ : Unit) => B.presentationπ)
+      apply (this.out 0 2).mpr
+      intro b
+      refine ⟨(), ?_⟩ 
+      have hπ : 
+        Function.Surjective B.presentationπ := sorry
+      exact hπ b
+  convert hS
   sorry
 
-theorem coverLifting : 
-    CoverLifting (coherentTopology _) (coherentTopology _) ExtrDisc.toCompHaus := 
+lemma coherentTopology_is_induced : 
+    coherentTopology ExtrDisc.{u} = coverDense.inducedTopology := by
+  rw [CategoryTheory.topology_eq_iff_same_sheaves]
+  intro P 
   sorry
+
+lemma coverPreserving : 
+  CoverPreserving 
+    (coherentTopology _) 
+    (coherentTopology _) 
+    ExtrDisc.toCompHaus := by
+  rw [coherentTopology_is_induced]
+  exact LocallyCoverDense.inducedTopology_coverPreserving (CoverDense.locallyCoverDense coverDense)
+
+lemma coverLifting :
+  CoverLifting 
+    (coherentTopology _) 
+    (coherentTopology _) 
+    ExtrDisc.toCompHaus := by
+  rw [coherentTopology_is_induced]
+  exact LocallyCoverDense.inducedTopology_coverLifting (CoverDense.locallyCoverDense coverDense)
 
 noncomputable
 def equivalence (A : Type _) [Category.{u+1} A] [HasLimits A] : 
     Sheaf (coherentTopology ExtrDisc) A ≌ Condensed.{u} A := 
-  CoverDense.sheafEquivOfCoverPreservingCoverLifting 
-    coverDense coverPreserving coverLifting
-
--- This example explains that the inverse of the above equivalence is just given
--- by composition with `ExtrDisc.toCompHaus` on the level of presheaves.
-example (A : Type _) [Category.{u+1} A] [HasLimits A] (F : Condensed.{u} A) :
-    ((equivalence A).inverse.obj F).val = 
-    ExtrDisc.toCompHaus.op ⋙ F.val := 
-  rfl
-
--- This example explains that the functor of the above equivalence is given
--- by right Kan extensions along `ExtrDisc.toCompHaus` on the level of presheaves.
-example (A : Type _) [Category.{u+1} A] [HasLimits A] 
-    (F : Sheaf (coherentTopology ExtrDisc) A) :
-    ((equivalence A).functor.obj F).val = 
-    (ran ExtrDisc.toCompHaus.op).obj F.val := 
-  rfl
+CoverDense.sheafEquivOfCoverPreservingCoverLifting 
+  coverDense coverPreserving coverLifting
 
 end ExtrDiscCompHaus
 
