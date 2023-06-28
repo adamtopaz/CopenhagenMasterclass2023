@@ -26,7 +26,7 @@ lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).t
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
   constructor
   <;> intro h 
-  <;> obtain ⟨T,⟨h,_⟩⟩ := h 
+  <;> obtain ⟨T,⟨h,hT⟩⟩ := h 
   · use T 
     refine' ⟨_, by assumption⟩  
     simp only [Set.mem_union, Set.mem_setOf_eq] at h 
@@ -132,8 +132,7 @@ lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : P
     dsimp [Presieve.FamilyOfElements.Compatible] at hT
     letI := hS f g hf hg  
     apply hT pullback.fst pullback.snd hf hg  
-    simp
-
+    exact pullback.condition
   · sorry
 
 
