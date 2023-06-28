@@ -18,7 +18,35 @@ def dagurCoverage : Coverage C where
     { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
       (fun (_ : Unit) ↦ f) ∧ Epi f }
   pullback := by
-    rintro X Y f S ⟨hS1, hS2⟩
+    rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
+    · set S' := @Presieve.ofArrows C _ Y Unit _ (fun (_ : Unit) ↦ (𝟙 Y)) with hS'
+      use S'
+      rw [Set.mem_union]
+      constructor
+      · apply Or.intro_right
+        simp only [Set.mem_setOf_eq]
+        exact ⟨Y, 𝟙 _, hS', instEpiIdToCategoryStruct _⟩
+      · rw [hS', Presieve.FactorsThruAlong]
+        intro W g hg
+        rw [Presieve.ofArrows_pUnit] at hg
+        induction hg
+        simp only [Category.id_comp]
+        use sigmaObj Z
+        -- use f \
+        let e1 := @Sigma.desc α C _ Z _ X π
+        let e := CategoryTheory.inv e1
+        -- use Z
+        -- rw [hS₁]
+        -- s
+        -- use 𝟙 _
+        -- use f
+        -- constructor
+        -- · 
+        -- · simp only [Category.id_comp]
+        
+      
+
+    sorry
 
 
 lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := by
@@ -60,7 +88,6 @@ lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).t
         rfl
       simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
   · sorry  
-
 
 lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X)
   (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
