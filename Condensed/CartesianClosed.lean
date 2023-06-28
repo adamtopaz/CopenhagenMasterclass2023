@@ -108,7 +108,7 @@ variable {D : Type w} [Category.{max v u} D] [Limits.HasFiniteProducts D]
 
 variable {J : GrothendieckTopology C}
 instance : Full (sheafToPresheaf J D) := inferInstance
-instance : Faithful (sheafToPresheaf J D) := show_term inferInstance
+instance : Faithful (sheafToPresheaf J D) := inferInstance
 -- Generalize this in mathlib?
 instance Condensed.hasFiniteProductsSheaf : HasFiniteProducts (Sheaf J D) where
   out j := { has_limit := fun F => by infer_instance }
@@ -131,8 +131,28 @@ namespace CondensedSet
 noncomputable instance HasFiniteProducts :
     HasFiniteProducts CondensedSet.{u} :=
 Condensed.hasFiniteProductsSheaf -- TODO generalize
+
+
+lemma foo :autoParam a s = a:=by rfl
+-- noncomputable instance :
+-- PreservesLimitsOfShape (Discrete WalkingPair)
+--     (leftAdjoint (sheafToPresheaf (coherentTopology CompHaus) (Type (u + 1)))) :=
+-- by
+--   constructor -- TODO output weird
 noncomputable instance :
-  ExponentialIdeal (sheafToPresheaf (coherentTopology CompHaus) (Type (u + 1))) := sorry
+PreservesLimitsOfShape (Discrete WalkingPair)
+    (leftAdjoint (sheafToPresheaf (coherentTopology CompHaus) (Type (u + 1)))) :=
+⟨by
+  intros K
+  show PreservesLimit K (presheafToSheaf _ _)
+  exact PreservesLimitsOfShape.preservesLimit⟩
+  -- convert_to {K : _} → PreservesLimit K (leftAdjoint (sheafToPresheaf (coherentTopology CompHaus) (Type (u + 1))))
+
+
+-- noncomputable instance :
+--   ExponentialIdeal (sheafToPresheaf (coherentTopology CompHaus) (Type (u + 1))) := inferInstance
 noncomputable instance CartesianClosed :
     CategoryTheory.CartesianClosed CondensedSet.{u} :=
 cartesianClosedOfReflective (sheafToPresheaf _ (Type (u + 1)))
+
+#print axioms CartesianClosed
