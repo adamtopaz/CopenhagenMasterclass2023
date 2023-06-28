@@ -49,10 +49,6 @@ def p₂ {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
   fun x _ s hs Z s' hs' ↦ 
   F.map (@pullback.snd _ _ _ _ _ s s' (hS s s' hs hs')).op (x Z s' hs')
 
-variable {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (S : Presieve X)
-    (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
-    S s → S s' → HasPullback s s')
-
 def IsEqualizerDiagram_vi_to_sheaf {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) 
     (S : Presieve X) (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
     S s → S s' → HasPullback s s') : Prop := 
@@ -61,7 +57,39 @@ def IsEqualizerDiagram_vi_to_sheaf {X : ExtrDisc} (F : ExtrDisc.{u}ᵒᵖ ⥤ Ty
 lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : Presieve X)
     (hS : ∀ {Y : ExtrDisc} (s : Y ⟶ X) {Z : ExtrDisc} (s' : Z ⟶ X), 
     S s → S s' → HasPullback s s') : 
-    IsEqualizerDiagram_vi_to_sheaf F S hS ↔ S.IsSheafFor F := sorry
+    IsEqualizerDiagram_vi_to_sheaf F S hS ↔ S.IsSheafFor F := by
+  constructor
+  <;> intro h
+  · -- rw [CategoryTheory.Presieve.isSheafFor_iff_generate]
+    dsimp [Presieve.IsSheafFor]
+    intro T hT 
+    dsimp [Presieve.FamilyOfElements.IsAmalgamation]
+    dsimp [IsEqualizerDiagram_vi_to_sheaf] at h
+    dsimp [Presieve.FamilyOfElements] at T 
+    specialize h T
+    dsimp [p₁, p₂, e] at h 
+    suffices : ∃! x, (fun _ s _ ↦ F.map s.op x) = T 
+    · obtain ⟨x, h⟩ := this 
+      apply ExistsUnique.intro x _ _
+      · dsimp at h 
+        rw [← h.1] 
+        intro Y f hf
+        rfl
+      · intro y 
+        have h' := h.2 y 
+        intro _
+        apply h' 
+        dsimp at h 
+        rw [← h.1]
+        ext
+        sorry
+    apply h 
+    ext Y f hf Z g hg
+    dsimp [Presieve.FamilyOfElements.Compatible] at hT  
+    apply hT (@pullback.fst _ _ _ _ _ f g (hS f g hf hg)) 
+      (@pullback.snd _ _ _ _ _ f g (hS f g hf hg)) hf hg  
+    sorry -- this should be obvious!?
+  · sorry
 
 lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
   (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := sorry
