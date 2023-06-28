@@ -348,7 +348,6 @@ theorem effectiveEpiFamily_of_jointly_surjective
 
 open List in
 theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
-theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
     (X : α → Profinite.{u})
     (π : (a : α) → (X a ⟶ B)) :
     TFAE [

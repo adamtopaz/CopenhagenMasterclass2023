@@ -5,61 +5,16 @@ import Profinite.Epi
 
 open CategoryTheory Limits
 
-
-
-
--- namespace Test
-
--- variable {α : Type} [Fintype α] {C D : Type u} [Category C] [Category D]
---   {B : C} {X : α → C}
---   (π : (a : α) → (X a ⟶ B)) (F : C ⥤ D)
---   [Full F] [Faithful F]
-
--- -- Hmm…
--- -- variable (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b)
-
--- #check fun (a : α) => F.map (π a)
-
--- variable (a : α)
-
--- #check F.obj (X a)
-
--- -- def π₂ : (a : α) → ((X a).compHaus ⟶ B.compHaus) :=
--- --   fun a => (ExtrDisc.toCompHaus.map (π a))
-
--- lemma EffectiveEpiFamily_of_fully_faithful
---     (h : EffectiveEpiFamily (fun a => F.obj (X a)) (fun a => F.map (π a))) :
---     EffectiveEpiFamily X π :=
---   ⟨⟨{
---     desc := (fun {W} e he => by
---       apply Full.preimage (F := F)
---       refine EffectiveEpiFamily.desc (fun a => F.obj (X a)) (fun a => F.map (π a)) ?_ ?_
---       · exact (fun a => F.map (e a))
---       · intro Z a₁ a₂ (g₁ : Z ⟶ F.obj (X a₁)) (g₂ : Z ⟶ F.obj (X a₂))
---           (hg : g₁ ≫ F.map (π a₁) = g₂ ≫ F.map (π a₂))
-
---         -- wanted to use `he` but `(Z : D)` might not be of the form `F.obj Z'`,
---         -- so this doesn't work :(
---         sorry
---     )
---     fac := (fun {W} e he a => by
---       sorry
---       )
---     uniq := sorry }⟩⟩
-
--- end Test
-
 namespace ExtrDisc
 
 universe u
 
 variable {α : Type} [Fintype α] (X : α → ExtrDisc.{u})
 
-variable {α : Type} [Fintype α] {B : ExtrDisc.{u}}
+variable {B : ExtrDisc.{u}}
   {X : α → ExtrDisc.{u}} (π : (a : α) → (X a ⟶ B))
   (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b)
 
--- For mathlib?
 /-- Construct a term of `Profinite` from a type endowed with the structure of a
 compact, Hausdorff and totally disconnected topological space.
 -/
@@ -67,17 +22,9 @@ def of (X : Type _) [TopologicalSpace X] [CompactSpace X] [T2Space X]
     [ExtremallyDisconnected X] : ExtrDisc :=
   ⟨⟨⟨X, inferInstance⟩⟩⟩
 
--- -- For mathlib?
 instance {π : ι → Type _} [∀ i, TopologicalSpace (π i)] [∀ i, ExtremallyDisconnected (π i)] :
     ExtremallyDisconnected (Σi, π i) := by
   sorry
---   refine ⟨fun s hs₁ hs₂ ⟨a, hs₃⟩  => ?_⟩
---   simp at hs₃
-
---   obtain rfl | h := s.eq_empty_or_nonempty
---   · sorry -- exact Set.subsingleton_empty
---   · obtain ⟨a, t, ht, rfl⟩ := Sigma.isConnected_iff.1 ⟨h, hs⟩
---     exact ht.isPreconnected.subsingleton.image _
 
 section FiniteCoproducts
 
@@ -142,16 +89,12 @@ def finiteCoproduct.isColimit : Limits.IsColimit (finiteCoproduct.cocone X) wher
 
 end FiniteCoproducts
 
+#check CompHaus.epi_iff_surjective
 
--- /-
--- pick any open subset
-
--- -/
--- #check Full
+abbrev F := ExtrDisc.toCompHaus
 
 lemma epi_iff_surjective {X Y : ExtrDisc.{u}} (f : X ⟶ Y) :
-    Epi f ↔ Function.Surjective f :=
-    Epi f ↔ Function.Surjective f :=
+    Epi f ↔ Function.Surjective f := by
   sorry
 
 namespace EffectiveEpiFamily
@@ -159,60 +102,65 @@ namespace EffectiveEpiFamily
 #check ExtrDisc.toCompHaus
 #check profiniteToCompHaus
 #check ExtrDisc.toProfinite
+#check Full
 
-/- Lifting the diagram `π` to `CompHaus`. -/
-def π₂ : (a : α) → ((X a).compHaus ⟶ B.compHaus) :=
-  fun a => (ExtrDisc.toCompHaus.map (π a))
-
-#check CompHaus.EffectiveEpiFamily.ι (π₂ π) surj
-
-#check (CompHaus.EffectiveEpiFamily.struct (π₂ π) surj).desc
-
-#check Quotient.lift
-
+lemma helper {W : ExtrDisc} {e : (a : α) → X a ⟶ W}
+    (h : ∀ {Z : ExtrDisc} (a₁ a₂ : α) (g₁ : Z ⟶ X a₁) (g₂ : Z ⟶ X a₂),
+      g₁ ≫ π a₁ = g₂ ≫ π a₂ → g₁ ≫ e a₁ = g₂ ≫ e a₂)
+    : ∀ {Z : CompHaus} (a₁ a₂ : α) (g₁ : Z ⟶ F.obj (X a₁)) (g₂ : Z ⟶ F.obj (X a₂)),
+        g₁ ≫ (π a₁) = g₂ ≫ (π a₂) → g₁ ≫ e a₁ = g₂ ≫ e a₂ := by
+  intro Z a₁ a₂ g₁ g₂ hg
+  -- apply h
+  let βZ := Z.presentation
+  let g₁' := F.preimage (Z.presentationπ ≫ g₁ : F.obj βZ ⟶ F.obj (X a₁))
+  let g₂' := F.preimage (Z.presentationπ ≫ g₂ : F.obj βZ ⟶ F.obj (X a₂))
+  have d := @h βZ a₁ a₂ g₁' g₂'
+  apply Epi.left_cancellation (f := Z.presentationπ)
+  change g₁' ≫ e a₁ = g₂' ≫ e a₂
+  apply d
+  change CompHaus.presentationπ Z ≫ g₁ ≫ π a₁ = CompHaus.presentationπ Z ≫ g₂ ≫ π a₂
+  simp [hg]
 
 noncomputable
 def struct : EffectiveEpiFamilyStruct X π where
   desc := fun {W} e h => ExtrDisc.toCompHaus.preimage <|
-    by
-      dsimp
-      have f₁ := CompHaus.EffectiveEpiFamily.ι (π₂ π) surj
-      have f₂ : CompHaus.EffectiveEpiFamily.QB π ⟶ W.compHaus := {
-    toFun := Quotient.lift (fun ⟨a,x⟩ => e a x) <| by
-      sorry
-      -- rintro ⟨a,x⟩ ⟨b,y⟩ ⟨Z,z,fst,snd,hh,hx,hy⟩
-      -- dsimp at *
-      -- rw [← hx, ← hy]
-      -- specialize h _ _ fst ?_ ?_
-      -- · ext z
-      --   apply ιFun_injective
-      --   apply_fun (fun q => q z) at hh
-      --   exact hh
-      -- apply_fun (fun q => q z) at h
-      -- exact h
-    continuous_toFun := by
-      apply Continuous.quotient_lift
-      apply continuous_sigma
-      intro a
-      exact (e a).continuous }
-      exact f₁.inv ≫ f₂
-  fac := sorry
-  uniq := sorry
+    (CompHaus.effectiveEpiFamily_of_jointly_surjective (fun (a : α) => F.obj (X a)) π surj).desc
+    (fun (a : α) => F.map (e a)) (helper π h)
+  fac := by
+    intro W e he a
+
+    have : EffectiveEpiFamily (fun a => F.obj (X a)) π :=
+      CompHaus.effectiveEpiFamily_of_jointly_surjective (fun a => F.obj (X a)) π surj
+
+    have q := EffectiveEpiFamily.fac (fun (a : α) => F.obj (X a)) π e (helper π he) a
+
+    change F.map (π a ≫ _) = F.map (e a) at q
+    replace q := Faithful.map_injective q
+    assumption
+  uniq := by
+    intro W e he m hm
+
+    have Fhm : ∀ (a : α), π a ≫ F.map m = e a
+    · aesop_cat
+
+    have : EffectiveEpiFamily (fun a => F.obj (X a)) π :=
+      CompHaus.effectiveEpiFamily_of_jointly_surjective (fun a => F.obj (X a)) π surj
+
+    have q := EffectiveEpiFamily.uniq (fun (a : α) => F.obj (X a)) π e (helper π he) (F.map m) Fhm
+    change F.map m = F.map _ at q
+    replace q := Faithful.map_injective q
+    assumption
 
 end EffectiveEpiFamily
+
+#check Faithful
 
 theorem effectiveEpiFamily_of_jointly_surjective
     {α : Type} [Fintype α] {B : ExtrDisc.{u}}
     (X : α → ExtrDisc.{u}) (π : (a : α) → (X a ⟶ B))
     (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b) :
-    EffectiveEpiFamily X π := -- by
-  -- apply Test.EffectiveEpiFamily_of_fully_faithful π ExtrDisc.toCompHaus
-  -- simp
-  -- apply CompHaus.effectiveEpiFamily_of_jointly_surjective
-  -- assumption
-
-  ⟨⟨ExtrDisc.EffectiveEpiFamily.struct π surj⟩⟩ -- TODO: add `surj`
-
+    EffectiveEpiFamily X π :=
+  ⟨⟨ExtrDisc.EffectiveEpiFamily.struct π surj⟩⟩
 
 open List in
 theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : ExtrDisc.{u}}
@@ -221,7 +169,6 @@ theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : ExtrDisc.{u}}
     TFAE [
       EffectiveEpiFamily X π,
       Epi (Limits.Sigma.desc π),
-      ∀ (b : B), ∃ (a : α) (x : X a), π a x = b
       ∀ (b : B), ∃ (a : α) (x : X a), π a x = b
     ] := by
   tfae_have 1 → 2
