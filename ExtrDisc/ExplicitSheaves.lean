@@ -18,8 +18,46 @@ def dagurCoverage [HasFiniteCoproducts C] : Coverage C where
   pullback := by sorry
 
 
-lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := 
-  sorry
+lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := by
+  ext X S  
+  dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
+  constructor
+  <;> intro h 
+  <;> obtain ⟨T,⟨h,_⟩⟩ := h 
+  · use T 
+    refine' ⟨_, by assumption⟩  
+    simp only [Set.mem_union, Set.mem_setOf_eq] at h 
+    apply Or.elim h 
+    <;> intro h
+    · obtain ⟨α, x, Xmap, π, h⟩ := h
+      use α
+      use x
+      use Xmap 
+      use π 
+      refine' ⟨h.1,_⟩  
+      have he := (effectiveEpiFamily_tfae Xmap π).out 0 1
+      rw [he]
+      letI := h.2
+      exact inferInstance
+    · obtain ⟨Y, f, h⟩ := h
+      use Unit
+      use inferInstance 
+      use (fun _ ↦ Y) 
+      use (fun _ ↦ f)
+      refine' ⟨h.1,_⟩  
+      have he := (effectiveEpiFamily_tfae (fun (_ : Unit) ↦ Y) (fun _ ↦ f)).out 0 1
+      rw [he] 
+      rw [ExtrDisc.epi_iff_surjective _] at h ⊢ 
+      intro x 
+      obtain ⟨y,hy⟩ := h.2 x  
+      use Sigma.ι (fun (_ : Unit) ↦ Y) Unit.unit y 
+      rw [← hy]
+      suffices : (f : Y → X) = Sigma.ι (fun (_ : Unit) ↦ Y) Unit.unit ≫ Sigma.desc (fun _ ↦ f)
+      · rw [this]
+        rfl
+      simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
+  · sorry  
+  
 
 lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 
