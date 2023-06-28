@@ -4,6 +4,7 @@ import Mathlib.Topology.Category.CompHaus.ExplicitLimits
 --import Mathlib.Topology.Category.CompHaus.EffectiveEpi
 
 open CategoryTheory Limits
+open CategoryTheory Limits
 
 namespace Profinite
 
@@ -346,6 +347,7 @@ theorem effectiveEpiFamily_of_jointly_surjective
   ⟨⟨Profinite.EffectiveEpiFamily.struct π surj⟩⟩
 
 open List in
+theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
 theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
     (X : α → Profinite.{u})
     (π : (a : α) → (X a ⟶ B)) :
