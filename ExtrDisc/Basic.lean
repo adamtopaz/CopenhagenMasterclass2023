@@ -3,10 +3,10 @@ Copyright (c) 2023 Adam Topaz. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Adam Topaz
 -/
+import ExtrDisc.Gleason
 import Mathlib.CategoryTheory.Sites.Coherent
 import Mathlib.Topology.Category.CompHaus.Projective
 import Mathlib.Topology.Category.Profinite.Basic
-import Mathlib.Topology.ExtremallyDisconnected
 /-!
 # Extremally disconnected sets
 
@@ -14,14 +14,14 @@ This file develops some of the basic theory of extremally disconnected sets.
 
 ## Overview
 
-This file defines the type `ExtrDisc` of all extremally (note: not "extremely"!) 
+This file defines the type `ExtrDisc` of all extremally (note: not "extremely"!)
 disconnected spaces, and gives it the structure of a large category.
 
-The Lean implementation: a term of type `ExtrDisc` is a pair, considering of 
+The Lean implementation: a term of type `ExtrDisc` is a pair, considering of
 a term of type `CompHaus` (i.e. a compact Hausdorff topological space) plus
 a proof that the space is extremally disconnected.
-This is equivalent to the assertion that the term is projective in `CompHaus`, 
-in the sense of category theory (i.e., such that morphisms out of the object 
+This is equivalent to the assertion that the term is projective in `CompHaus`,
+in the sense of category theory (i.e., such that morphisms out of the object
 can be lifted along epimorphisms).
 
 This file defines the type of all extremally disconnected spaces, gives it the
@@ -37,10 +37,8 @@ category and various functors from it.
 
 ## TODO
 
-The following proofs need to be filled in: 
+The following proofs need to be filled in:
 
-* Gleason's theorem: a compact Hausdorff space is extrDisc if and 
-  only if it is projective (one direction is in `mathlib4`).
 * If `X` is extremally disconnected then it is totally disconnected.
 * The forgetful functor `toCompHaus : ExtrDisc ⥤ CompHaus` is full and faithful.
 * The functor `toProfinite : ExtrDisc ⥤ Profinite` is full and faithful.
@@ -62,7 +60,7 @@ attribute [nolint docBlame] ExtrDisc.compHaus ExtrDisc.extrDisc
 namespace ExtrDisc
 
 /-- Extremally disconnected spaces form a large category. -/
-instance : LargeCategory ExtrDisc.{u} :=  
+instance : LargeCategory ExtrDisc.{u} :=
   show Category (InducedCategory CompHaus (·.compHaus)) from inferInstance
 
 /-- The (forgetful) functor from extremally disconnected spaces to compact Hausdorff spaces. -/
@@ -88,34 +86,34 @@ instance : CoeSort ExtrDisc.{u} (Type u) := ConcreteCategory.hasCoeToSort _
 instance {X Y : ExtrDisc.{u}} : FunLike (X ⟶ Y) X (fun _ => Y) := ConcreteCategory.funLike
 
 /-- Extremally disconnected spaces are topological spaces. -/
-instance (X : ExtrDisc.{u}) : TopologicalSpace X := 
+instance (X : ExtrDisc.{u}) : TopologicalSpace X :=
   show TopologicalSpace X.compHaus from inferInstance
 
 /-- Extremally disconnected spaces are compact. -/
-instance (X : ExtrDisc.{u}) : CompactSpace X := 
+instance (X : ExtrDisc.{u}) : CompactSpace X :=
   show CompactSpace X.compHaus from inferInstance
 
 /-- Extremally disconnected spaces are Hausdorff. -/
-instance (X : ExtrDisc.{u}) : T2Space X := 
+instance (X : ExtrDisc.{u}) : T2Space X :=
   show T2Space X.compHaus from inferInstance
 
-instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X := 
+instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X :=
   X.2
 
 /-- Extremally disconnected spaces are totally disconnected. -/
-instance (X : ExtrDisc.{u}) : TotallySeparatedSpace X := 
-{ isTotallySeparated_univ := by 
-    intro x _ y _ hxy 
+instance (X : ExtrDisc.{u}) : TotallySeparatedSpace X :=
+{ isTotallySeparated_univ := by
+    intro x _ y _ hxy
     obtain ⟨U, V, hUV⟩ := T2Space.t2 x y hxy
-    use closure U 
-    use (closure U)ᶜ 
+    use closure U
+    use (closure U)ᶜ
     refine ⟨ExtremallyDisconnected.open_closure U hUV.1,
-      by simp only [isOpen_compl_iff, isClosed_closure], subset_closure hUV.2.2.1, ?_, 
-      by simp only [Set.union_compl_self, Set.subset_univ], disjoint_compl_right⟩ 
+      by simp only [isOpen_compl_iff, isClosed_closure], subset_closure hUV.2.2.1, ?_,
+      by simp only [Set.union_compl_self, Set.subset_univ], disjoint_compl_right⟩
     simp only [Set.mem_compl_iff]
-    rw [mem_closure_iff] 
-    push_neg 
-    use V 
+    rw [mem_closure_iff]
+    push_neg
+    use V
     refine' ⟨hUV.2.1,hUV.2.2.2.1,_⟩
     rw [Set.nonempty_iff_ne_empty]
     simp only [not_not]
@@ -127,8 +125,8 @@ instance (X : ExtrDisc.{u}) : TotallyDisconnectedSpace X := inferInstance
 /-- The functor from extremally disconnected spaces to profinite spaces. -/
 @[simps]
 def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
-  obj X := { 
-    toCompHaus := X.compHaus, 
+  obj X := {
+    toCompHaus := X.compHaus,
     IsTotallyDisconnected := show TotallyDisconnectedSpace X from inferInstance }
   map f := f
 
@@ -136,11 +134,19 @@ def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
 instance : Full toProfinite := sorry
 instance : Faithful toProfinite := sorry
 
-example : toProfinite ⋙ profiniteToCompHaus = toCompHaus := 
+example : toProfinite ⋙ profiniteToCompHaus = toCompHaus :=
   rfl
 
 -- TODO: Gleason's theorem.
-instance (X : ExtrDisc) : Projective X.compHaus := sorry
+instance (X : ExtrDisc) : Projective X.compHaus where
+  factors := by
+    intro B C φ f _
+    haveI : ExtremallyDisconnected X.compHaus.toTop := X.extrDisc
+    have hf : f.1.Surjective
+    · rwa [CompHaus.epi_iff_surjective] at *
+    use ⟨_, (gleason_diagram_commutes φ.continuous f.continuous hf).left⟩
+    ext
+    exact congr_fun (gleason_diagram_commutes φ.continuous f.continuous hf).right _
 
 end ExtrDisc
 
@@ -152,19 +158,19 @@ namespace CompHaus
 noncomputable
 def presentation (X : CompHaus) : ExtrDisc where
   compHaus := (projectivePresentation X).p
-  extrDisc := sorry 
+  extrDisc := sorry
 
 /-- The morphism from `presentation X` to `X`. -/
 noncomputable
-def presentationπ (X : CompHaus) : X.presentation.compHaus ⟶ X :=   
+def presentationπ (X : CompHaus) : X.presentation.compHaus ⟶ X :=
   (projectivePresentation X).f
 
 /-- The morphism from `presentation X` to `X` is an epimorphism. -/
 noncomputable
-instance epiPresentπ (X : CompHaus) : Epi X.presentationπ :=   
+instance epiPresentπ (X : CompHaus) : Epi X.presentationπ :=
   (projectivePresentation X).epi
 
-/-- 
+/--
 
                X
                |
@@ -172,14 +178,14 @@ instance epiPresentπ (X : CompHaus) : Epi X.presentationπ :=
                |
                \/
   Z ---(e)---> Y
-              
+
 If `Z` is extremally disconnected, X, Y are compact Hausdorff, if `f : X ⟶ Y` is an epi and `e : Z ⟶ Y` is
 arbitrary, then `lift e f` is a fixed (but arbitrary) lift of `e` to a morphism `Z ⟶ X`. It exists because
-`Z` is a projective object in `CompHaus`. 
+`Z` is a projective object in `CompHaus`.
 -/
 noncomputable
 def lift {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [Epi f] : Z.compHaus ⟶ X :=
-  Projective.factorThru e f 
+  Projective.factorThru e f
 
 @[simp, reassoc]
 lemma lift_lifts {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X ⟶ Y) [Epi f] :
@@ -189,7 +195,7 @@ lemma lift_lifts {X Y : CompHaus} {Z : ExtrDisc} (e : Z.compHaus ⟶ Y) (f : X �
 instance : Limits.HasCoproducts ExtrDisc.{u} := sorry
 
 /-- The category of extremally disconnected spaces has finite coproducts. -/
-instance : Limits.HasFiniteCoproducts ExtrDisc.{u} := 
+instance : Limits.HasFiniteCoproducts ExtrDisc.{u} :=
   Limits.hasFiniteCoproducts_of_hasCoproducts.{u} ExtrDisc.{u}
 
 end CompHaus
