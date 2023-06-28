@@ -85,10 +85,11 @@ lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : P
         sorry
     apply h 
     ext Y f hf Z g hg
-    dsimp [Presieve.FamilyOfElements.Compatible] at hT  
-    apply hT (@pullback.fst _ _ _ _ _ f g (hS f g hf hg)) 
-      (@pullback.snd _ _ _ _ _ f g (hS f g hf hg)) hf hg  
-    sorry -- this should be obvious!?
+    dsimp [Presieve.FamilyOfElements.Compatible] at hT
+    letI := hS f g hf hg  
+    apply hT pullback.fst pullback.snd hf hg  
+    simp
+
   · sorry
 
 lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
