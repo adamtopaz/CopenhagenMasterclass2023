@@ -74,6 +74,92 @@ noncomputable def compact_to_T2_homeomorph [T2Space A] [ExtremallyDisconnected A
   Continuous.homeoOfEquivCompactToT2
     (f := Equiv.ofBijective ρ ⟨compact_to_T2_injective ρ_cont ρ_surj image_ne_top, ρ_surj⟩) ρ_cont
 
+/-- Lemma 2.4 -/
+lemma exists_image_ne_top [T2Space A] [CompactSpace A] [T2Space D] [CompactSpace D] :
+    ∃ E : Set D, CompactSpace E ∧ π '' E = ⊤ ∧
+    ∀ E₀ : Set E, E₀ ≠ ⊤ → CompactSpace E₀ → π '' E₀ ≠ ⊤ := by
+  -- Define the set of closed subsets of D for which the map onto A is surjective
+  let S := { E : Set D | CompactSpace E ∧ (π) '' E = univ}
+  -- Checking the Chain condition
+  have chain_cond : (∀ (c : Set (Set ↑(D))),
+      c ⊆ S →
+      IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D)), s ∈ c → lb ⊆ s) := by
+    intro Ch h hCh
+    let M := sInter Ch
+    use M
+    constructor
+    · constructor
+      · rw [←isCompact_iff_compactSpace]
+        apply IsClosed.isCompact
+        apply isClosed_sInter
+        intro N hN
+        have N_comp := (h hN).1
+        dsimp at N_comp
+        rw [←isCompact_iff_compactSpace] at N_comp
+        exact IsCompact.isClosed N_comp
+      --Next, we need to show that the image of M is all of A
+      · by_cases h₂ : Nonempty Ch
+        rotate_left 1
+        -- Case that `Ch` is empty
+        · simp at h₂
+          rw [←eq_empty_iff_forall_not_mem] at h₂
+          revert M
+          rw [h₂, sInter_empty]
+          simp
+          exact range_iff_surjective.mpr π_surj
+        -- Now we assume that `Ch` is nonempty
+        · ext x
+          refine' ⟨ fun _ => trivial , fun _ => _ ⟩
+          rw [mem_image]
+          change Set.Nonempty {x_1 : D | x_1 ∈ M ∧ π x_1 = x}
+          let Z : Ch → Set (D) := fun X => X ∩ π⁻¹' {x}
+          suffices Set.Nonempty <| ⋂ (X : Ch), (X: Set (D)) ∩ π⁻¹' {x} by
+            convert this
+            rw [← iInter_inter, ←  sInter_eq_iInter]
+            rw [←setOf_inter_eq_sep, inter_comm]
+            congr
+          -- Using this result `nonempty_iInter_of_...` introduces a lot of unnecessary checks
+          have assumps : ∀ (i : ↑Ch), Set.Nonempty (Z i) ∧ IsCompact (Z i) ∧ IsClosed (Z i) := by
+            intro X
+            -- `Z X` nonempty
+            simp
+            have h₃ := (h (Subtype.mem X)).2
+            rw [←image_inter_nonempty_iff, h₃]
+            simp
+            -- `Z X` is Closed
+            have := (h (Subtype.mem X)).1
+            rw [←isCompact_iff_compactSpace] at this
+            have h_cl := IsClosed.inter (IsCompact.isClosed this)
+                (IsClosed.preimage π_cont <| T1Space.t1 x)
+            exact And.intro (IsClosed.isCompact h_cl) h_cl
+
+          apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z _
+              (fun X => (assumps X).1) (fun X => (assumps X).2.1) (fun X => (assumps X).2.2)
+        -- Need to show the `Directed` assumption for the inclusion, which is annoying...
+          change Directed _ ((fun X => X ∩ _) ∘ (fun X => X: ↑Ch → Set (D)))
+          refine' Directed.mono_comp _ _ _
+          · exact fun x y => x ⊇ y
+          · exact fun ⦃x y⦄ a => inter_subset_inter_left _ a
+          refine Iff.mp directedOn_iff_directed ?_
+          refine IsChain.directedOn ?H
+          dsimp [IsChain, Pairwise] at hCh ⊢
+          exact fun ⦃x⦄ a ⦃y⦄ a_1 a_2 =>  Or.comm.mp (hCh a a_1 a_2)
+    · intro X hX
+      exact sInter_subset_of_mem hX
+  have := zorn_superset S chain_cond
+  rcases this with ⟨E, ⟨⟨hE₁,hE₂⟩, hE₃⟩⟩
+  use E
+  constructor
+  · exact hE₁
+  constructor
+  · exact hE₂
+  --Now, it's just rephrasing the conclusion of Zorn's Lemma
+  · intro E₀ h₁ h₂
+    replace hE₃ := hE₃ E₀
+    by_contra h₃
+    replace hE₃ := hE₃ (And.intro h₂ h₃) (subset_of_ssubset h₁) -- TODO fix
+    exact (ne_of_ssubset h₁) hE₃ -- TODO fix
+
 variable [T2Space A] [CompactSpace A] [T2Space B] [CompactSpace B] [T2Space C] (φ : A → C) (f : B → C)
 
 def D' : Set (A × B) := {x | φ x.fst = f x.snd}
