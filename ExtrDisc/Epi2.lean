@@ -143,6 +143,8 @@ variable {α : Type} [Fintype α] {B : ExtrDisc.{u}}
   {X : α → ExtrDisc.{u}} (π : (a : α) → (X a ⟶ B))
   (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b)
 
+abbrev FX := (fun (a : α) => (X a).compHaus)
+
 /--
 Implementation: This is a setoid on the explicit finite coproduct of `X` whose quotient
 will be isomorphic to `B` provided that `X a → B` is an effective epi family.

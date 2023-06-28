@@ -284,7 +284,8 @@ Implementation: The family of morphisms `X a ⟶ QB` is an effective epi.
 def structAux : EffectiveEpiFamilyStruct X (π' π surj) where
   desc := fun {W} e h => {
     toFun := Quotient.lift (fun ⟨a,x⟩ => e a x) <| by
-      rintro ⟨a,x⟩ ⟨b,y⟩ ⟨Z,z,fst,snd,hh,hx,hy⟩ ; dsimp at *
+      rintro ⟨a,x⟩ ⟨b,y⟩ ⟨Z,z,fst,snd,hh,hx,hy⟩
+      dsimp at *
       rw [← hx, ← hy]
       specialize h _ _ fst snd ?_
       · ext z
