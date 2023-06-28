@@ -136,7 +136,10 @@ lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : P
 
   · sorry
 
--- lemma isSheafFor_of_dagur
+
+lemma isSheafFor_of_dagur (X : ExtrDisc) (S : Presieve X)
+  (hS : S ∈ (dagurCoverage ExtrDisc).covering X)
+  (F : ExtrDiscᵒᵖ ⥤ Type (u + 1)) (hf : PreservesFiniteProducts F) : S.IsSheafFor F := sorry
 
 
 lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
