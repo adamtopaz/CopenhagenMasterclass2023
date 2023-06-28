@@ -19,8 +19,9 @@ def dagurCoverage : Coverage C where
       (fun (_ : Unit) ↦ f) ∧ Epi f }
   pullback := by
     rintro X Y f S ⟨hS1, hS2⟩
-
-
+    · sorry
+    · sorry
+     
 lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := by
   ext X S  
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
@@ -59,6 +60,54 @@ lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).t
       · rw [this]
         rfl
       simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
+  · sorry
+
+lemma one' : (dagurCoverage ExtrDisc).toGrothendieck = 
+    (coherentCoverage ExtrDisc).toGrothendieck := by
+  ext X S  
+  constructor
+  <;> intro h 
+  · dsimp [Coverage.toGrothendieck] at *
+    induction h with 
+    | of Y T hT => 
+      · apply Coverage.saturate.of 
+        dsimp [coherentCoverage]
+        dsimp [dagurCoverage] at hT 
+        apply Or.elim hT
+        <;> intro h
+        · obtain ⟨α, x, Xmap, π, h⟩ := h
+          use α
+          use x
+          use Xmap 
+          use π 
+          refine' ⟨h.1,_⟩  
+          have he := (effectiveEpiFamily_tfae Xmap π).out 0 1
+          rw [he]
+          letI := h.2
+          exact inferInstance
+        · obtain ⟨Z, f, h⟩ := h
+          use Unit
+          use inferInstance 
+          use (fun _ ↦ Z) 
+          use (fun _ ↦ f)
+          refine' ⟨h.1,_⟩  
+          have he := (effectiveEpiFamily_tfae (fun (_ : Unit) ↦ Z) (fun _ ↦ f)).out 0 1
+          rw [he] 
+          rw [ExtrDisc.epi_iff_surjective _] at h ⊢ 
+          intro x 
+          obtain ⟨y,hy⟩ := h.2 x  
+          use Sigma.ι (fun (_ : Unit) ↦ Z) Unit.unit y 
+          rw [← hy]
+          suffices : (f : Z → Y) = Sigma.ι (fun (_ : Unit) ↦ Z) Unit.unit ≫ Sigma.desc (fun _ ↦ f)
+          · rw [this]
+            rfl
+          simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
+    | top Y => 
+      · apply Coverage.saturate.top 
+    | transitive Y T R hT h ih₁ ih₂ => 
+      · apply Coverage.saturate.transitive Y T
+        · assumption
+        · assumption  
   · sorry  
 
 
