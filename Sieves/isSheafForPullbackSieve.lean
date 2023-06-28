@@ -7,16 +7,14 @@ namespace CategoryTheory
 
 open Opposite CategoryTheory Category Limits Sieve
 
-namespace Presieve
-
 variable {C : Type u₁} [Category.{v₁} C]
 
 variable {X : C} (R : Presieve X)
 
 def isPullbackPresieve : Prop :=
-  ∀ fg : (ΣY, { f : Y ⟶ X // R f }) × ΣZ, { g : Z ⟶ X // R g },
-  HasPullback fg.1.2.1 fg.2.2.1
+  ∀ Y Z (f : Y ⟶ X) (_ : R f) (g : Z ⟶ X) (_ : R g),
+  -- ∀ fg : (ΣY, { f : Y ⟶ X // R f }) × ΣZ, { g : Z ⟶ X // R g },
+  HasPullback f g 
 
-end Presieve
 
 end CategoryTheory

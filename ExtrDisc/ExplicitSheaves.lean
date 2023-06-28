@@ -1,21 +1,24 @@
 import ExtrDisc.Basic
 import Sieves.dagur
+import Sieves.isSheafForPullbackSieve
 import Mathlib.CategoryTheory.Sites.Sheaf
 import ExtrDisc.Coherent
+
 
 universe u
 
 open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
 
-variable (C : Type _) [Category C] [Precoherent C]
+variable (C : Type _) [Category C] [Precoherent C] [HasFiniteCoproducts C]
 
-def dagurCoverage [HasFiniteCoproducts C] : Coverage C where
+def dagurCoverage : Coverage C where
   covering B := 
     { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
     S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) } ∪
     { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
       (fun (_ : Unit) ↦ f) ∧ Epi f }
-  pullback := by sorry
+  pullback := by
+    rintro X Y f S ⟨hS1, hS2⟩
 
 
 lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).toDCoverage := by
@@ -57,7 +60,10 @@ lemma one : (dagurCoverage ExtrDisc).toDCoverage = (coherentCoverage ExtrDisc).t
         rfl
       simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
   · sorry  
-  
+
+
+lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X)
+  (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
 
 lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 
@@ -129,6 +135,9 @@ lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : P
     simp
 
   · sorry
+
+-- lemma isSheafFor_of_dagur
+
 
 lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
   (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := sorry
