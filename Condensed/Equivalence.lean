@@ -10,6 +10,8 @@ import Mathlib.CategoryTheory.Sites.DenseSubsite
 import Mathlib.CategoryTheory.Sites.InducedTopology
 import Mathlib.CategoryTheory.Sites.Closed
 import FindWithGpt
+import Mathlib.Topology.Category.CompHaus.Basic
+import Mathlib.CategoryTheory.Preadditive.Projective
 /-!
 # Sheaves on CompHaus are equivalent to sheaves on ExtrDisc
 
@@ -92,10 +94,33 @@ lemma coverDense :
       intro b
       refine ⟨(), ?_⟩ 
       have hπ : 
-        Function.Surjective B.presentationπ := sorry
+        Function.Surjective B.presentationπ := by
+          rw [← CompHaus.epi_iff_surjective B.presentationπ]
+          exact CompHaus.epiPresentπ B
       exact hπ b
   convert hS
-  sorry
+  ext Y f
+  constructor
+  · rintro ⟨⟨obj, lift, map, fact⟩⟩ 
+    obtain ⟨obj_factors⟩ : Projective obj.compHaus := by 
+      infer_instance
+    obtain ⟨p, p_factors⟩ := obj_factors map B.presentationπ 
+    refine ⟨(CompHaus.presentation B).compHaus ,?_⟩  
+    refine ⟨lift ≫ p, ⟨ B.presentationπ
+        , {
+        left := Presieve.singleton.mk
+        right := by
+          rw [Category.assoc, p_factors, fact]
+      } ⟩  
+      ⟩
+  · rintro ⟨Z, h, g, hypo1, ⟨_⟩⟩  
+    cases hypo1
+    constructor 
+    refine
+    { obj := CompHaus.presentation B
+      lift := h
+      map := CompHaus.presentationπ B
+      fac := rfl } 
 
 lemma coherentTopology_is_induced : 
     coherentTopology ExtrDisc.{u} = coverDense.inducedTopology := by

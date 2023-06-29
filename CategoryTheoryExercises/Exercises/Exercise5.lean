@@ -1,12 +1,11 @@
 import Mathlib.CategoryTheory.Preadditive.Basic
+import Mathlib.CategoryTheory.Preadditive.AdditiveFunctor
 import Mathlib.CategoryTheory.Limits.Shapes.Biproducts
 import Mathlib.CategoryTheory.Preadditive.Biproducts
 set_option autoImplicit false
 /-!
-We prove that biproducts (direct sums) are preserved by any preadditive functor.
-
-This result is not in mathlib, so full marks for the exercise are only
-achievable if you contribute to a pull request! :-)
+We prove that binary and finite biproducts (direct sums) are preserved by any 
+additive functor.
 -/
 
 noncomputable section
@@ -17,36 +16,31 @@ open CategoryTheory.Limits
 namespace CategoryTheory
 
 universe u v
--- porting note: was Preadditive but stupid structure below breaks it!
-variable {C : Type u} [Category C] [CategoryTheory.Preadditive C]
-variable {D : Type v} [Category D] [CategoryTheory.Preadditive D]
 
-/-!
-In fact, no one has gotten around to defining preadditive functors,
-so I'll help you out by doing that first.
--/
-
-structure Functor.Preadditive (F : C ⥤ D) : Prop :=
-(map_zero : ∀ X Y, F.map (0 : X ⟶ Y) = 0)
-(map_add : ∀ {X Y} (f g : X ⟶ Y), F.map (f + g) = F.map f + F.map g)
+variable {C : Type u} [Category C] [Preadditive C]
+variable {D : Type v} [Category D] [Preadditive D]
 
 variable [HasBinaryBiproducts C] [HasBinaryBiproducts D]
 
-def Functor.Preadditive.preserves_biproducts (F : C ⥤ D) (P : F.Preadditive) (X Y : C) :
-    F.obj (X ⊞ Y) ≅ F.obj X ⊞ F.obj Y :=
-  sorry
+def Functor.Additive.preservesBinaryBiproducts (F : C ⥤ D) [Additive F] (X Y : C) :
+  F.obj (X ⊞ Y) ≅ F.obj X ⊞ F.obj Y := sorry
 
-/-!
-There are some further hints in
-`hints/category_theory/exercise5/`
--/
-
--- Challenge problem:
+-- Variant:
 -- In fact one could prove a better result,
 -- not requiring chosen biproducts in D,
 -- asserting that `F.obj (X ⊞ Y)` is a biproduct of `F.obj X` and `F.obj Y`.
 
+-- Note that the version for all finite biproducts is already in mathlib!
+example (F : C ⥤ D) [F.Additive] :
+  PreservesFiniteBiproducts F := inferInstance
+
+-- but the below is missing!
+
+instance (F : C ⥤ D) [F.Additive] :
+  PreservesBinaryBiproducts F := sorry -- `inferInstance` fails!
+
+example (F : C ⥤ D) [F.Additive] (X Y : C) :
+  F.obj (X ⊞ Y) ≅ F.obj X ⊞ F.obj Y := 
+Functor.mapBiprod F X Y -- works given the instance above
 
 end CategoryTheory
-
-end section
