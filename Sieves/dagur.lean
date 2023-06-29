@@ -24,29 +24,14 @@ def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
   pullback := fun X Y f S hS ↦ by
     obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
     obtain ⟨R,hR⟩ := F.pullback f W hW.1
-    use (Sieve.generate R).arrows 
-    refine' ⟨⟨Sieve.generate R, ⟨_, _⟩⟩, _⟩ 
-    · use R 
-      exact ⟨hR.1,rfl⟩  
-    · rfl
-    · dsimp [Presieve.FactorsThruAlong] at *  
-      simp only [forall_exists_index, and_imp]
-      intro Z φ K ψ τ hτ  
-      have hR' := hR.2 hτ 
-      obtain ⟨W_1, i, e, h⟩ := hR' 
-      intro hh 
-      use W_1
-      use ψ ≫ i
-      use e 
-      constructor
-      · rw [← hT, ← hW.2]
-        simp only [generate_apply]
-        use W_1
-        use 𝟙 _ 
-        use e 
-        exact ⟨h.1, by simp⟩ 
-      · rw [← hh] 
-        simp only [Category.assoc]  
-        rw [h.2]
+    refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1,rfl⟩⟩, rfl⟩⟩, _⟩⟩    
+    dsimp [Presieve.FactorsThruAlong] at *  
+    simp only [forall_exists_index, and_imp]
+    intro Z φ K ψ τ hτ  
+    obtain ⟨W_1, i, e, h⟩ := hR.2 hτ 
+    intro hh
+    refine' ⟨W_1, ψ ≫ i, e, ⟨_, by rw [← hh, Category.assoc, Category.assoc, h.2]⟩⟩
+    rw [← hT, ← hW.2]
+    exact ⟨W_1, 𝟙 _, e, ⟨h.1, by simp⟩⟩ 
 
 end CategoryTheory
