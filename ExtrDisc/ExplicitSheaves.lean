@@ -1,75 +1,15 @@
 import ExtrDisc.Basic
 import Sieves.dagur
-import Sieves.isSheafForPullbackSieve
 import Mathlib.CategoryTheory.Sites.Sheaf
 import ExtrDisc.Coherent
-
 
 universe u v
 
 open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
 
-variable (C : Type _) [Category C] 
+instance : HasPullbackOfRightMono (ExtrDisc.{u}) := sorry
 
-class HasPullbackOfRightMono : Prop where
-  HasPullback_of_mono : ∀ {X Y Z : C} (f : X ⟶ Z) {i : Y ⟶ Z} [Mono i], HasPullback f i
-
-instance [HasPullbackOfRightMono C] {X Y Z : C} (f : X ⟶ Z)
-  {i : Y ⟶ Z} [Mono i] : HasPullback f i := HasPullbackOfRightMono.HasPullback_of_mono f
-
-instance : HasPullbackOfRightMono (ExtrDisc) := sorry
-
-variable [Precoherent C] [HasFiniteCoproducts C]
-
-def DagurSieveIso (B : C) := { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
-    S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) }
-
-def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X)
-      (fun (_ : Unit) ↦ f) ∧ Epi f }
-
-
-def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
-  covering B :=   (DagurSieveIso C B) ∪ (DagurSieveSingle C B)
-  pullback := by
-    rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
-    have : ∀ a : α, Mono (π a)
-    · sorry
-    · let Z' : α → C
-      · intro a
-        exact pullback f (π a)
-      let π' : (a : α) → Z' a ⟶ Y
-      · intro a
-        exact pullback.fst
-      set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
-      -- set S' := @Presieve.ofArrows C _ Y Unit _ (fun (_ : Unit) ↦ (𝟙 Y)) with hS'
-      use S'
-      constructor
-      rw [Set.mem_union]
-      apply Or.intro_left
-      · rw [DagurSieveIso]
-        simp only [Set.mem_setOf_eq]
-      
-
-      -- · apply Or.intro_right
-      --   simp only [Set.mem_setOf_eq]
-      --   exact ⟨Y, 𝟙 _, hS', instEpiIdToCategoryStruct _⟩
-      -- · rw [hS', Presieve.FactorsThruAlong]
-      --   intro W g hg
-      --   rw [Presieve.ofArrows_pUnit] at hg
-      --   induction hg
-      --   simp only [Category.id_comp]
-      --   use sigmaObj Z
-      --   let e := Sigma.desc π
-      --   use f ≫ (CategoryTheory.inv e)
-      --   use e
-      --   constructor
-      --   · rw [hS]
-      --     -- convert @Presieve.ofArrows.mk C _ X _ Z π
-          sorry
-        · simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
-    sorry
-
-lemma one (X : ExtrDisc) (S : Sieve X) : 
+lemma one (X : ExtrDisc.{u}) (S : Sieve X) : 
     S ∈ (dagurCoverage ExtrDisc).toDCoverage.covering X →  
     S ∈ (coherentCoverage ExtrDisc).toDCoverage.covering X := by
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
@@ -218,21 +158,7 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         · assumption
         · assumption   
 
-variable {C}
-
-lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X} [HasPullbackOfRightMono C]
-  (hS : S ∈ DagurSieveIso C X) : isPullbackPresieve S := sorry
-
-lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
-
-lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
-
-lemma isSheafForDagurSieveIso {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveIso _ X)
-    {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
-  refine' (Equalizer.Presieve.sheaf_condition' F <| (isPullbackSieve_DagurSieveIso hS)).2 _
-  sorry
-
-lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle _ X)
+lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle X)
     (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : Presieve.IsSheafFor F S := by
   sorry
 
@@ -243,7 +169,7 @@ lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   · exact isSheafForDagurSieveIso hSIso hF
   · exact isSheafForDagurSieveSingle hSSingle F
 
-lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
+lemma final (A : Type (u+2)) [Category.{u+1} A] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
   exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
