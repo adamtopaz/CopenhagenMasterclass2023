@@ -250,7 +250,10 @@ lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ Dag
     (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : IsSheafFor F S := by
   obtain ⟨Y, f, rfl, hf⟩ := hS
   have proj : Projective (toCompHaus.obj X) := inferInstanceAs (Projective X.compHaus)
-  have : Epi (toCompHaus.map f) := sorry --This because `f` is surjective
+  have : Epi (toCompHaus.map f) := by
+    rw [CompHaus.epi_iff_surjective]
+    change Function.Surjective f
+    rwa [← ExtrDisc.epi_iff_surjective]
   set g := toCompHaus.preimage <| Projective.factorThru (𝟙 _) (toCompHaus.map f) with hg
   have hfg : g ≫ f = 𝟙 _ := by
     refine' toCompHaus.map_injective _
