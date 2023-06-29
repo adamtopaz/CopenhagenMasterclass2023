@@ -160,6 +160,7 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
 
 lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle X)
     (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : Presieve.IsSheafFor F S := by
+  obtain ⟨Y, f, rfl, hf⟩ := hS
   sorry
 
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
