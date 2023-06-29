@@ -24,7 +24,7 @@ def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
   pullback := fun X Y f S hS ↦ by
     obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
     obtain ⟨R,hR⟩ := F.pullback f W hW.1
-    refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1,rfl⟩⟩, rfl⟩⟩, _⟩⟩    
+    refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1, rfl⟩⟩, rfl⟩⟩, _⟩⟩    
     dsimp [Presieve.FactorsThruAlong] at *  
     simp only [forall_exists_index, and_imp]
     intro Z φ K ψ τ hτ  
