@@ -7,7 +7,95 @@ universe u v
 
 open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits Functor Presieve
 
-instance : HasPullbackOfRightMono (ExtrDisc.{u}) := sorry
+def RightMonoLimitConePt {X Y Z : ExtrDisc} (f : X ⟶ Z) (i : Y ⟶ Z) : ExtrDisc where
+  compHaus := {
+    toTop := TopCat.of (f ⁻¹' (Set.range i))
+    is_compact := by
+      dsimp [TopCat.of]
+      rw [← isCompact_iff_compactSpace] 
+      apply IsClosed.isCompact 
+      refine' IsClosed.preimage f.continuous _ 
+      apply IsCompact.isClosed 
+      simp only [← Set.image_univ]
+      exact IsCompact.image isCompact_univ i.continuous 
+    is_hausdorff := by
+      dsimp [TopCat.of]
+      exact inferInstance
+  }
+  extrDisc := by
+    constructor 
+    have h : IsClosed (f ⁻¹' (Set.range i))
+    · refine' IsClosed.preimage f.continuous _ 
+      apply IsCompact.isClosed 
+      simp only [← Set.image_univ]
+      exact IsCompact.image isCompact_univ i.continuous 
+    intro U hU 
+    dsimp at U 
+    rw [isOpen_induced_iff] at hU ⊢
+    obtain ⟨V, hV⟩ := hU  
+    use closure V -- (Subtype.val : f ⁻¹' (Set.range i) → X)  '' U
+    refine' ⟨ExtremallyDisconnected.open_closure _ hV.1, _⟩ 
+    ext x
+    constructor
+    · simp only [TopCat.coe_of, Eq.ndrec, id_eq, eq_mpr_eq_cast, Set.mem_preimage]
+      rw [closure_induced]
+      rw [ClosedEmbedding.closure_image_eq h.closedEmbedding_subtype_val]
+      intro hx
+      
+      -- use ⟨x.val, ?_⟩ 
+      -- exact x.prop
+      -- refine' ⟨_, rfl⟩ 
+      -- rw [closure_induced]
+      -- rw [ClosedEmbedding.closure_image_eq h.closedEmbedding_subtype_val]
+      -- dsimp
+      sorry
+    · intro hx
+      rw [← hV.2] at hx
+      exact Continuous.closure_preimage_subset continuous_subtype_val _ hx
+    -- refine' ⟨IsOpen.preimage continuous_subtype_val (ExtremallyDisconnected.open_closure _ hV.1), _⟩ 
+    -- rw [← hV.2] 
+    -- have : closure ((Subtype.val : f ⁻¹' (Set.range i) → X) ⁻¹' V) = Subtype.val ⁻¹' (closure V)
+    -- · ext x 
+    --   constructor
+    --   <;> intro hx
+    --   · exact Continuous.closure_preimage_subset continuous_subtype_val _ hx
+    --   · rw [closure_induced]
+    --     simp only [Set.mem_preimage] at hx 
+    -- rw [this]
+    -- exact IsOpen.preimage continuous_subtype_val (ExtremallyDisconnected.open_closure _ hV.1)
+    
+    -- suffices : closure U = (Subtype.val : f ⁻¹' (Set.range i) → X) '' 
+    --   (closure ((Subtype.val : f ⁻¹' (Set.range i) → X)  ⁻¹' U))
+    
+
+noncomputable
+def RightMonoLimitCone {X Y Z : ExtrDisc} (f : X ⟶ Z) (i : Y ⟶ Z) [Mono i] : 
+    Cone (cospan f i) where
+  pt := X
+  π := {
+    app := by
+      intro W 
+      dsimp 
+      match W with 
+      | none => 
+        · simp only [cospan_one]
+          exact f
+      | some W' => 
+        · induction W' with 
+        | left => 
+          · simp only [cospan_left] 
+            sorry
+        | right => 
+          · simp only [cospan_right]
+            sorry
+    naturality := sorry
+  }
+
+instance : HasPullbackOfRightMono (ExtrDisc.{u}) := by
+  constructor
+  intro X Y Z f i _
+  constructor
+  sorry
 
 lemma one (X : ExtrDisc.{u}) (S : Sieve X) : 
     S ∈ (dagurCoverage ExtrDisc).toDCoverage.covering X →  
