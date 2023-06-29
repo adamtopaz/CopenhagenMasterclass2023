@@ -163,27 +163,10 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         let φ := fun (i : I) ↦ Sigma.ι Xmap i
         let F := Sigma.desc f
         let Z := Sieve.generate T
-        have hφ : ∀ i, φ i ≫ F = f i 
-        · intro i
-          simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] 
-        have hFZ : ∀ i, Z.pullback F (φ i)
-        · intro i
-          simp only [Sieve.pullback_apply, colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app, 
-            Sieve.generate_apply]
-          refine' ⟨_,(𝟙 _),f i,⟨_,by simp only [Category.id_comp]⟩⟩    
-          rw [h]
-          exact Presieve.ofArrows.mk i
         let Xs := (∐ fun (i : I) => Xmap i)
-        have fZ_mem : (Z.pullback F) ∈ 
-            GrothendieckTopology.sieves (Coverage.toGrothendieck ExtrDisc 
-            (dagurCoverage ExtrDisc)) Xs
-        · sorry
-        have hh : ∀ W (ψ : W ⟶ Xs), Coverage.saturate (dagurCoverage ExtrDisc)
-            W ((Z.pullback F).pullback ψ)
-        · sorry
         let Zf : Sieve Y := Sieve.generate 
           (Presieve.ofArrows (fun (_ : Unit) ↦ Xs) (fun (_ : Unit) ↦ F)) 
-        apply Coverage.saturate.transitive Y Zf  
+        apply Coverage.saturate.transitive Y Zf
         · apply Coverage.saturate.of 
           dsimp [dagurCoverage]
           simp only [Set.mem_union, Set.mem_setOf_eq]
@@ -192,12 +175,42 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
           use F 
           refine' ⟨rfl, inferInstance⟩  
         · intro R g hZfg 
-          have : ∃ τ, g = τ ≫ F := sorry
-          obtain ⟨τ, this⟩ := this
-          apply Coverage.saturate.transitive R (Zf.pullback g)
-          · rw [this, Sieve.pullback_comp Zf]
-            sorry
-          · sorry
+          dsimp at hZfg 
+          rw [Presieve.ofArrows_pUnit] at hZfg
+          obtain ⟨W, ψ, σ, ⟨hW, hW'⟩⟩ := hZfg 
+          dsimp [Presieve.singleton] at hW 
+          induction hW
+          rw [← hW', Sieve.pullback_comp Z]
+          suffices : Sieve.pullback ψ ((Sieve.pullback F) Z) ∈ GrothendieckTopology.sieves
+            (dagurCoverage ExtrDisc).toGrothendieck R 
+          · exact this 
+          apply GrothendieckTopology.pullback_stable' 
+          dsimp [Coverage.toGrothendieck]
+          suffices : Coverage.saturate (dagurCoverage ExtrDisc) Xs (Z.pullback F)
+          · exact this
+          suffices : Sieve.generate (Presieve.ofArrows Xmap φ) ≤ Z.pullback F
+          · apply Coverage.saturate_of_superset _ this
+            apply Coverage.saturate.of 
+            dsimp [dagurCoverage] 
+            left
+            refine' ⟨I, hI, Xmap, φ, ⟨rfl, _⟩⟩ 
+            suffices : Sigma.desc φ = 𝟙 _ 
+            · rw [this]
+              exact inferInstance 
+            ext 
+            simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app, Category.comp_id]
+          intro Q q hq 
+          simp only [Sieve.pullback_apply, Sieve.generate_apply] 
+          simp only [Sieve.generate_apply] at hq    
+          obtain ⟨E, e, r, hq⟩ := hq
+          refine' ⟨E, e, r ≫ F, ⟨_, _⟩⟩  
+          · rw [h]
+            induction hq.1
+            dsimp 
+            simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
+            exact Presieve.ofArrows.mk _
+          · rw [← hq.2]
+            rfl
     | top => 
       · apply Coverage.saturate.top
     | transitive Y T => 
@@ -205,50 +218,37 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         · assumption
         · assumption   
 
-lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
-  (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
+variable {C}
+
+lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X} [HasPullbackOfRightMono C]
+  (hS : S ∈ DagurSieveIso C X) : isPullbackPresieve S := sorry
 
 lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 
 lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
+lemma isSheafForDagurSieveIso {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveIso _ X)
+    {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
+  refine' (Equalizer.Presieve.sheaf_condition' F <| (isPullbackSieve_DagurSieveIso hS)).2 _
+  sorry
 
-lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
-  (hS : S ∈ (dagurCoverage C).covering X) : ( ∃ (α : Type) (_ : Fintype α) (Z : α → C)
-    (π : (a : α) → (Z a ⟶ X)),
-    S = Presieve.ofArrows Z π ∧ IsIso (Sigma.desc π))
-   ∨ (∃ (Z : C) (f : Z ⟶ X), S = Presieve.ofArrows (fun (_ : Unit) ↦ Z) 
-      (fun (_ : Unit) ↦ f) ∧ Epi f) := by
-    rcases hS with (H | H)
-    · apply Or.intro_left
-      exact H
-    · apply Or.intro_right
-      exact H 
+lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle _ X)
+    (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : Presieve.IsSheafFor F S := by
+  sorry
 
-
-lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
+lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
-  (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
-  rcases (is_Dagur_Presieve_iff ExtrDisc X S hS) with H | H
-  · have : isPullbackPresieve S := (isPullbackSieve_DagurCoverage ExtrDisc X S hS)
-    replace this := (Equalizer.Presieve.sheaf_condition' F this).mpr
-    apply this
-    sorry
-  · sorry
+  {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
+  cases' hS with hSIso hSSingle
+  · exact isSheafForDagurSieveIso hSIso hF
+  · exact isSheafForDagurSieveSingle hSSingle F
 
-
-lemma final (A : Type u) [Category A] [HasLimits A] (s : A ⥤ Type (u+1)) [PreservesLimits s]
-    [ReflectsIsomorphisms s] (F : ExtrDiscᵒᵖ ⥤ A) (hF : PreservesFiniteProducts F) : 
-    Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
-  rw [CategoryTheory.Presheaf.IsSheaf]--, Presheaf.isLimit_iff_isSheafFor]
-
-lemma final' (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
-    (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
+    (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
-  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
-  cases' hS with hS₁ hS₂
-  · sorry -- Dagur presieve of type 1, to be done by hand
-  · sorry -- Dagur presieve of type 2, we need that it `isPullbackPresieve`
+  exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
+    ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+  
   
 
   
