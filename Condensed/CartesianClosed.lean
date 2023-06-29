@@ -37,8 +37,6 @@ abbrev CondensedSet := Condensed.{u} (Type (u + 1))
 
 open GrothendieckTopology
 
-set_option pp.universes true
-example : Category (AsSmall.{u+1} CompHaus.{u}) := by show_term infer_instance
 -- TODO less
 noncomputable
 def AsSmall_Functor_equiv :
