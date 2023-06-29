@@ -202,7 +202,9 @@ lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ 
     (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
   refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
-  sorry
+  cases' hS with hS₁ hS₂
+  · sorry -- Dagur presieve of type 1, to be done by hand
+  · sorry -- Dagur presieve of type 2, we need that it `isPullbackPresieve`
   
 
   
