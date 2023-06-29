@@ -214,9 +214,9 @@ lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
       exact H 
 
 
-lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
+lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
-  (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
+  {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
   rcases (is_Dagur_Presieve_iff ExtrDisc X S hS) with H | H
   · have : isPullbackPresieve S := (isPullbackSieve_DagurCoverage ExtrDisc X S hS)
     replace this := (Equalizer.Presieve.sheaf_condition' F this).mpr
@@ -224,12 +224,11 @@ lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
     sorry
   · sorry
 
-lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] (F : ExtrDisc.{u}ᵒᵖ ⥤ A)
+lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
-  haveI := hF.1
-  exact fun E => (Presieve.isSheaf_coverage _ _).2 (fun S hS => isSheafFor_of_Dagur _ S hS _
-    ⟨fun J inst => compPreservesLimitsOfShape _ _⟩)
+  exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
+    ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
   
   
 
