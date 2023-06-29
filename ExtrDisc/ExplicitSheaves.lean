@@ -26,11 +26,6 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 
 def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
-  -- covering B := 
-    -- { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
-    -- S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) } ∪
-    -- { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
-    --   (fun (_ : Unit) ↦ f) ∧ Epi f }
   covering B :=   (DagurSieveIso C B) ∪ (DagurSieveSingle C B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
@@ -193,34 +188,20 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         · assumption
         · assumption   
 
-lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
-  (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
+variable {C}
+
+lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X} [HasPullbackOfRightMono C]
+  (hS : S ∈ DagurSieveIso C X) : isPullbackPresieve S := sorry
 
 lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 
 lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
-
-lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
-  (hS : S ∈ (dagurCoverage C).covering X) : ( ∃ (α : Type) (_ : Fintype α) (Z : α → C)
-    (π : (a : α) → (Z a ⟶ X)),
-    S = Presieve.ofArrows Z π ∧ IsIso (Sigma.desc π))
-   ∨ (∃ (Z : C) (f : Z ⟶ X), S = Presieve.ofArrows (fun (_ : Unit) ↦ Z) 
-      (fun (_ : Unit) ↦ f) ∧ Epi f) := by
-    rcases hS with (H | H)
-    · apply Or.intro_left
-      exact H
-    · apply Or.intro_right
-      exact H 
-
-
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
   {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
-  rcases (is_Dagur_Presieve_iff ExtrDisc X S hS) with H | H
-  · have : isPullbackPresieve S := (isPullbackSieve_DagurCoverage ExtrDisc X S hS)
-    replace this := (Equalizer.Presieve.sheaf_condition' F this).mpr
-    apply this
+  cases' hS with hSIso hSSingle
+  · refine' (Equalizer.Presieve.sheaf_condition' F <| (isPullbackSieve_DagurSieveIso hSIso)).2 _
     sorry
   · sorry
 
