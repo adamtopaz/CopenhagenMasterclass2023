@@ -224,19 +224,14 @@ lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
     sorry
   · sorry
 
-
-lemma final (A : Type u) [Category A] [HasLimits A] (s : A ⥤ Type (u+1)) [PreservesLimits s]
-    [ReflectsIsomorphisms s] (F : ExtrDiscᵒᵖ ⥤ A) (hF : PreservesFiniteProducts F) : 
-    Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
-  rw [CategoryTheory.Presheaf.IsSheaf]--, Presheaf.isLimit_iff_isSheafFor]
-
-lemma final' (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
-    (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] (F : ExtrDisc.{u}ᵒᵖ ⥤ A)
+    (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
-  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
-  cases' hS with hS₁ hS₂
-  · sorry -- Dagur presieve of type 1, to be done by hand
-  · sorry -- Dagur presieve of type 2, we need that it `isPullbackPresieve`
+  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => isSheafFor_of_Dagur X S hS _ ⟨fun J inst => _⟩)
+  haveI : PreservesLimitsOfShape (Discrete J) (coyoneda.obj (op E)) := PreservesFiniteLimits.preservesFiniteLimits _
+  haveI : PreservesLimitsOfShape (Discrete J) F := hF.1 J
+  apply compPreservesLimitsOfShape
+  
   
 
   
