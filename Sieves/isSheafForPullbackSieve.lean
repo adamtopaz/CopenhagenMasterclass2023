@@ -14,9 +14,8 @@ def isPullbackPresieve : Prop :=
   ∀ {Y Z} {f : Y ⟶ X} (_ : S f) {g : Z ⟶ X} (_ : S g),
   HasPullback f g 
 
-variable (P : Cᵒᵖ ⥤ Type max v₁ u₁)
+variable (P : Cᵒᵖ ⥤ Type max v₁ u₁) (hS : isPullbackPresieve S) {S}
 
-variable (hS : isPullbackPresieve S) {S}
 namespace Presieve
 
 def FamilyOfElements.PullbackCompatible' (x : FamilyOfElements P S) : Prop :=
