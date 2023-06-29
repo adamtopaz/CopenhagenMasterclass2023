@@ -37,13 +37,13 @@ abbrev CondensedSet := Condensed.{u} (Type (u + 1))
 
 open GrothendieckTopology
 
-
+set_option pp.universes true
+example : Category (AsSmall.{u+1} CompHaus.{u}) := by show_term infer_instance
 -- TODO less
 noncomputable
 def AsSmall_Functor_equiv :
   (CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) ≌ (AsSmall.{u+1} CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) :=
-Equivalence.congrLeft.{u, u + 1, u + 1, u + 1, u + 1, u + 2}
-  AsSmall.equiv.{u, u + 1, u + 1}
+Equivalence.congrLeft AsSmall.equiv
 
 noncomputable
 example : CartesianClosed (AsSmall.{u+1} CompHaus.{u}ᵒᵖ ⥤ Type (u + 1)) :=
@@ -52,6 +52,7 @@ inferInstance
 universe v₁ v₂
 instance {C D : Type v₁} [Category C] [Category D] (e : C ⥤ D) [IsEquivalence e] :
   Reflective e := ⟨⟩
+
 --huh fails second time TODO
 -- instance {C D : Type v₁} [Category C] [Category D] (e : C ⥤ D) [IsEquivalence e] :
 --   Reflective e := ⟨⟩
@@ -60,27 +61,28 @@ instance {C D : Type v₁} [Category C] [Category D] (e : C ⥤ D) [IsEquivalenc
 -- TODO maybe reflective should just have an inst
 -- instance {C D : Type v₁} [Category C] [Category D] (e : C ≌ D) :
 --   Reflective e.inverse := ⟨⟩
-noncomputable
-instance {C D : Type v₁} [Category C] [Category D] (e : C ≌ D) :
-  Reflective e.inverse := ⟨⟩
+-- noncomputable
+-- instance {C D : Type v₁} [Category C] [Category D] (e : C ≌ D) :
+--   Reflective e.inverse := ⟨⟩
 
 /-- Any essentially surjective, viewed as a subcategory is an exponential ideal. -/
 instance {C D : Type _} [Category C] [Category D] [HasFiniteProducts D] [CartesianClosed D]
   (e : C ⥤ D) [EssSurj e] : ExponentialIdeal e :=
   ExponentialIdeal.mk' _ fun _ _ => EssSurj.mem_essImage _
+
 -- This generalizes the following mathlib lemma
-instance {C : Type _} [Category C] [HasFiniteProducts C] [CartesianClosed C] :
-  ExponentialIdeal (𝟭 C) := inferInstance
+-- instance {C : Type _} [Category C] [HasFiniteProducts C] [CartesianClosed C] :
+--   ExponentialIdeal (𝟭 C) := inferInstance
   -- ExponentialIdeal.mk' _ fun _ _ => ⟨_, ⟨Iso.refl _⟩⟩
 -- TODO no duplicate TC argument linter?
 -- instance {C : Type _} [Category C] [Category C] [HasFiniteProducts C] [CartesianClosed C] :
 -- #lint
 
 -- this works now too
-instance {C D : Type _} [Category C] [Category D] [HasFiniteProducts D] [CartesianClosed D]
-  (e : C ≌ D) :
-ExponentialIdeal e.functor :=
-  inferInstance
+-- instance {C D : Type _} [Category C] [Category D] [HasFiniteProducts D] [CartesianClosed D]
+--   (e : C ≌ D) :
+-- ExponentialIdeal e.functor :=
+--   inferInstance
 
 noncomputable
 instance : CartesianClosed (CompHaus.{u}ᵒᵖ ⥤ Type (u + 1)) :=
@@ -115,6 +117,7 @@ instance : Reflective (sheafToPresheaf J D) where
 -- _ _
 
 namespace CondensedSet
+
 
 noncomputable instance HasFiniteProducts :
     HasFiniteProducts CondensedSet.{u} :=
