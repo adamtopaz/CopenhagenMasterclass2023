@@ -16,6 +16,8 @@ class HasPullbackOfRightMono : Prop where
 instance [HasPullbackOfRightMono C] {X Y Z : C} (f : X ⟶ Z)
   {i : Y ⟶ Z} [Mono i] : HasPullback f i := HasPullbackOfRightMono.HasPullback_of_mono f
 
+instance [HasPullbacks C] : HasPullbackOfRightMono C := ⟨fun _ _ _ => inferInstance⟩
+
 end HasPullbackOfRightMono
 
 section Coverage
