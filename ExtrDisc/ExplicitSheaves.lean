@@ -5,18 +5,32 @@ import Mathlib.CategoryTheory.Sites.Sheaf
 import ExtrDisc.Coherent
 
 
-universe u
+universe u v
 
 open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
 
-variable (C : Type _) [Category C] [Precoherent C] [HasFiniteCoproducts C]
+variable (C : Type _) [Category C] 
 
-def dagurCoverage : Coverage C where
-  covering B := 
-    { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
-    S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) } ∪
-    { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
+class HasPullbackOfRightMono : Prop where
+  HasPullback_of_mono : ∀ (X Y Z : C) (f : X ⟶ Z) {i : Y ⟶ Z} (_ : CategoryTheory.Mono i),
+    HasPullback f i
+
+variable [Precoherent C] [HasFiniteCoproducts C]
+
+def DagurSieveIso (B : C) := { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
+    S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) }
+
+def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X)
       (fun (_ : Unit) ↦ f) ∧ Epi f }
+
+
+def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
+  -- covering B := 
+    -- { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
+    -- S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) } ∪
+    -- { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
+    --   (fun (_ : Unit) ↦ f) ∧ Epi f }
+  covering B :=   (DagurSieveIso C B) ∪ (DagurSieveSingle C B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · set S' := @Presieve.ofArrows C _ Y Unit _ (fun (_ : Unit) ↦ (𝟙 Y)) with hS'
@@ -32,20 +46,14 @@ def dagurCoverage : Coverage C where
         induction hg
         simp only [Category.id_comp]
         use sigmaObj Z
-        -- use f \
-        let e1 := @Sigma.desc α C _ Z _ X π
-        let e := CategoryTheory.inv e1
-        -- use Z
-        -- rw [hS₁]
-        -- s
-        -- use 𝟙 _
-        -- use f
-        -- constructor
-        -- · 
-        -- · simp only [Category.id_comp]
-        
-      
-
+        let e := Sigma.desc π
+        use f ≫ (CategoryTheory.inv e)
+        use e
+        constructor
+        · rw [hS]
+          -- convert @Presieve.ofArrows.mk C _ X _ Z π
+          sorry
+        · simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
     sorry
 
 
@@ -219,10 +227,31 @@ lemma dagur115_vi_to_sheaf {X : ExtrDisc} (F : ExtrDiscᵒᵖ ⥤ Type _) (S : P
   · sorry
 
 
-lemma isSheafFor_of_dagur (X : ExtrDisc) (S : Presieve X)
-  (hS : S ∈ (dagurCoverage ExtrDisc).covering X)
-  (F : ExtrDiscᵒᵖ ⥤ Type (u + 1)) (hf : PreservesFiniteProducts F) : S.IsSheafFor F := sorry
+lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X)
+  (hS : S ∈ (dagurCoverage C).covering X) : ( ∃ (α : Type) (_ : Fintype α) (Z : α → C)
+    (π : (a : α) → (Z a ⟶ X)),
+    S = Presieve.ofArrows Z π ∧ IsIso (Sigma.desc π))
+   ∨ (∃ (Z : C) (f : Z ⟶ X), S = Presieve.ofArrows (fun (_ : Unit) ↦ Z) 
+      (fun (_ : Unit) ↦ f) ∧ Epi f) := by
+    rcases hS with (H | H)
+    · apply Or.intro_left
+      exact H
+    · apply Or.intro_right
+      exact H 
 
 
-lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
-  (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := sorry
+lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
+  (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
+  (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
+  rcases (is_Dagur_Presieve_iff ExtrDisc X S hS) with H | H
+  · have : isPullbackPresieve S := (isPullbackSieve_DagurCoverage ExtrDisc X S hS)
+    replace this := (Equalizer.Presieve.sheaf_condition' F this).mpr
+    apply this
+    sorry
+  · sorry
+
+
+lemma final (A : Type u) [Category A] [HasLimits A] (s : A ⥤ Type (u+1)) [PreservesLimits s]
+    [ReflectsIsomorphisms s] (F : ExtrDiscᵒᵖ ⥤ A) (hF : PreservesFiniteProducts F) : 
+    Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+  rw [CategoryTheory.Presheaf.IsSheaf]--, Presheaf.isLimit_iff_isSheafFor]
