@@ -197,13 +197,21 @@ lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 
 lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
+lemma isSheafForDagurSieveIso {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveIso _ X)
+    {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
+  refine' (Equalizer.Presieve.sheaf_condition' F <| (isPullbackSieve_DagurSieveIso hS)).2 _
+  sorry
+
+lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle _ X)
+    (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : Presieve.IsSheafFor F S := by
+  sorry
+
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
   {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
-  · refine' (Equalizer.Presieve.sheaf_condition' F <| (isPullbackSieve_DagurSieveIso hSIso)).2 _
-    sorry
-  · sorry
+  · exact isSheafForDagurSieveIso hSIso hF
+  · exact isSheafForDagurSieveSingle hSSingle F
 
 lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
