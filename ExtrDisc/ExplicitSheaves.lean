@@ -89,7 +89,7 @@ lemma one (X : ExtrDisc) (S : Sieve X) :
     simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
 
 lemma one' : (dagurCoverage ExtrDisc).toGrothendieck = 
-    (coherentCoverage ExtrDisc).toGrothendieck := by
+    (coherentTopology ExtrDisc) := by
   ext X S  
   constructor
   <;> intro h 
@@ -199,4 +199,10 @@ lemma isSheafFor_of_dagur (X : ExtrDisc) (S : Presieve X)
 
 
 lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
-  (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := sorry
+    (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+  rw [← one']
+  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
+  sorry
+  
+
+  
