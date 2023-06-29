@@ -12,7 +12,10 @@ open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
 variable (C : Type _) [Category C] 
 
 class HasPullbackOfRightMono : Prop where
-  HasPullback_of_mono : ∀ (X Y Z : C) (f : X ⟶ Z) {i : Y ⟶ Z} (_ : Mono i), HasPullback f i
+  HasPullback_of_mono : ∀ {X Y Z : C} (f : X ⟶ Z) {i : Y ⟶ Z} [Mono i], HasPullback f i
+
+instance [HasPullbackOfRightMono C] {X Y Z : C} (f : X ⟶ Z)
+  {i : Y ⟶ Z} [Mono i] : HasPullback f i := HasPullbackOfRightMono.HasPullback_of_mono f
 
 instance : HasPullbackOfRightMono (ExtrDisc) := sorry
 
@@ -26,33 +29,42 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 
 def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
-  -- covering B := 
-    -- { S | ∃ (α : Type) (_ : Fintype α) (X : α → C) (π : (a : α) → (X a ⟶ B)),
-    -- S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) } ∪
-    -- { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X) 
-    --   (fun (_ : Unit) ↦ f) ∧ Epi f }
   covering B :=   (DagurSieveIso C B) ∪ (DagurSieveSingle C B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
-    · set S' := @Presieve.ofArrows C _ Y Unit _ (fun (_ : Unit) ↦ (𝟙 Y)) with hS'
+    have : ∀ a : α, Mono (π a)
+    · sorry
+    · let Z' : α → C
+      · intro a
+        exact pullback f (π a)
+      let π' : (a : α) → Z' a ⟶ Y
+      · intro a
+        exact pullback.fst
+      set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
+      -- set S' := @Presieve.ofArrows C _ Y Unit _ (fun (_ : Unit) ↦ (𝟙 Y)) with hS'
       use S'
-      rw [Set.mem_union]
       constructor
-      · apply Or.intro_right
+      rw [Set.mem_union]
+      apply Or.intro_left
+      · rw [DagurSieveIso]
         simp only [Set.mem_setOf_eq]
-        exact ⟨Y, 𝟙 _, hS', instEpiIdToCategoryStruct _⟩
-      · rw [hS', Presieve.FactorsThruAlong]
-        intro W g hg
-        rw [Presieve.ofArrows_pUnit] at hg
-        induction hg
-        simp only [Category.id_comp]
-        use sigmaObj Z
-        let e := Sigma.desc π
-        use f ≫ (CategoryTheory.inv e)
-        use e
-        constructor
-        · rw [hS]
-          -- convert @Presieve.ofArrows.mk C _ X _ Z π
+      
+
+      -- · apply Or.intro_right
+      --   simp only [Set.mem_setOf_eq]
+      --   exact ⟨Y, 𝟙 _, hS', instEpiIdToCategoryStruct _⟩
+      -- · rw [hS', Presieve.FactorsThruAlong]
+      --   intro W g hg
+      --   rw [Presieve.ofArrows_pUnit] at hg
+      --   induction hg
+      --   simp only [Category.id_comp]
+      --   use sigmaObj Z
+      --   let e := Sigma.desc π
+      --   use f ≫ (CategoryTheory.inv e)
+      --   use e
+      --   constructor
+      --   · rw [hS]
+      --     -- convert @Presieve.ofArrows.mk C _ X _ Z π
           sorry
         · simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
     sorry
