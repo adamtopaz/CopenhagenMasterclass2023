@@ -12,8 +12,9 @@ open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
 variable (C : Type _) [Category C] 
 
 class HasPullbackOfRightMono : Prop where
-  HasPullback_of_mono : ∀ (X Y Z : C) (f : X ⟶ Z) {i : Y ⟶ Z} (_ : CategoryTheory.Mono i),
-    HasPullback f i
+  HasPullback_of_mono : ∀ (X Y Z : C) (f : X ⟶ Z) {i : Y ⟶ Z} (_ : Mono i), HasPullback f i
+
+instance : HasPullbackOfRightMono (ExtrDisc) := sorry
 
 variable [Precoherent C] [HasFiniteCoproducts C]
 
@@ -55,7 +56,6 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
           sorry
         · simp only [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
     sorry
-
 
 lemma one (X : ExtrDisc) (S : Sieve X) : 
     S ∈ (dagurCoverage ExtrDisc).toDCoverage.covering X →  
@@ -193,7 +193,7 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         · assumption
         · assumption   
 
-lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X)
+lemma isPullbackSieve_DagurCoverage (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
   (hS : S ∈ (dagurCoverage C).covering X) : isPullbackPresieve S := sorry
 
 lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
@@ -201,7 +201,7 @@ lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
 lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
 
-lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X)
+lemma is_Dagur_Presieve_iff (X : C) (S : Presieve X) [HasPullbackOfRightMono C]
   (hS : S ∈ (dagurCoverage C).covering X) : ( ∃ (α : Type) (_ : Fintype α) (Z : α → C)
     (π : (a : α) → (Z a ⟶ X)),
     S = Presieve.ofArrows Z π ∧ IsIso (Sigma.desc π))
@@ -225,17 +225,18 @@ lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
   · sorry
 
 
--- lemma final (A : Type u) [Category A] [HasLimits A] (s : A ⥤ Type (u+1)) [PreservesLimits s]
---     [ReflectsIsomorphisms s] (F : ExtrDiscᵒᵖ ⥤ A) (hF : PreservesFiniteProducts F) : 
---     Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
---   rw [CategoryTheory.Presheaf.IsSheaf]--, Presheaf.isLimit_iff_isSheafFor]
--- lemma final (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
---     (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
---   rw [← one']
---   refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
---   cases' hS with hS₁ hS₂
---   · sorry -- Dagur presieve of type 1, to be done by hand
---   · sorry -- Dagur presieve of type 2, we need that it `isPullbackPresieve`
+lemma final (A : Type u) [Category A] [HasLimits A] (s : A ⥤ Type (u+1)) [PreservesLimits s]
+    [ReflectsIsomorphisms s] (F : ExtrDiscᵒᵖ ⥤ A) (hF : PreservesFiniteProducts F) : 
+    Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+  rw [CategoryTheory.Presheaf.IsSheaf]--, Presheaf.isLimit_iff_isSheafFor]
+
+lemma final' (A : Type _) [Category A] [HasFiniteProducts C] (F : ExtrDiscᵒᵖ ⥤ A)
+    (hf : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
+  rw [← one']
+  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => _)
+  cases' hS with hS₁ hS₂
+  · sorry -- Dagur presieve of type 1, to be done by hand
+  · sorry -- Dagur presieve of type 2, we need that it `isPullbackPresieve`
   
 
   
