@@ -1,19 +1,70 @@
 import Mathlib.Topology.Category.Profinite.Basic
 import Mathlib.CategoryTheory.Sites.Coherent
-import Mathlib.Topology.Category.CompHaus.ExplicitLimits
---import Mathlib.Topology.Category.CompHaus.EffectiveEpi
 
 open CategoryTheory Limits
-open CategoryTheory Limits
-
-namespace Profinite
 
 universe u
 
 /-!
-TODO
+This section contains results that should probably go in a different file as they
+do not work with `Profinite` at all.
 
-This section is copied from
+TODO: They also need proper naming
+-/
+section Preliminaries
+
+/--
+The image of an open set under an isomorphism is open.
+-/
+lemma TopCat.isOpen_iso {X Y : TopCat} {U : Set X} (f : X ≅ Y) (h : IsOpen U) :
+    IsOpen (f.hom '' U) := by
+  let ff := TopCat.homeoOfIso f
+  rw [← Homeomorph.isOpen_image ff] at h
+  assumption
+
+/--
+Isomorphisms preserve totally-disconnectedness.
+-/
+lemma TotallyDisconnectedSpace.ofIso
+    {X Y : TopCat} [k : TotallyDisconnectedSpace X] (f : X ≅ Y) :
+    TotallyDisconnectedSpace Y := by
+
+  have surj' : Function.Surjective f.hom
+  · apply (TopCat.homeoOfIso f).surjective
+
+  have inj' : Function.Injective f.hom
+  · apply (TopCat.homeoOfIso f).injective
+
+  constructor
+  unfold _root_.IsTotallyDisconnected
+  intro t _ ht₂
+
+  apply Set.subsingleton_of_preimage surj'
+
+  replace k := k.isTotallyDisconnected_univ
+  unfold _root_.IsTotallyDisconnected at k
+
+  apply k
+
+  tauto
+
+  apply IsPreconnected.preimage_of_open_map
+  assumption
+  assumption
+  · unfold IsOpenMap
+    intro U hU
+    apply TopCat.isOpen_iso _ hU
+  tauto
+
+end Preliminaries
+
+namespace Profinite
+
+/-!
+This section defines the finite Coproduct of a finite family
+of profinite spaces `X : α → Profinite.{u}`
+
+Notes: The content is mainly copied from
 `Mathlib/Topology/Category/CompHaus/ExplicitLimits.lean`
 -/
 section FiniteCoproducts
@@ -83,7 +134,7 @@ variable {X Y B : Profinite.{u}} (f : X ⟶ B) (g : Y ⟶ B)
 
 /--
 The pullback of two morphisms `f, g` in `Profinite`, constructed explicitly as the set of
-pairs `(x,y)` such that `f x = g y`, with the topology induced by the product.
+pairs `(x, y)` such that `f x = g y`, with the topology induced by the product.
 -/
 def pullback : Profinite.{u} :=
   let set := { xy : X × Y | f xy.fst = g xy.snd }
@@ -107,8 +158,17 @@ def pullback.snd : pullback f g ⟶ Y where
   toFun := fun ⟨⟨_,y⟩,_⟩ => y
   continuous_toFun := Continuous.comp continuous_snd continuous_subtype_val
 
+/-!
+This section contains exclusively technical definitions and results that are used
+in the proof of `Profinite.effectiveEpiFamily_of_jointly_surjective`.
+
+The construction of `QB` as a quotient of the maps `X a → B` is analoguous to the
+construction in `CompHaus`, but one has to start with an equivalence relation
+on `Profinite` instead.
+-/
 namespace EffectiveEpiFamily
 
+-- Assume we have `X a → B` which are jointly surjective.
 variable {α : Type} [Fintype α] {B : Profinite.{u}}
   {X : α → Profinite.{u}} (π : (a : α) → (X a ⟶ B))
   (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b)
@@ -169,20 +229,16 @@ lemma ιFun_surjective : (ιFun π).Surjective := by
 
 lemma ιFun_bijective : (ιFun π).Bijective := ⟨ιFun_injective π, ιFun_surjective π surj⟩
 
-/--
-Implementation: The quotient of `relation π`, considered as an object of `CompHaus`.
--/
+/-- Implementation: The quotient of `relation π`, considered as an object of `CompHaus`. -/
 def QB₁ : CompHaus.{u} :=
   haveI : T2Space (Quotient <| relation π) :=
     ⟨fun _ _ h => separated_by_continuous (ιFun_continuous π) <| (ιFun_injective π).ne h ⟩
   CompHaus.of (Quotient <| relation π)
 
-/-- The function `ι_fun`, considered as a morphism. -/
+/-- Implementation: The function `ιFun`, considered as a morphism in `CompHaus`. -/
 def ι₁Hom : (QB₁ π) ⟶ B.toCompHaus := ⟨ιFun π, ιFun_continuous π⟩
 
-/--
-Implementation: The promised isomorphism between `QB` and `B`.
--/
+/-- Implementation: `ιFun` as isomorphism in `CompHaus`. -/
 noncomputable
 def ι₁Iso : (QB₁ π) ≅ B.toCompHaus :=
   have : IsIso (ι₁Hom π) := by
@@ -193,72 +249,22 @@ def ι₁Iso : (QB₁ π) ≅ B.toCompHaus :=
     refine ⟨Quotient.mk _ ⟨a,x⟩, h⟩
   asIso (ι₁Hom π)
 
-lemma isOpen_iso {X Y : TopCat} {U : Set X} (f : X ≅ Y) (h : IsOpen U) : IsOpen (f.hom '' U) := by
-  let ff := TopCat.homeoOfIso f
-  rw [← Homeomorph.isOpen_image ff] at h
-  assumption
-
-lemma _root_.TotallyDisconnectedSpace_ofIsIso
-    {X Y : TopCat} [k : TotallyDisconnectedSpace X] (f : X ≅ Y) :
-    TotallyDisconnectedSpace Y := by
-
-  have surj' : Function.Surjective f.hom
-  · apply (TopCat.homeoOfIso f).surjective
-
-  have inj' : Function.Injective f.hom
-  · apply (TopCat.homeoOfIso f).injective
-
-  constructor
-  unfold _root_.IsTotallyDisconnected
-  intro t _ ht₂
-
-  apply Set.subsingleton_of_preimage surj'
-
-  replace k := k.isTotallyDisconnected_univ
-  unfold _root_.IsTotallyDisconnected at k
-
-  apply k
-
-  tauto
-
-  apply IsPreconnected.preimage_of_open_map
-  assumption
-  assumption
-  · unfold IsOpenMap
-    intro U hU
-    apply isOpen_iso _ hU
-  tauto
-
 lemma CompHaus.TotallyDisconnectedSpace_ofIsIso
     {X Y : CompHaus} [k : TotallyDisconnectedSpace X] (f : X ≅ Y) :
     TotallyDisconnectedSpace Y := by
   have f : X.toTop ≅ Y.toTop
   · exact compHausToTop.mapIso f
-  apply _root_.TotallyDisconnectedSpace_ofIsIso f
+  apply TotallyDisconnectedSpace.ofIso f
 
-lemma Profinite.TotallyDisconnectedSpace_ofIsIso
-    {X Y : CompHaus} [k : TotallyDisconnectedSpace X] (f : X ≅ Y) :
-    TotallyDisconnectedSpace Y := by
-  have f : X.toTop ≅ Y.toTop
-  · exact compHausToTop.mapIso f
-  apply _root_.TotallyDisconnectedSpace_ofIsIso f
-
-lemma QB₁_totallyDisconnectedSpace : TotallyDisconnectedSpace (QB₁ π) :=
-  CompHaus.TotallyDisconnectedSpace_ofIsIso (ι₁Iso π surj).symm
-
-/--
-Implementation: The quotient of `relation π`, considered as an object of `Profinite`.
--/
+/-- Implementation: The quotient of `relation π`, considered as an object of `Profinite`. -/
 def QB₂ : Profinite.{u} where
   toCompHaus := QB₁ π
-  IsTotallyDisconnected := QB₁_totallyDisconnectedSpace π surj
+  IsTotallyDisconnected := CompHaus.TotallyDisconnectedSpace_ofIsIso (ι₁Iso π surj).symm
 
-/-- The function `ι_fun`, considered as a morphism. -/
+/-- Implementation: The function `ιFun`, considered as a morphism in `Profinite`. -/
 def ι₂Hom : (QB₂ π surj) ⟶ B := ⟨ιFun π, ιFun_continuous π⟩
 
-/--
-Implementation: The promised isomorphism between `QB` and `B`.
--/
+/-- Implementation: `ιFun` as isomorphism in `CompHaus`. -/
 noncomputable
 def ι₂Iso : (QB₂ π surj) ≅ B :=
   have : IsIso (ι₂Hom π surj) := by
@@ -269,9 +275,7 @@ def ι₂Iso : (QB₂ π surj) ≅ B :=
     refine ⟨Quotient.mk _ ⟨a,x⟩, h⟩
   asIso (ι₂Hom π surj)
 
-/--
-Implementation: The family of morphisms `X a ⟶ QB` which will be shown to be effective epi.
--/
+/-- Implementation: The family of morphisms `X a ⟶ QB` which will be shown to be effective epi. -/
 def π' : (a : α) → (X a ⟶ QB₂ π surj) := fun a =>
   { toFun := fun x => Quotient.mk _ ⟨a, x⟩
     continuous_toFun := by
@@ -279,9 +283,7 @@ def π' : (a : α) → (X a ⟶ QB₂ π surj) := fun a =>
       apply continuous_quot_mk
       apply continuous_sigmaMk (σ := fun a => X a) }
 
-/--
-Implementation: The family of morphisms `X a ⟶ QB` is an effective epi.
--/
+/-- Implementation: The family of morphisms `X a ⟶ QB` is an effective epi. -/
 def structAux : EffectiveEpiFamilyStruct X (π' π surj) where
   desc := fun {W} e h => {
     toFun := Quotient.lift (fun ⟨a,x⟩ => e a x) <| by
@@ -309,10 +311,12 @@ def structAux : EffectiveEpiFamilyStruct X (π' π surj) where
     exact hm
 
 @[reassoc]
-lemma π'_comp_ι_hom (a : α) : π' π surj a ≫ (ι₂Iso π surj).hom = π a := by ext ; rfl
+lemma π'_comp_ι_hom (a : α) : π' π surj a ≫ (ι₂Iso π surj).hom = π a := by
+  ext
+  rfl
 
 @[reassoc]
-lemma π_comp_ι_inv (a : α) : π a ≫ (ι₂Iso π surj).inv = π' π surj a :=  by
+lemma π_comp_ι_inv (a : α) : π a ≫ (ι₂Iso π surj).inv = π' π surj a := by
   rw [Iso.comp_inv_eq]
   exact π'_comp_ι_hom _ surj _
 
@@ -339,6 +343,7 @@ def struct : EffectiveEpiFamilyStruct X π where
 
 end EffectiveEpiFamily
 
+/-- One direction of `Profinite.effectiveEpiFamily_tfae` -/
 theorem effectiveEpiFamily_of_jointly_surjective
     {α : Type} [Fintype α] {B : Profinite.{u}}
     (X : α → Profinite.{u}) (π : (a : α) → (X a ⟶ B))
@@ -347,6 +352,12 @@ theorem effectiveEpiFamily_of_jointly_surjective
   ⟨⟨Profinite.EffectiveEpiFamily.struct π surj⟩⟩
 
 open List in
+/--
+For a finite family of profinite spaces `πₐ : Xₐ → B` the following are equivalent:
+* they are an effective epi family
+* the map `∐ πₐ ⟶ B` is an epimorphism
+* they are jointly surjective
+-/
 theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
     (X : α → Profinite.{u})
     (π : (a : α) → (X a ⟶ B)) :
@@ -358,7 +369,6 @@ theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite.{u}}
   tfae_have 1 → 2
   · intro
     infer_instance
-    -- #check CategoryTheory.epiCoproductDescOfEffectiveEpiFamily
   tfae_have 2 → 3
   · intro e
     rw [epi_iff_surjective] at e
