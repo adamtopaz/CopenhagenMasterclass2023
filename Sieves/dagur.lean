@@ -9,8 +9,8 @@ open Sieve
 @[ext]
 structure DCoverage where
   covering : ∀ (X : C), Set (Sieve X)
-  pullback : ∀ ⦃X Y : C⦄ (f : Y ⟶ X) (S : Presieve X) (_ : S ∈ (arrows)'' (covering X)),
-    ∃ (T : Presieve Y), T ∈ (arrows)'' (covering Y) ∧ T.FactorsThruAlong S f
+  pullback : ∀ ⦃X Y : C⦄ (f : Y ⟶ X) (S : Presieve X) (_ : S ∈ arrows '' (covering X)),
+    ∃ (T : Presieve Y), T ∈ arrows '' (covering Y) ∧ T.FactorsThruAlong S f
 
 variable {C}
 
@@ -25,7 +25,7 @@ def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
     obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
     obtain ⟨R,hR⟩ := F.pullback f W hW.1
     refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1, rfl⟩⟩, rfl⟩⟩, _⟩⟩    
-    dsimp [Presieve.FactorsThruAlong] at *  
+    dsimp [Presieve.FactorsThruAlong]
     simp only [forall_exists_index, and_imp]
     intro Z φ K ψ τ hτ hh
     obtain ⟨W_1, i, e, h⟩ := hR.2 hτ 
