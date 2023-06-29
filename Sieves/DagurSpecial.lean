@@ -125,7 +125,26 @@ def dagurCoverageExtrDisc : Coverage ExtrDisc where
     · sorry
 
 lemma isPullbackSieve_DagurSieveIso {X : ExtrDisc} {S : Presieve X}
-  (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := sorry
+    (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
+  intro _ _ _ _ g hg 
+  refine' HasPullbackOpenEmbedding _ _
+  dsimp [DagurSieveIso] at hS
+  obtain ⟨α, x, Xmap, π, hS⟩ := hS 
+  rw [hS.1] at hg 
+  induction hg with 
+  | mk i => 
+    · have h₁ : OpenEmbedding (Sigma.desc π)
+      · sorry
+        -- let h := (homeoOfIso (@asIso _ _ _ _ (Sigma.desc π) hS.2))
+      have h₂ : OpenEmbedding (Sigma.ι Xmap i)
+      · constructor
+        · sorry
+        · sorry-- rw [isOpen_sigma_iff]
+      have := OpenEmbedding.comp h₁ h₂ 
+      erw [← CategoryTheory.coe_comp (Sigma.ι Xmap i) (Sigma.desc π)] at this 
+      simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
+      assumption 
+  
     
 lemma isSheafForDagurSieveIso {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
     {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : 
