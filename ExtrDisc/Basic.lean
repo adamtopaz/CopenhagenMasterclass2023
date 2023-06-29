@@ -68,6 +68,13 @@ instance : LargeCategory ExtrDisc.{u} :=
 def toCompHaus : ExtrDisc.{u} ⥤ CompHaus.{u} :=
   inducedFunctor _
 
+/-- Construct a term of `ExtrDistr` from a type endowed with the structure of a
+compact, Hausdorff and totally disconnected topological space.
+-/
+def of (X : Type _) [TopologicalSpace X] [CompactSpace X] [T2Space X]
+    [ExtremallyDisconnected X] : ExtrDisc :=
+  ⟨⟨⟨X, inferInstance⟩⟩⟩
+
 /-- The forgetful functor `ExtrDisc ⥤ CompHaus` is full. -/
 instance : Full toCompHaus where
   preimage := fun f => f
@@ -89,7 +96,7 @@ instance : CoeSort ExtrDisc.{u} (Type u) := ConcreteCategory.hasCoeToSort _
 instance {X Y : ExtrDisc.{u}} : FunLike (X ⟶ Y) X (fun _ => Y) := ConcreteCategory.funLike
 
 /-- Extremally disconnected spaces are topological spaces. -/
-instance (X : ExtrDisc.{u}) : TopologicalSpace X :=
+instance instTopologicalSpace (X : ExtrDisc.{u}) : TopologicalSpace X :=
   show TopologicalSpace X.compHaus from inferInstance
 
 /-- Extremally disconnected spaces are compact. -/
