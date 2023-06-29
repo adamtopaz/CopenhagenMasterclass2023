@@ -27,9 +27,8 @@ def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
     refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1, rfl⟩⟩, rfl⟩⟩, _⟩⟩    
     dsimp [Presieve.FactorsThruAlong] at *  
     simp only [forall_exists_index, and_imp]
-    intro Z φ K ψ τ hτ  
+    intro Z φ K ψ τ hτ hh
     obtain ⟨W_1, i, e, h⟩ := hR.2 hτ 
-    intro hh
     refine' ⟨W_1, ψ ≫ i, e, ⟨_, by rw [← hh, Category.assoc, Category.assoc, h.2]⟩⟩
     rw [← hT, ← hW.2]
     exact ⟨W_1, 𝟙 _, e, ⟨h.1, by simp⟩⟩ 
