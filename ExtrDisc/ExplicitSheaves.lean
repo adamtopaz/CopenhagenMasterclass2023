@@ -5,7 +5,7 @@ import ExtrDisc.Coherent
 
 universe u v
 
-open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits
+open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits Functor Presieve
 
 instance : HasPullbackOfRightMono (ExtrDisc.{u}) := sorry
 
@@ -159,9 +159,26 @@ lemma one' : (dagurCoverage ExtrDisc).toGrothendieck =
         · assumption   
 
 lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle X)
-    (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : Presieve.IsSheafFor F S := by
+    (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : IsSheafFor F S := by
   obtain ⟨Y, f, rfl, hf⟩ := hS
-  sorry
+  have proj : Projective (toCompHaus.obj X) := inferInstanceAs (Projective X.compHaus)
+  have : Epi (toCompHaus.map f) := sorry --This because `f` is surjective
+  set g := toCompHaus.preimage <| Projective.factorThru (𝟙 _) (toCompHaus.map f) with hg
+  have hfg : g ≫ f = 𝟙 _ := by
+    refine' toCompHaus.map_injective _
+    rw [map_comp, hg, image_preimage, Projective.factorThru_comp]
+    rfl
+  intro y hy
+  refine' ⟨F.map g.op <| y f <| ofArrows.mk (), fun Z h hZ => _, fun z hz => _⟩
+  · cases' hZ with u
+    have := hy (f₁ := f) (f₂ := f) (𝟙 Y) (f ≫ g) (ofArrows.mk ()) (ofArrows.mk ()) ?_
+    · rw [op_id, F.map_id, types_id_apply] at this
+      rw [← types_comp_apply (F.map g.op) (F.map f.op), ← F.map_comp, ← op_comp]
+      exact this.symm
+    · rw [Category.id_comp, Category.assoc, hfg, Category.comp_id]
+  · have := congr_arg (F.map g.op) <| hz f (ofArrows.mk ())
+    rwa [← types_comp_apply (F.map f.op) (F.map g.op), ← F.map_comp, ← op_comp, hfg, op_id,
+      F.map_id, types_id_apply] at this
 
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
