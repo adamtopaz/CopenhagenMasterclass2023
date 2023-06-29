@@ -227,10 +227,9 @@ lemma isSheafFor_of_Dagur (X : ExtrDisc) (S : Presieve X)
 lemma final (A : Type (u+2)) [Category.{u+1} A] [HasFiniteProducts C] (F : ExtrDisc.{u}ᵒᵖ ⥤ A)
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
-  refine' fun E => (Presieve.isSheaf_coverage _ _).2 (@fun X S hS => isSheafFor_of_Dagur X S hS _ ⟨fun J inst => _⟩)
-  haveI : PreservesLimitsOfShape (Discrete J) (coyoneda.obj (op E)) := PreservesFiniteLimits.preservesFiniteLimits _
-  haveI : PreservesLimitsOfShape (Discrete J) F := hF.1 J
-  apply compPreservesLimitsOfShape
+  haveI := hF.1
+  exact fun E => (Presieve.isSheaf_coverage _ _).2 (fun S hS => isSheafFor_of_Dagur _ S hS _
+    ⟨fun J inst => compPreservesLimitsOfShape _ _⟩)
   
   
 
