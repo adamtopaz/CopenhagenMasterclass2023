@@ -3,10 +3,38 @@ import Mathlib.CategoryTheory.Limits.Shapes.FiniteProducts
 import ExtrDisc.Coherent
 import Sieves.isSheafForPullbackSieve
 import Sieves.dagur
+import Sieves.OpenEmbedding
 
 universe u
 
 section Coverage
+
+namespace ExtrDisc
+
+open CategoryTheory
+
+def homeoOfIso {X Y : ExtrDisc} (f : X ≅ Y) : X ≃ₜ Y where
+  toFun := f.hom
+  invFun := f.inv
+  left_inv := by
+    intro x 
+    have : f.inv (f.hom x) = (f.hom ≫ f.inv) x
+    · rfl 
+    rw [this]
+    simp only [Iso.hom_inv_id]
+    rfl
+  right_inv := by
+    intro x 
+    have : f.hom (f.inv x) = (f.inv ≫ f.hom) x
+    · rfl 
+    rw [this]
+    simp only [Iso.inv_hom_id]
+    rfl
+  continuous_toFun := f.hom.continuous
+  continuous_invFun := f.inv.continuous
+
+end ExtrDisc
+
 namespace CategoryTheory
 
 open CategoryTheory.Limits
@@ -214,7 +242,18 @@ lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z
   use OpenEmbeddingCone f hi 
   exact ExtrDisc.OpenEmbeddingLimitCone f hi
 
-instance : HasPullbackOfRightMono ExtrDisc := sorry
+instance : HasPullbackOfRightMono ExtrDisc := by
+  constructor 
+  intro X Z α f Y i _ _ _ a 
+  apply HasPullbackOpenEmbedding 
+  have h₁ : OpenEmbedding (Sigma.desc i) :=
+    (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
+  have h₂ : OpenEmbedding (Sigma.ι Y a) := DagurOpenEmbedding _ _
+  have := OpenEmbedding.comp h₁ h₂ 
+  erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
+  simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
+  assumption 
+
 
 
 -- lemma ExtensivityExtrDisc {α : Type} {Y : ExtrDisc} [Fintype α]
@@ -266,26 +305,6 @@ instance : HasPullbackOfRightMono ExtrDisc := sorry
 --         rcases hg with ⟨a⟩
 --         simp only [Category.id_comp]
 --         sorry
-
-def ExtrDisc.homeoOfIso {X Y : ExtrDisc} (f : X ≅ Y) : X ≃ₜ Y where
-  toFun := f.hom
-  invFun := f.inv
-  left_inv := by
-    intro x 
-    have : f.inv (f.hom x) = (f.hom ≫ f.inv) x
-    · rfl 
-    rw [this]
-    simp only [Iso.hom_inv_id]
-    rfl
-  right_inv := by
-    intro x 
-    have : f.hom (f.inv x) = (f.inv ≫ f.hom) x
-    · rfl 
-    rw [this]
-    simp only [Iso.inv_hom_id]
-    rfl
-  continuous_toFun := f.hom.continuous
-  continuous_invFun := f.inv.continuous
 
 -- lemma isPullbackSieve_DagurSieveIso {X : ExtrDisc} {S : Presieve X}
 --     (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
