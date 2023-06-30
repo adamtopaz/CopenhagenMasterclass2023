@@ -12,10 +12,13 @@ open CategoryTheory Opposite CategoryTheory.Limits Functor
 variable (C : Type u) [Category.{v, u} C] 
 
 class HasPullbackOfRightMono : Prop where
-  HasPullback_of_mono : ∀ {X Y Z : C} (f : X ⟶ Z) {i : Y ⟶ Z} [Mono i], HasPullback f i
+    HasPullback_of_mono : ∀ {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C}
+    (i : (a : α) → Y a ⟶ Z) [Fintype α] [HasCoproduct Y] [IsIso (Sigma.desc i)] (a : α),
+    HasPullback f (i a)
 
-instance [HasPullbackOfRightMono C] {X Y Z : C} (f : X ⟶ Z)
-  {i : Y ⟶ Z} [Mono i] : HasPullback f i := HasPullbackOfRightMono.HasPullback_of_mono f
+instance [HasPullbackOfRightMono C] {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C} 
+    (i : (a : α) → Y a ⟶ Z) [Fintype α] [HasCoproduct Y] [IsIso (Sigma.desc i)] (a : α) :  
+    HasPullback f (i a) := HasPullbackOfRightMono.HasPullback_of_mono f i a
 
 instance [HasPullbacks C] : HasPullbackOfRightMono C := ⟨fun _ _ _ => inferInstance⟩
 
