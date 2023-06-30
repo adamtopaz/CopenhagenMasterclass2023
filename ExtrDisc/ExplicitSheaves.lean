@@ -1,4 +1,5 @@
 import ExtrDisc.Basic
+import ExtrDisc.Coherent
 import Sieves.DagurSpecial
 import Mathlib.CategoryTheory.Sites.Sheaf
 
@@ -6,7 +7,7 @@ universe u v
 
 open CategoryTheory ExtrDisc Opposite CategoryTheory.Limits Functor Presieve
 
-lemma one' : dagurCoverageExtrDisc.toGrothendieck = 
+lemma one' : (dagurCoverage ExtrDisc).toGrothendieck = 
     (coherentTopology ExtrDisc) := by
   ext X S  
   constructor
@@ -16,7 +17,7 @@ lemma one' : dagurCoverageExtrDisc.toGrothendieck =
     | of Y T hT => 
       · apply Coverage.saturate.of 
         dsimp [coherentCoverage]
-        dsimp [dagurCoverageExtrDisc] at hT 
+        dsimp [dagurCoverage] at hT 
         apply Or.elim hT
         <;> intro h
         · obtain ⟨α, x, Xmap, π, h⟩ := h
@@ -66,7 +67,7 @@ lemma one' : dagurCoverageExtrDisc.toGrothendieck =
           (Presieve.ofArrows (fun (_ : Unit) ↦ Xs) (fun (_ : Unit) ↦ F)) 
         apply Coverage.saturate.transitive Y Zf
         · apply Coverage.saturate.of 
-          dsimp [dagurCoverageExtrDisc]
+          dsimp [dagurCoverage]
           simp only [Set.mem_union, Set.mem_setOf_eq]
           right
           use Xs 
@@ -80,16 +81,16 @@ lemma one' : dagurCoverageExtrDisc.toGrothendieck =
           induction hW
           rw [← hW', Sieve.pullback_comp Z]
           suffices : Sieve.pullback ψ ((Sieve.pullback F) Z) ∈ GrothendieckTopology.sieves
-            (dagurCoverageExtrDisc).toGrothendieck R 
+            (dagurCoverage ExtrDisc).toGrothendieck R 
           · exact this 
           apply GrothendieckTopology.pullback_stable' 
           dsimp [Coverage.toGrothendieck]
-          suffices : Coverage.saturate (dagurCoverageExtrDisc) Xs (Z.pullback F)
+          suffices : Coverage.saturate (dagurCoverage ExtrDisc) Xs (Z.pullback F)
           · exact this
           suffices : Sieve.generate (Presieve.ofArrows Xmap φ) ≤ Z.pullback F
           · apply Coverage.saturate_of_superset _ this
             apply Coverage.saturate.of 
-            dsimp [dagurCoverageExtrDisc] 
+            dsimp [dagurCoverage] 
             left
             refine' ⟨I, hI, Xmap, φ, ⟨rfl, _⟩⟩ 
             suffices : Sigma.desc φ = 𝟙 _ 
@@ -141,7 +142,7 @@ lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ Dag
       F.map_id, types_id_apply] at this
 
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
-  (hS : S ∈ (dagurCoverageExtrDisc.{u}).covering X)
+  (hS : S ∈ (dagurCoverage ExtrDisc.{u}).covering X)
   {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
   · exact isSheafForDagurSieveIso hSIso hF
