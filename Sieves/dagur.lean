@@ -1,7 +1,8 @@
+import ExtrDisc.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
 import Mathlib.CategoryTheory.Limits.Shapes.FiniteProducts
-import Sieves.isSheafForPullbackSieve
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
+import Sieves.isSheafForPullbackSieve
 
 universe u v
 section HasPullbackOfRightMono
@@ -62,15 +63,6 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
--- lemma RiccardoFoo {α : Type} {Y : C} [Fintype α] {Z : α → C} {π : (a : α) → Z a ⟶ X}
---     (f : Y ⟶ X) (H : IsIso (Sigma.desc π)) (a : α) : HasPullback f (π a) := by
---   sorry
-
--- lemma Extensivity_left {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
---   {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
---   [∀ a : α, HasPullback (π a) f] :
---   IsIso (Sigma.desc ((fun _ ↦ pullback.snd) : (a : α) → pullback (π a) f ⟶ _)) := sorry
-
 lemma Extensivity {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
   {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
   [∀ a : α, HasPullback f (π a)] :
@@ -82,6 +74,11 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · have : ∀ a : α, Mono (π a)
       · intro a
+        have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
+        · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
+        rw [this]
+        -- apply mono_comp
+        
         -- have : Mono (Sigma.desc π)
         sorry
         -- refine SplitMono.mono (?_ (id (Eq.symm hS)))
@@ -93,7 +90,7 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
       · rw [Set.mem_union]
         apply Or.intro_left
         rw [DagurSieveIso]
-        simp only [Set.mem_setOf_eq]
+        -- simp only [Set.mem_setOf_eq]
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
@@ -105,8 +102,28 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
         refine ⟨Z a, pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
         rw [hS]
         refine Presieve.ofArrows.mk a
-    · sorry
-      
+    · set S' := Presieve.singleton (𝟙 Y) with hS'
+      use S'
+      constructor
+      · apply Or.intro_right
+        rw [DagurSieveSingle]
+        simp only [Set.mem_setOf_eq]--comment
+        refine ⟨Y, 𝟙 _, by {rw [Presieve.ofArrows_pUnit (𝟙 Y)]}, instEpiIdToCategoryStruct Y⟩
+      · rw [hS', Presieve.FactorsThruAlong]
+        intro W g hg
+        rcases hg with ⟨a⟩
+        simp only [Category.id_comp]
+        sorry
+        -- have proj : Projective (toCompHaus.obj X) := inferInstanceAs (Projective X.compHaus)
+      -- have : Epi (toCompHaus.map f) := by
+      --   rw [CompHaus.epi_iff_surjective]
+      --   change Function.Surjective f
+      --   rwa [← ExtrDisc.epi_iff_surjective]
+      -- set g := toCompHaus.preimage <| Projective.factorThru (𝟙 _) (toCompHaus.map f) with hg
+      -- have hfg : g ≫ f = 𝟙 _ := by
+      --   refine' toCompHaus.map_injective _
+      --   rw [map_comp, hg, image_preimage, Projective.factorThru_comp, CategoryTheory.Functor.map_id]
+          
 
 variable [HasPullbackOfRightMono C] {C}
 
