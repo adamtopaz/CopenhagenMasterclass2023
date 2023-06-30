@@ -222,12 +222,23 @@ lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z
   use OpenEmbeddingCone f hi 
   exact ExtrDisc.OpenEmbeddingLimitCone f hi
 
+
+lemma ExtensivityExtrDisc {α : Type} {Y : ExtrDisc} [Fintype α]
+   {Z : α → ExtrDisc}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
+  [∀ a : α, HasPullback f (π a)] :
+  IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
+
+
 def dagurCoverageExtrDisc : Coverage ExtrDisc where
   covering B := (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · have : ∀ a : α, OpenEmbedding (π a)
-      · sorry
+      · intro a
+        have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
+        · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
+        rw [this]
+        sorry
       haveI hpb : ∀ a : α, HasPullback f (π a) := fun a ↦ HasPullbackOpenEmbedding f (this a)  
       set Z' : α → ExtrDisc := fun a ↦ pullback f (π a) with hZ'
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
@@ -241,27 +252,26 @@ def dagurCoverageExtrDisc : Coverage ExtrDisc where
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
-          have := @Limits.pullback_snd_iso_of_right_iso ExtrDisc _ Y (∐ fun b => Z b) X f 
-            (Sigma.desc π) h_iso
-          have hdo : OpenEmbedding (Sigma.desc π)
-          · sorry
-          haveI hpbd : HasPullback f (Sigma.desc π) := HasPullbackOpenEmbedding f hdo
-          let ψ : Limits.pullback f (Sigma.desc π) ⟶ Y := pullback.fst
-          let φ : (∐ fun b => Z' b) ⟶ Limits.pullback f (Sigma.desc π)
-          · sorry
-          have aux : IsIso φ
-          · sorry
-          have comp : φ ≫ ψ = Sigma.desc fun a => pullback.fst
-          · sorry
-          rw [← comp]
-          infer_instance
+          apply ExtensivityExtrDisc
+          exact h_iso
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
-        rcases hg with ⟨a⟩-- with a
+        rcases hg with ⟨a⟩
         refine ⟨Z a, pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
         rw [hS]
         refine Presieve.ofArrows.mk a
-    · sorry
+    · set S' := Presieve.singleton (𝟙 Y) with hS'
+      use S'
+      constructor
+      · apply Or.intro_right
+        rw [DagurSieveSingle]
+        simp only [Set.mem_setOf_eq]--comment
+        refine ⟨Y, 𝟙 _, by {rw [Presieve.ofArrows_pUnit (𝟙 Y)]}, instEpiIdToCategoryStruct Y⟩
+      · rw [hS', Presieve.FactorsThruAlong]
+        intro W g hg
+        rcases hg with ⟨a⟩
+        simp only [Category.id_comp]
+        sorry
 
 lemma isPullbackSieve_DagurSieveIso {X : ExtrDisc} {S : Presieve X}
     (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
