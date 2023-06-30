@@ -5,6 +5,9 @@ open CategoryTheory Limits
 
 universe u
 
+
+/- this is some comment! -/
+
 /-!
 This section contains helper lemmas about the sigma-type `Σ i, π i`,
 they probably belong into a different place.
