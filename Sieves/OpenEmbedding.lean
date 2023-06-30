@@ -30,10 +30,16 @@ theorem FromFiniteCoproductComptToFiniteCoproduct :
   refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
   simp [toFiniteCoproduct, fromFiniteCoproduct]
 
+@[simp]
 theorem Sigma.ιCompToFiniteCoproduct (a : α) :
     (Sigma.ι Z a) ≫ toFiniteCoproduct Z = finiteCoproduct.ι Z a := by
   simp [toFiniteCoproduct]
   
+@[simp]
+theorem finiteCoproduct.ιCompFromFiniteCoproduct (a : α) :
+    (finiteCoproduct.ι Z a) ≫ fromFiniteCoproduct Z = Sigma.ι Z a := by
+  simp [fromFiniteCoproduct]
+
 @[simps] noncomputable
 def toFiniteCoproductHomeo : (∐ Z : _) ≃ₜ finiteCoproduct Z where
   toFun := toFiniteCoproduct Z
@@ -66,7 +72,7 @@ lemma DagurOpenEmbedding {α : Type} [Fintype α] (Z : α → ExtrDisc.{u}) (a :
   convert finiteCoproduct.ιOpenEmbedding Z a
   ext x
   change ((Sigma.ι Z a) ≫ toFiniteCoproduct Z) x = _
-  rw [Sigma.ιCompToFiniteCoproduct]
+  simp
 
 
 end OpenEmbedding
