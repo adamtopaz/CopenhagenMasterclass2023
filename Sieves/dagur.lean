@@ -68,19 +68,27 @@ lemma Extensivity {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
   [∀ a : α, HasPullback f (π a)] :
   IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
 
-def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
+class EverythingIsProjective : Prop where
+  is_proj' : ∀ X : C, Projective X
+
+class IsMono_ι : Prop where
+  mono_ι' : ∀ (α : Type _) [Fintype α] (Z : α → C) (a : α), Mono (Sigma.ι Z a)
+
+def dagurCoverage [HasPullbackOfRightMono C] [EverythingIsProjective C] [IsMono_ι C] : Coverage C
+    where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · have : ∀ a : α, Mono (π a)
+      -- infer_instance
       · intro a
         have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
         · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
         rw [this]
         -- apply mono_comp
         
-        -- have : Mono (Sigma.desc π)
-        sorry
+      --   -- have : Mono (Sigma.desc π)
+      --   sorry
         -- refine SplitMono.mono (?_ (id (Eq.symm hS)))
       set Z' : α → C := fun a ↦ pullback f (π a) with hZ'
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
