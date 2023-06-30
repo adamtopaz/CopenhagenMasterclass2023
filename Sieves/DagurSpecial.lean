@@ -64,6 +64,37 @@ def OpenEmbeddingConePt {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : Ope
     exact ((closure U).preimage_image_eq Subtype.coe_injective).symm 
 
 noncomputable
+def OpenEmbedding.InvRange {X Y : Type _} [TopologicalSpace X] [TopologicalSpace Y] {i : X → Y}
+    (hi : OpenEmbedding i) : C(Set.range i, X) where
+  toFun := (Homeomorph.ofEmbedding i hi.toEmbedding).invFun
+  continuous_toFun := (Homeomorph.ofEmbedding i hi.toEmbedding).symm.continuous
+
+noncomputable
+def OpenEmbedding.ToRange {X Y : Type _} [TopologicalSpace X] [TopologicalSpace Y] {i : X → Y}
+    (hi : OpenEmbedding i) : C(X, Set.range i) where
+  toFun := (Homeomorph.ofEmbedding i hi.toEmbedding).toFun
+  continuous_toFun := (Homeomorph.ofEmbedding i hi.toEmbedding).continuous
+
+lemma aux_forall_mem {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (_ : OpenEmbedding i) : 
+    ∀ x : f ⁻¹' (Set.range i), f x.val ∈ Set.range i := by
+  rintro ⟨x, hx⟩ 
+  simpa only [Set.mem_preimage]
+
+lemma aux_continuous_restrict {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (_ : OpenEmbedding i) : 
+    Continuous ((f ⁻¹' (Set.range i)).restrict f) := by
+  apply ContinuousOn.restrict 
+  apply Continuous.continuousOn 
+  exact f.continuous
+
+noncomputable
+def OpenEmbeddingConeRightMap {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i) :
+    C(f ⁻¹' (Set.range i), Y) := 
+  ContinuousMap.comp (OpenEmbedding.InvRange hi) 
+  ⟨(Set.range i).codRestrict ((f ⁻¹' (Set.range i)).restrict f) 
+  (aux_forall_mem f hi), Continuous.codRestrict 
+  (aux_continuous_restrict f hi) (aux_forall_mem f hi)⟩  
+  
+noncomputable
 def OpenEmbeddingCone {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i) : 
     Cone (cospan f i) where
   pt := OpenEmbeddingConePt f hi
@@ -79,8 +110,38 @@ def OpenEmbeddingCone {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenE
         | left => 
           · exact ⟨Subtype.val, continuous_subtype_val⟩ 
         | right => 
-          · sorry
-    naturality := sorry
+          · exact OpenEmbeddingConeRightMap f hi
+    naturality := by
+      intro W V q
+      simp only [Functor.const_obj_obj, Functor.const_obj_map, cospan_one, 
+        cospan_left, id_eq, Category.id_comp]
+      induction q with
+      | id => 
+        · simp only [cospan_one, cospan_left, WidePullbackShape.hom_id, 
+          Functor.map_id, Category.comp_id]
+      | term j => 
+        · induction j with
+          | left => 
+            · simp only [cospan_one, cospan_left, cospan_map_inl]
+              congr
+          | right => 
+            · simp only [cospan_one, cospan_right, cospan_map_inr]
+              dsimp [OpenEmbeddingConeRightMap, ContinuousMap.comp, Set.restrict, Set.codRestrict,
+                OpenEmbedding.InvRange]
+              congr 
+              ext x
+              simp only [Function.comp_apply]
+              obtain ⟨y, hy⟩ := x.prop 
+              rw [← hy] 
+              congr 
+              suffices : y = (Homeomorph.ofEmbedding i hi.toEmbedding).symm 
+                (⟨f x.val, by rw [← hy] ; simp⟩)
+              · rw [this]
+                rfl
+              apply_fun (Homeomorph.ofEmbedding i hi.toEmbedding)
+              simp only [Homeomorph.apply_symm_apply]
+              dsimp [Homeomorph.ofEmbedding]
+              simp_rw [hy]
   }
 
 lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
