@@ -3,6 +3,7 @@ import Mathlib.CategoryTheory.Limits.Shapes.FiniteProducts
 import ExtrDisc.Coherent
 import Sieves.isSheafForPullbackSieve
 import Sieves.dagur
+import Sieves.OpenEmbedding
 
 universe u
 
@@ -247,7 +248,7 @@ instance : HasPullbackOfRightMono ExtrDisc := by
   apply HasPullbackOpenEmbedding 
   have h₁ : OpenEmbedding (Sigma.desc i) :=
     (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-  have h₂ : OpenEmbedding (Sigma.ι Y a) := sorry
+  have h₂ : OpenEmbedding (Sigma.ι Y a) := DagurOpenEmbedding _ _
   have := OpenEmbedding.comp h₁ h₂ 
   erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
   simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 

@@ -88,6 +88,7 @@ def dagurCoverage [HasPullbackOfRightMono C] [EverythingIsProjective C] [IsMono_
         have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
         · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
         rw [this]
+        sorry
         -- apply mono_comp
         
       --   -- have : Mono (Sigma.desc π)
