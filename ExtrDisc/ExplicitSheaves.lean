@@ -127,8 +127,7 @@ lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ Dag
   set g := toCompHaus.preimage <| Projective.factorThru (𝟙 _) (toCompHaus.map f) with hg
   have hfg : g ≫ f = 𝟙 _ := by
     refine' toCompHaus.map_injective _
-    rw [map_comp, hg, image_preimage, Projective.factorThru_comp]
-    rfl
+    rw [map_comp, hg, image_preimage, Projective.factorThru_comp, CategoryTheory.Functor.map_id]
   intro y hy
   refine' ⟨F.map g.op <| y f <| ofArrows.mk (), fun Z h hZ => _, fun z hz => _⟩
   · cases' hZ with u
