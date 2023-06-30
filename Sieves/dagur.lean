@@ -62,6 +62,20 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
+-- lemma RiccardoFoo {α : Type} {Y : C} [Fintype α] {Z : α → C} {π : (a : α) → Z a ⟶ X}
+--     (f : Y ⟶ X) (H : IsIso (Sigma.desc π)) (a : α) : HasPullback f (π a) := by
+--   sorry
+
+-- lemma Extensivity_left {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
+--   {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
+--   [∀ a : α, HasPullback (π a) f] :
+--   IsIso (Sigma.desc ((fun _ ↦ pullback.snd) : (a : α) → pullback (π a) f ⟶ _)) := sorry
+
+lemma Extensivity {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
+  {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
+  [∀ a : α, HasPullback f (π a)] :
+  IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
+
 def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
@@ -72,11 +86,7 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
         sorry
         -- refine SplitMono.mono (?_ (id (Eq.symm hS)))
       set Z' : α → C := fun a ↦ pullback f (π a) with hZ'
-      -- · intro a
-      --   exact pullback f (π a)
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
-      -- · intro a
-      --   exact pullback.fst
       set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
       use S'
       constructor
@@ -87,20 +97,11 @@ def dagurCoverage [HasPullbackOfRightMono C] : Coverage C where
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
-          have := @Limits.pullback_snd_iso_of_right_iso C _ Y (∐ fun b => Z b) X f (Sigma.desc π)
-            h_iso
-          let ψ : Limits.pullback f (Sigma.desc π) ⟶ Y := pullback.fst
-          let φ : (∐ fun b => Z' b) ⟶ Limits.pullback f (Sigma.desc π)
-          · sorry
-          have aux : IsIso φ
-          · sorry
-          have comp : φ ≫ ψ = Sigma.desc fun a => pullback.fst
-          · sorry
-          rw [← comp]
-          infer_instance
+          apply Extensivity
+          exact h_iso
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
-        rcases hg with ⟨a⟩-- with a
+        rcases hg with ⟨a⟩
         refine ⟨Z a, pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
         rw [hS]
         refine Presieve.ofArrows.mk a
