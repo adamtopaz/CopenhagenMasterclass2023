@@ -75,9 +75,9 @@ noncomputable def compact_to_T2_homeomorph [T2Space A] [ExtremallyDisconnected A
     (f := Equiv.ofBijective ρ ⟨compact_to_T2_injective ρ_cont ρ_surj image_ne_top, ρ_surj⟩) ρ_cont
 
 /-- Lemma 2.4 -/
-lemma exists_image_ne_top [T2Space A] [CompactSpace A] [T2Space D] [CompactSpace D] :
+lemma exists_image_ne_top' [T2Space A] [CompactSpace A] [T2Space D] [CompactSpace D] :
     ∃ E : Set D, CompactSpace E ∧ π '' E = ⊤ ∧
-    ∀ E₀ : Set E, E₀ ≠ ⊤ → CompactSpace E₀ → π '' E₀ ≠ ⊤ := by
+    ∀ E₀ : Set D, E₀ ⊂ E → CompactSpace E₀ → π '' E₀ ≠ ⊤ := by
   -- Define the set of closed subsets of D for which the map onto A is surjective
   let S := { E : Set D | CompactSpace E ∧ (π) '' E = univ}
   -- Checking the Chain condition
@@ -157,8 +157,8 @@ lemma exists_image_ne_top [T2Space A] [CompactSpace A] [T2Space D] [CompactSpace
   · intro E₀ h₁ h₂
     replace hE₃ := hE₃ E₀
     by_contra h₃
-    replace hE₃ := hE₃ (And.intro h₂ h₃) (subset_of_ssubset h₁) -- TODO fix
-    exact (ne_of_ssubset h₁) hE₃ -- TODO fix
+    replace hE₃ := hE₃ (And.intro h₂ h₃) (subset_of_ssubset h₁)
+    exact (ne_of_ssubset h₁) hE₃
 
 variable [T2Space A] [CompactSpace A] [T2Space B] [CompactSpace B] [T2Space C] (φ : A → C) (f : B → C)
 
