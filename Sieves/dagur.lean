@@ -66,19 +66,23 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
+
 lemma Extensivity {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
   {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
   [∀ a : α, HasPullback f (π a)] :
   IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
 
-class EverythingIsProjective : Prop where
-  is_proj' : ∀ X : C, Projective X
+@[reducible]
+def EverythingIsProjective (C : Type _) [Category C] : Prop :=
+  ∀ X : C, Projective X
 
-class IsMono_ι : Prop where
-  mono_ι' : ∀ (α : Type _) [Fintype α] (Z : α → C) (a : α), Mono (Sigma.ι Z a)
+@[reducible]
+def IsMono_ι (C : Type (u+1)) [Category C] [HasFiniteCoproducts C] : Prop :=
+  ∀ (α : Type u) [Fintype α] (Z : α → C) (a : α), Mono (Sigma.ι Z a)
 
-def dagurCoverage [HasPullbackOfRightMono C] [EverythingIsProjective C] [IsMono_ι C] : Coverage C
-    where
+
+def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullbackOfRightMono C]
+    (h_proj : EverythingIsProjective C) (h_mono_ι : IsMono_ι C) : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
@@ -88,7 +92,9 @@ def dagurCoverage [HasPullbackOfRightMono C] [EverythingIsProjective C] [IsMono_
         have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
         · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
         rw [this]
-        -- apply mono_comp
+        -- have ciccio := @mono_comp C
+        sorry
+        -- apply Mo
         
       --   -- have : Mono (Sigma.desc π)
       --   sorry
@@ -134,7 +140,7 @@ def dagurCoverage [HasPullbackOfRightMono C] [EverythingIsProjective C] [IsMono_
       -- have hfg : g ≫ f = 𝟙 _ := by
       --   refine' toCompHaus.map_injective _
       --   rw [map_comp, hg, image_preimage, Projective.factorThru_comp, CategoryTheory.Functor.map_id]
-          
+
 
 variable [HasPullbackOfRightMono C] {C}
 
