@@ -144,14 +144,83 @@ def OpenEmbeddingCone {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenE
               simp_rw [hy]
   }
 
+namespace ExtrDisc
+
+def pullback.fst {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
+    (hi : OpenEmbedding i) : (OpenEmbeddingCone f hi).pt ⟶ X := 
+  ⟨Subtype.val, continuous_subtype_val⟩ 
+
+noncomputable
+def pullback.snd {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
+    (hi : OpenEmbedding i) : (OpenEmbeddingCone f hi).pt ⟶ Y := 
+  (OpenEmbeddingCone f hi).π.app WalkingCospan.right
+
+def pullback.lift {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i)
+    (a : W ⟶ X) (b : W ⟶ Y) (w : a ≫ f = b ≫ i) : 
+    W ⟶ (OpenEmbeddingCone f hi).pt where
+  toFun := fun z => ⟨a z, by 
+    simp only [Set.mem_preimage] 
+    use (b z) 
+    exact congr_fun (FunLike.ext'_iff.mp w.symm) z⟩
+  continuous_toFun := by
+    apply Continuous.subtype_mk 
+    exact a.continuous
+
+@[reassoc (attr := simp)]
+lemma pullback.lift_fst {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i)
+    (a : W ⟶ X) (b : W ⟶ Y) (w : a ≫ f = b ≫ i) : 
+  pullback.lift f hi a b w ≫ pullback.fst f hi = a := rfl
+
+-- @[reassoc (attr := simp)]
+lemma pullback.lift_snd {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i)
+    (a : W ⟶ X) (b : W ⟶ Y) (w : a ≫ f = b ≫ i) : 
+    pullback.lift f hi a b w ≫ ExtrDisc.pullback.snd f hi = b := by 
+  dsimp [lift, snd, OpenEmbeddingCone, OpenEmbeddingConeRightMap, ContinuousMap.comp, Set.restrict, 
+    Set.codRestrict, OpenEmbedding.InvRange]
+  congr 
+  ext z
+  simp only [Function.comp_apply]
+  sorry
+  -- have := congr_fun (FunLike.ext'_iff.mp w.symm) z 
+  -- obtain ⟨y, hy⟩ := x.prop 
+  -- rw [← hy] 
+  -- congr 
+  -- suffices : y = (Homeomorph.ofEmbedding i hi.toEmbedding).symm 
+  --   (⟨f x.val, by rw [← hy] ; simp⟩)
+  -- · rw [this]
+  --   rfl
+  -- apply_fun (Homeomorph.ofEmbedding i hi.toEmbedding)
+  -- simp only [Homeomorph.apply_symm_apply]
+  -- dsimp [Homeomorph.ofEmbedding]
+  -- simp_rw [hy]
+  -- have := (OpenEmbeddingCone f hi).π.naturality (𝟙 WalkingCospan.right)
+
+-- lemma pullback.hom_ext {Z : CompHaus.{u}} (a b : Z ⟶ pullback f g)
+--     (hfst : a ≫ pullback.fst f g = b ≫ pullback.fst f g)
+--     (hsnd : a ≫ pullback.snd f g = b ≫ pullback.snd f g) : a = b := by
+--   ext z
+--   apply_fun (fun q => q z) at hfst hsnd
+--   apply Subtype.ext
+--   apply Prod.ext
+--   · exact hfst
+--   · exact hsnd
+
+
+def OpenEmbeddingLimitCone {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
+    (hi : OpenEmbedding i) : IsLimit (OpenEmbeddingCone f hi) := sorry
+  -- Limits.PullbackCone.isLimitAux _
+  --   (fun s => pullback.lift f g s.fst s.snd s.condition)
+  --   (fun _ => pullback.lift_fst _ _ _ _ _)
+  --   (fun _ => pullback.lift_snd _ _ _ _ _)
+  --   (fun _ _ hm => pullback.hom_ext _ _ _ _ (hm .left) (hm .right))
+
+end ExtrDisc
+
 lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
     (hi : OpenEmbedding i) : HasPullback f i := by
   constructor
   use OpenEmbeddingCone f hi 
-  constructor
-  · sorry 
-  · sorry 
-  · sorry 
+  exact ExtrDisc.OpenEmbeddingLimitCone f hi
 
 def dagurCoverageExtrDisc : Coverage ExtrDisc where
   covering B := (DagurSieveIso B) ∪ (DagurSieveSingle B)
