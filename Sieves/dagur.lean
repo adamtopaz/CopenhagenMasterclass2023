@@ -66,11 +66,12 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
+-- @[reducible]
+def Extensivity (C : Type _) [Category C] [HasPullbackOfRightMono C] [HasFiniteCoproducts C] : Prop :=
+  ∀ {α : Type} [Fintype α] {X : C} {Z : α → C} (π : (a : α) → Z a ⟶ X)
+  {Y : C} (f : Y ⟶ X) [∀ a : α, HasPullback f (π a)] (_ : IsIso (Sigma.desc π)),
+     IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _))
 
-lemma Extensivity {α : Type} {Y : C} [Fintype α] [HasPullbackOfRightMono C]
-  {Z : α → C}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
-  [∀ a : α, HasPullback f (π a)] :
-  IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
 
 @[reducible]
 def EverythingIsProjective (C : Type _) [Category C] : Prop :=
@@ -82,12 +83,11 @@ def IsMono_ι (C : Type (u+1)) [Category C] [HasFiniteCoproducts C] : Prop :=
 
 
 def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullbackOfRightMono C]
-    (h_proj : EverythingIsProjective C) (h_mono_ι : IsMono_ι C) : Coverage C where
+    (h_proj : EverythingIsProjective C) (h_mono_ι : IsMono_ι C) (h_ext : Extensivity C) : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · have : ∀ a : α, Mono (π a)
-      -- infer_instance
       · intro a
         have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
         · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
@@ -105,11 +105,10 @@ def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullback
       · rw [Set.mem_union]
         apply Or.intro_left
         rw [DagurSieveIso]
-        -- simp only [Set.mem_setOf_eq]
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
-          apply Extensivity
+          apply h_ext
           exact h_iso
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg

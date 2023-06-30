@@ -6,8 +6,15 @@ universe u v
 
 open CategoryTheory CompHaus Opposite CategoryTheory.Limits
 
+lemma Extensivity_CompHaus : Extensivity CompHaus := sorry
+
+lemma EverythingProj_CompHaus : EverythingIsProjective CompHaus := sorry
+
+lemma Is_Mono_ι_CompHaus : IsMono_ι CompHaus := sorry
+
 lemma one (X : CompHaus.{u}) (S : Sieve X) : 
-    S ∈ (dagurCoverage CompHaus).toDCoverage.covering X →  
+    S ∈ (dagurCoverage Extensivity_CompHaus
+      EverythingProj_CompHaus Is_Mono_ι_CompHaus).toDCoverage.covering X →  
     S ∈ (coherentCoverage CompHaus).toDCoverage.covering X := by
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
   intro h 
@@ -45,7 +52,8 @@ lemma one (X : CompHaus.{u}) (S : Sieve X) :
       rfl
     simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]        
 
-lemma one' : (dagurCoverage CompHaus).toGrothendieck = 
+lemma one' : (dagurCoverage Extensivity_CompHaus
+      EverythingProj_CompHaus Is_Mono_ι_CompHaus).toGrothendieck = 
     (coherentTopology CompHaus) := by
   ext X S  
   constructor
