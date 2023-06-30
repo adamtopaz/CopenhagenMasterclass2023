@@ -255,7 +255,7 @@ lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := sorry
 
 lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := sorry
 
-lemma Is_Mono_ι_ExtrDisc : IsMono_ι ExtrDisc := sorry
+-- lemma Is_Mono_ι_ExtrDisc : IsMono_ι ExtrDisc := sorry
 
 end ExtrDisc
 
@@ -264,7 +264,7 @@ end CategoryTheory
 end Coverage
 
 lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
-  Is_Mono_ι_ExtrDisc Extensivity_ExtrDisc).toGrothendieck = 
+   Extensivity_ExtrDisc).toGrothendieck = 
     (coherentTopology ExtrDisc) := by
   ext X S  
   constructor
@@ -338,11 +338,11 @@ lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
           induction hW
           rw [← hW', Sieve.pullback_comp Z]
           suffices : Sieve.pullback ψ ((Sieve.pullback F) Z) ∈ GrothendieckTopology.sieves
-            (dagurCoverage _ _ _ _).toGrothendieck R 
+            (dagurCoverage _ _ _).toGrothendieck R 
           · exact this 
           apply GrothendieckTopology.pullback_stable' 
           dsimp [Coverage.toGrothendieck]
-          suffices : Coverage.saturate (dagurCoverage _ _ _ _) Xs (Z.pullback F)
+          suffices : Coverage.saturate (dagurCoverage _ _ _) Xs (Z.pullback F)
           · exact this
           suffices : Sieve.generate (Presieve.ofArrows Xmap φ) ≤ Z.pullback F
           · apply Coverage.saturate_of_superset _ this
@@ -399,7 +399,7 @@ lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ Dag
       F.map_id, types_id_apply] at this
 
 lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
-  (hS : S ∈ (dagurCoverage ExtrDisc EverythinProj_ExtrDisc Is_Mono_ι_ExtrDisc
+  (hS : S ∈ (dagurCoverage ExtrDisc EverythinProj_ExtrDisc
     Extensivity_ExtrDisc).covering X)
   {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
@@ -411,3 +411,4 @@ lemma final (A : Type (u+2)) [Category.{u+1} A] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
   rw [← one']
   exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
     ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+  exacts [ExtrDisc.EverythingProj_ExtrDisc, ExtrDisc.Extensivity_ExtrDisc]
