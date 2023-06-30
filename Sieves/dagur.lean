@@ -92,13 +92,11 @@ def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullback
         have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
         · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
         rw [this]
-        -- have ciccio := @mono_comp C
-        sorry
-        -- apply Mo
-        
-      --   -- have : Mono (Sigma.desc π)
-      --   sorry
-        -- refine SplitMono.mono (?_ (id (Eq.symm hS)))
+        have inj_one : Mono (Sigma.ι Z a)
+        · infer_instance
+        have inj_two : Mono (Sigma.desc π)
+        · infer_instance
+        apply mono_comp
       set Z' : α → C := fun a ↦ pullback f (π a) with hZ'
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
       set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
