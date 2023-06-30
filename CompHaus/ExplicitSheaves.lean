@@ -13,8 +13,8 @@ lemma EverythingProj_CompHaus : EverythingIsProjective CompHaus := sorry
 lemma Is_Mono_ι_CompHaus : IsMono_ι CompHaus := sorry
 
 lemma one (X : CompHaus.{u}) (S : Sieve X) : 
-    S ∈ (dagurCoverage Extensivity_CompHaus
-      EverythingProj_CompHaus Is_Mono_ι_CompHaus).toDCoverage.covering X →  
+    S ∈ (dagurCoverage _ EverythingProj_CompHaus Is_Mono_ι_CompHaus
+      Extensivity_CompHaus).toDCoverage.covering X →  
     S ∈ (coherentCoverage CompHaus).toDCoverage.covering X := by
   dsimp [dagurCoverage, coherentCoverage, Coverage.toDCoverage] 
   intro h 

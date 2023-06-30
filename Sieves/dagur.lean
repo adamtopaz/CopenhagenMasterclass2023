@@ -66,38 +66,42 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
--- @[reducible]
-def Extensivity (C : Type _) [Category C] [HasPullbackOfRightMono C] [HasFiniteCoproducts C] : Prop :=
+-- -- @[reducible]
+def Extensivity /- (C : Type _) [Category C]  [HasFiniteCoproducts C] -/ [HasPullbackOfRightMono C] : Prop :=
   ∀ {α : Type} [Fintype α] {X : C} {Z : α → C} (π : (a : α) → Z a ⟶ X)
   {Y : C} (f : Y ⟶ X) [∀ a : α, HasPullback f (π a)] (_ : IsIso (Sigma.desc π)),
      IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _))
 
 
-@[reducible]
-def EverythingIsProjective (C : Type _) [Category C] : Prop :=
+-- -- @[reducible]
+def EverythingIsProjective /- (C : Type _) [Category C]  -/: Prop :=
   ∀ X : C, Projective X
 
-@[reducible]
-def IsMono_ι (C : Type (u+1)) [Category C] [HasFiniteCoproducts C] : Prop :=
-  ∀ (α : Type u) [Fintype α] (Z : α → C) (a : α), Mono (Sigma.ι Z a)
+-- -- -- @[reducible]
+-- def IsMono_ι /- (C : Type (u+1)) [Category C]  -/[HasFiniteCoproducts C] : Prop :=
+--   ∀ {α : Type} [Fintype α] {Z : α → C} {a : α}, Mono (Sigma.ι Z a)
 
+-- lemma MonoOfIsMono_ι [HasFiniteCoproducts C] (h_mono_ι : IsMono_ι C) {α : Type} [Fintype α]
+--   (Z : α → C) (a : α) : Mono (Sigma.ι Z a) := sorry
 
-def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullbackOfRightMono C]
-    (h_proj : EverythingIsProjective C) (h_mono_ι : IsMono_ι C) (h_ext : Extensivity C) : Coverage C where
+def dagurCoverage /- (C : Type _) [Category C] -/ [HasFiniteCoproducts C] [HasPullbackOfRightMono C]
+    (h_proj : EverythingIsProjective C) /- (h_mono_ι : IsMono_ι C) -/ (h_ext : Extensivity C) 
+    : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
-    · have : ∀ a : α, Mono (π a)
-      · intro a
-        have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
-        · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
-        rw [this]
-        have inj_one : Mono (Sigma.ι Z a)
-        · infer_instance
-        have inj_two : Mono (Sigma.desc π)
-        · infer_instance
-        apply mono_comp
-      set Z' : α → C := fun a ↦ pullback f (π a) with hZ'
+    -- · have foo : ∀ a : α, Mono (π a)
+    --   · intro a
+    --     have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
+    --     · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
+    --     rw [this]
+    --     have inj_one : Mono (Sigma.ι Z a)
+    --     · exact h_mono_ι
+    --     --exact @MonoOfIsMono_ι C _ _ h_mono_ι α hα Z a
+    --     have inj_two : Mono (Sigma.desc π)
+    --     · infer_instance
+    --     apply mono_comp
+    · let Z' : α → C := fun a ↦ pullback f (π a)
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
       set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
       use S'
@@ -108,8 +112,7 @@ def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullback
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
-          apply h_ext
-          exact h_iso
+          exact h_ext (fun x => π x) f h_iso
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
         rcases hg with ⟨a⟩
@@ -121,23 +124,22 @@ def dagurCoverage (C : Type _) [Category C] [HasFiniteCoproducts C] [HasPullback
       constructor
       · apply Or.intro_right
         rw [DagurSieveSingle]
-        simp only [Set.mem_setOf_eq]--comment
         refine ⟨Y, 𝟙 _, by {rw [Presieve.ofArrows_pUnit (𝟙 Y)]}, instEpiIdToCategoryStruct Y⟩
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
-        rcases hg with ⟨a⟩
+        cases hg
         simp only [Category.id_comp]
-        sorry
-        -- have proj : Projective (toCompHaus.obj X) := inferInstanceAs (Projective X.compHaus)
-      -- have : Epi (toCompHaus.map f) := by
-      --   rw [CompHaus.epi_iff_surjective]
-      --   change Function.Surjective f
-      --   rwa [← ExtrDisc.epi_iff_surjective]
-      -- set g := toCompHaus.preimage <| Projective.factorThru (𝟙 _) (toCompHaus.map f) with hg
-      -- have hfg : g ≫ f = 𝟙 _ := by
-      --   refine' toCompHaus.map_injective _
-      --   rw [map_comp, hg, image_preimage, Projective.factorThru_comp, CategoryTheory.Functor.map_id]
-
+        use Z
+        use @Projective.factorThru C _ Y X Z ?_ f π h_epi
+        exact h_proj Y
+        use π
+        constructor
+        · cases hπ
+          rw [Presieve.ofArrows_pUnit]
+          exact Presieve.singleton.mk
+        · have : Projective Y
+          exact h_proj Y
+          exact @Projective.factorThru_comp C _ Y X Z this f π h_epi
 
 variable [HasPullbackOfRightMono C] {C}
 
