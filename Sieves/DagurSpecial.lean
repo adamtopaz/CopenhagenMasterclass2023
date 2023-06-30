@@ -17,7 +17,16 @@ def DagurSieveSingle (B : ExtrDisc) := { S | ∃ (X : ExtrDisc) (f : X ⟶ B),
     S = Presieve.ofArrows (fun (_ : Unit) ↦ X) (fun (_ : Unit) ↦ f) ∧ Epi f }
 
 lemma clopen_extremallyDisconnected {X : ExtrDisc} {U : Set X} (hU : IsClopen U) :
-  ExtremallyDisconnected U := sorry
+    ExtremallyDisconnected U := by
+  constructor
+  intro V hV
+  have hV' : IsOpen (Subtype.val '' V) := hU.1.openEmbedding_subtype_val.isOpenMap V hV
+  have := ExtremallyDisconnected.open_closure _ hV'
+  rw [hU.2.closedEmbedding_subtype_val.closure_image_eq V] at this 
+  suffices hhU : closure V = Subtype.val ⁻¹' (Subtype.val '' (closure V)) 
+  · rw [hhU]
+    exact isOpen_induced this 
+  exact ((closure V).preimage_image_eq Subtype.coe_injective).symm 
 
 def OpenEmbeddingConePt {X Y Z : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i) : 
     ExtrDisc where
