@@ -207,8 +207,6 @@ def OpenEmbeddingLimitCone {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z}
     (fun _ => pullback.lift_snd _ _ _ _ _)
     (fun _ _ hm => pullback.hom_ext _ _ _ _ (hm WalkingCospan.left))
 
-end ExtrDisc
-
 lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
     (hi : OpenEmbedding i) : HasPullback f i := by
   constructor
@@ -219,7 +217,7 @@ lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z
 lemma ExtensivityExtrDisc {α : Type} {Y : ExtrDisc} [Fintype α]
    {Z : α → ExtrDisc}  {π : (a : α) → Z a ⟶ X} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)) 
   [∀ a : α, HasPullback f (π a)] :
-  IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
+  IsIso (Sigma.desc ((fun _ ↦ Limits.pullback.fst) : (a : α) → pullback f (π a) ⟶ _)) := sorry
 
 
 def dagurCoverageExtrDisc : Coverage ExtrDisc where
@@ -234,7 +232,7 @@ def dagurCoverageExtrDisc : Coverage ExtrDisc where
         sorry
       haveI hpb : ∀ a : α, HasPullback f (π a) := fun a ↦ HasPullbackOpenEmbedding f (this a)  
       set Z' : α → ExtrDisc := fun a ↦ pullback f (π a) with hZ'
-      set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
+      set π' : (a : α) → Z' a ⟶ Y := fun a ↦ Limits.pullback.fst with hπ'
       set S' := @Presieve.ofArrows ExtrDisc _ _ α Z' π' with hS'
       use S'
       constructor
@@ -250,7 +248,7 @@ def dagurCoverageExtrDisc : Coverage ExtrDisc where
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
         rcases hg with ⟨a⟩
-        refine ⟨Z a, pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
+        refine ⟨Z a, Limits.pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
         rw [hS]
         refine Presieve.ofArrows.mk a
     · set S' := Presieve.singleton (𝟙 Y) with hS'
@@ -266,6 +264,26 @@ def dagurCoverageExtrDisc : Coverage ExtrDisc where
         simp only [Category.id_comp]
         sorry
 
+def ExtrDisc.homeoOfIso {X Y : ExtrDisc} (f : X ≅ Y) : X ≃ₜ Y where
+  toFun := f.hom
+  invFun := f.inv
+  left_inv := by
+    intro x 
+    have : f.inv (f.hom x) = (f.hom ≫ f.inv) x
+    · rfl 
+    rw [this]
+    simp only [Iso.hom_inv_id]
+    rfl
+  right_inv := by
+    intro x 
+    have : f.hom (f.inv x) = (f.inv ≫ f.hom) x
+    · rfl 
+    rw [this]
+    simp only [Iso.inv_hom_id]
+    rfl
+  continuous_toFun := f.hom.continuous
+  continuous_invFun := f.inv.continuous
+
 lemma isPullbackSieve_DagurSieveIso {X : ExtrDisc} {S : Presieve X}
     (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
   intro _ _ _ _ g hg 
@@ -275,9 +293,8 @@ lemma isPullbackSieve_DagurSieveIso {X : ExtrDisc} {S : Presieve X}
   rw [hS.1] at hg 
   induction hg with 
   | mk i => 
-    · have h₁ : OpenEmbedding (Sigma.desc π)
-      · sorry
-        -- let h := (homeoOfIso (@asIso _ _ _ _ (Sigma.desc π) hS.2))
+    · have h₁ : OpenEmbedding (Sigma.desc π) :=
+        (ExtrDisc.homeoOfIso (@asIso _ _ _ _ (Sigma.desc π) hS.2)).openEmbedding
       have h₂ : OpenEmbedding (Sigma.ι Xmap i)
       · constructor
         · sorry
@@ -294,6 +311,7 @@ lemma isSheafForDagurSieveIso {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurS
   refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
   sorry
 
+end ExtrDisc
 end CategoryTheory
 
 end Coverage
