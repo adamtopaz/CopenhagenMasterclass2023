@@ -180,39 +180,32 @@ lemma pullback.lift_snd {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : O
   congr 
   ext z
   simp only [Function.comp_apply]
-  sorry
-  -- have := congr_fun (FunLike.ext'_iff.mp w.symm) z 
-  -- obtain ⟨y, hy⟩ := x.prop 
-  -- rw [← hy] 
-  -- congr 
-  -- suffices : y = (Homeomorph.ofEmbedding i hi.toEmbedding).symm 
-  --   (⟨f x.val, by rw [← hy] ; simp⟩)
-  -- · rw [this]
-  --   rfl
-  -- apply_fun (Homeomorph.ofEmbedding i hi.toEmbedding)
-  -- simp only [Homeomorph.apply_symm_apply]
-  -- dsimp [Homeomorph.ofEmbedding]
-  -- simp_rw [hy]
-  -- have := (OpenEmbeddingCone f hi).π.naturality (𝟙 WalkingCospan.right)
+  have := congr_fun (FunLike.ext'_iff.mp w.symm) z 
+  have h : i (b z) = f (a z) := this
+  suffices : b z = (Homeomorph.ofEmbedding i hi.toEmbedding).symm 
+    (⟨f (a z), by rw [← h] ; simp⟩) 
+  · exact this.symm
+  apply_fun (Homeomorph.ofEmbedding i hi.toEmbedding)
+  simp only [Homeomorph.apply_symm_apply]
+  dsimp [Homeomorph.ofEmbedding]
+  simp_rw [h]
 
--- lemma pullback.hom_ext {Z : CompHaus.{u}} (a b : Z ⟶ pullback f g)
---     (hfst : a ≫ pullback.fst f g = b ≫ pullback.fst f g)
---     (hsnd : a ≫ pullback.snd f g = b ≫ pullback.snd f g) : a = b := by
---   ext z
---   apply_fun (fun q => q z) at hfst hsnd
---   apply Subtype.ext
---   apply Prod.ext
---   · exact hfst
---   · exact hsnd
+lemma pullback.hom_ext {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i)
+    (a : W ⟶ (OpenEmbeddingCone f hi).pt) (b : W ⟶ (OpenEmbeddingCone f hi).pt)
+    (hfst : a ≫ pullback.fst f hi = b ≫ pullback.fst f hi) : a = b := by
+  ext z
+  apply_fun (fun q => q z) at hfst--  hsnd
+  apply Subtype.ext
+  exact hfst
 
 
 def OpenEmbeddingLimitCone {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
-    (hi : OpenEmbedding i) : IsLimit (OpenEmbeddingCone f hi) := sorry
-  -- Limits.PullbackCone.isLimitAux _
-  --   (fun s => pullback.lift f g s.fst s.snd s.condition)
-  --   (fun _ => pullback.lift_fst _ _ _ _ _)
-  --   (fun _ => pullback.lift_snd _ _ _ _ _)
-  --   (fun _ _ hm => pullback.hom_ext _ _ _ _ (hm .left) (hm .right))
+    (hi : OpenEmbedding i) : IsLimit (OpenEmbeddingCone f hi) :=
+  Limits.PullbackCone.isLimitAux _
+    (fun s => pullback.lift f hi s.fst s.snd s.condition)
+    (fun _ => pullback.lift_fst _ _ _ _ _)
+    (fun _ => pullback.lift_snd _ _ _ _ _)
+    (fun _ _ hm => pullback.hom_ext _ _ _ _ (hm WalkingCospan.left))
 
 end ExtrDisc
 
