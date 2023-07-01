@@ -273,6 +273,7 @@ theorem fromExcplictComptoExplicit :
     (fromExplicit f hi ≫ toExplicit f hi) = 𝟙 _ :=
   pullback.hom_ext f hi _ _ (by simp [toExplicit, fromExplicit])
 
+@[simps]
 noncomputable
 def fromExplicitIso : (OpenEmbeddingCone f hi).pt ≅ pullback f i where
   hom := fromExplicit f hi
