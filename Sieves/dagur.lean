@@ -11,16 +11,16 @@ open CategoryTheory Opposite CategoryTheory.Limits Functor
 
 variable (C : Type u) [Category.{v, u} C] 
 
-class HasPullbackOfRightMono : Prop where
-    HasPullback_of_mono : ∀ {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C}
+class HasPullbackOfIsIsodesc : Prop where
+    HasPullback : ∀ {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C}
     (i : (a : α) → Y a ⟶ Z) [Fintype α] [HasCoproduct Y] [IsIso (Sigma.desc i)] (a : α),
     HasPullback f (i a)
 
-instance [HasPullbackOfRightMono C] {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C} 
+instance [HasPullbackOfIsIsodesc C] {X Z : C} {α : Type _} (f : X ⟶ Z) {Y : (a : α) → C} 
     (i : (a : α) → Y a ⟶ Z) [Fintype α] [HasCoproduct Y] [IsIso (Sigma.desc i)] (a : α) :  
-    HasPullback f (i a) := HasPullbackOfRightMono.HasPullback_of_mono f i a
+    HasPullback f (i a) := HasPullbackOfIsIsodesc.HasPullback f i a
 
-instance [HasPullbacks C] : HasPullbackOfRightMono C := ⟨fun _ _ _ => inferInstance⟩
+instance [HasPullbacks C] : HasPullbackOfIsIsodesc C := ⟨fun _ _ _ => inferInstance⟩
 
 end HasPullbackOfRightMono
 
@@ -67,9 +67,9 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 variable [HasFiniteCoproducts C] (C)
 
 -- -- @[reducible]
-def Extensivity /- (C : Type _) [Category C]  [HasFiniteCoproducts C] -/ [HasPullbackOfRightMono C] : Prop :=
+def Extensivity /- (C : Type _) [Category C]  [HasFiniteCoproducts C] -/ [HasPullbackOfIsIsodesc C] : Prop :=
   ∀ {α : Type} [Fintype α] {X : C} {Z : α → C} (π : (a : α) → Z a ⟶ X)
-  {Y : C} (f : Y ⟶ X) [∀ a : α, HasPullback f (π a)] (_ : IsIso (Sigma.desc π)),
+  {Y : C} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)),
      IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _))
 
 
@@ -84,7 +84,7 @@ def EverythingIsProjective /- (C : Type _) [Category C]  -/: Prop :=
 -- lemma MonoOfIsMono_ι [HasFiniteCoproducts C] (h_mono_ι : IsMono_ι C) {α : Type} [Fintype α]
 --   (Z : α → C) (a : α) : Mono (Sigma.ι Z a) := sorry
 
-def dagurCoverage /- (C : Type _) [Category C] -/ [HasFiniteCoproducts C] [HasPullbackOfRightMono C]
+def dagurCoverage /- (C : Type _) [Category C] -/ [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
     (h_proj : EverythingIsProjective C) /- (h_mono_ι : IsMono_ι C) -/ (h_ext : Extensivity C) 
     : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
@@ -141,7 +141,7 @@ def dagurCoverage /- (C : Type _) [Category C] -/ [HasFiniteCoproducts C] [HasPu
           exact h_proj Y
           exact @Projective.factorThru_comp C _ Y X Z this f π h_epi
 
-variable [HasPullbackOfRightMono C] {C}
+variable [HasPullbackOfIsIsodesc C] {C}
 
 lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
   (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := sorry
