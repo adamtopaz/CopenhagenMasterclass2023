@@ -128,10 +128,12 @@ section Ab
 
 open MonoidalCategory
 
+/-- `Ab` is the category of `ℤ`-modules -/
 lemma moduleCat_int_equiv_ab : ModuleCat.{u} (ULift.{u} ℤ) ≌ Ab.{u} := sorry -- TODO: data
 
 /-- The monoidal structure on `Ab` is induced by the one on `ℤ`-modules. -/
 instance : MonoidalCategory Ab := Monoidal.transport moduleCat_int_equiv_ab
+#synth MonoidalCategory <| ModuleCat.{u} (ULift.{u} ℤ)
 
 /-- The symmetric monoidal structure on `Ab` is induced by the one on `ℤ`-modules. -/
 instance : SymmetricCategory Ab := Symmetric.transport moduleCat_int_equiv_ab
@@ -166,8 +168,9 @@ section Condensed
 
 open MonoidalCategory GrothendieckTopology Limits
 
--- TODO: Add this instance!
-variable [PreservesLimits (forget Ab.{u+1})]
+/- Move Limits across the iso above. This should be straight forward -/
+#synth PreservesLimits <| forget (ModuleCat.{u} (ULift.{u} ℤ))
+instance : PreservesLimits (forget Ab.{u+1}) := sorry
 
 /-
 Comment: we want `Category.{u, u+1} C` and `Ab.{u+1}`.
@@ -177,14 +180,14 @@ TODO: @Sina Is this correct?
 -/
 variable {C : Type (u+1)} [c : Category.{u} C] (J : GrothendieckTopology C)
 
-variable (G H : Sheaf J Ab.{u+1})
-
+/-- `S(SF ⊗ G) ≅ S(F ⊗ G)` where `S` is the sheafification. -/
 def helper_1 (F G : Cᵒᵖ ⥤ Ab.{u+1}) :
     (presheafToSheaf J Ab).obj (tensorObj (sheafify J F) G) ≅
     (presheafToSheaf J Ab).obj (tensorObj F G) :=
   sorry -- TODO: data
 
 
+/-- `S(F ⊗ SG) ≅ S(F ⊗ G)` where `S` is the sheafification. -/
 def helper_2 (F G : Cᵒᵖ ⥤ Ab.{u+1}) :
     (presheafToSheaf J Ab).obj (tensorObj F (sheafify J G)) ≅
     (presheafToSheaf J Ab).obj (tensorObj F G) :=
