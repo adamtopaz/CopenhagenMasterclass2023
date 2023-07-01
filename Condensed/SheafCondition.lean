@@ -44,6 +44,7 @@ def EqualizerCondition (P : CompHaus.{u}ᵒᵖ ⥤ C) : Prop :=
   ∀ {X Y : CompHaus.{u}} (f : X ⟶ Y) [Epi f],
   Nonempty (IsLimit <| equalizerFork P f) 
 
+/-- NOTE: A different approach in terms of coverages is underway (DON't SE). -/
 theorem isSheaf_iff_conditions (P : CompHaus.{u}ᵒᵖ ⥤ C) :
     Presheaf.IsSheaf (coherentTopology CompHaus) P ↔ 
     ProductCondition P ∧ EqualizerCondition P := by
