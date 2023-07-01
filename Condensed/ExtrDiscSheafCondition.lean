@@ -31,32 +31,44 @@ theorem isSheafColimit (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A)
   intro j
   apply Sheaf.cond
 
-@[simps]
-noncomputable
-def colimitCocone 
+lemma isSheafOfIsColimit 
     (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A) 
-    [HasColimit (F ⋙ sheafToPresheaf _ _)] :
-    Cocone F where
-  pt := {
-    val := colimit (F ⋙ sheafToPresheaf _ _)
-    cond := isSheafColimit _ }
-  ι := {
-    app := fun j => .mk <| colimit.ι (F ⋙ sheafToPresheaf _ _) j
-    naturality := fun i j f => Sheaf.Hom.ext _ _ <| 
-      by simpa using colimit.w (F ⋙ sheafToPresheaf _ _) _ }
+    (S : Cocone (F ⋙ sheafToPresheaf _ _))
+    (hS : IsColimit S) : 
+    Presheaf.IsSheaf (coherentTopology _) S.pt := by 
+  have : HasColimit (F ⋙ sheafToPresheaf _ _) := ⟨S,hS⟩ 
+  let e : S.pt ≅ colimit (F ⋙ sheafToPresheaf _ _) := 
+    hS.coconePointUniqueUpToIso (colimit.isColimit _)
+  rw [Presheaf.isSheaf_of_iso_iff e]
+  apply isSheafColimit
 
-noncomputable
-def isColimitColimitCocone
+def isColimitMap
     (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A) 
-    [HasColimit (F ⋙ sheafToPresheaf _ _)] :
-    IsColimit (colimitCocone F) where
-  desc := fun S => .mk <| 
-    colimit.desc (F := F ⋙ sheafToPresheaf _ _) ((sheafToPresheaf _ _).mapCocone S)
-  uniq S m hm := by
-    ext1 
-    apply colimit.hom_ext
-    intro j
-    simpa using congr_arg Sheaf.Hom.val (hm j)
+    (S : Cocone F)
+    (hS : IsColimit (sheafToPresheaf _ _ |>.mapCocone S)) :
+    IsColimit S where
+  desc E := .mk <| hS.desc <| sheafToPresheaf _ _ |>.mapCocone E
+  fac _ _ := Sheaf.Hom.ext _ _ <| hS.fac _ _
+  uniq E _ hm := Sheaf.Hom.ext _ _ <| hS.uniq 
+    (s := sheafToPresheaf _ _ |>.mapCocone E) _ 
+    fun j => congr_arg Sheaf.Hom.val <| hm j
+
+instance (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A) :
+    CreatesColimit F (sheafToPresheaf (coherentTopology ExtrDisc.{u}) A) where
+  reflects hS := isColimitMap _ _ <| hS
+  lifts S hS := {
+    liftedCocone := {
+      pt := ⟨S.pt, isSheafOfIsColimit _ _ hS⟩ 
+      ι := {
+        app := fun _ => .mk <| S.ι.app _
+        naturality := fun _ _ _ => Sheaf.Hom.ext _ _ <| S.ι.naturality _ } }
+    validLift := Iso.refl _ }
+
+instance : CreatesColimits
+    (sheafToPresheaf (coherentTopology ExtrDisc.{u}) A) := by
+  constructor ; unfold autoParam ; intro J _ 
+  constructor ; unfold autoParam ; intro K
+  infer_instance
 
 end Sheaf
 
