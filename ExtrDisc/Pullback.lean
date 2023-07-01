@@ -187,6 +187,10 @@ def pullback.lift {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmb
     apply Continuous.subtype_mk 
     exact a.continuous
 
+lemma pullback.condition {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
+    (hi : OpenEmbedding i) : pullback.fst f hi ≫ f = pullback.snd f hi ≫ i :=
+  PullbackCone.condition (OpenEmbeddingCone f hi)
+
 @[reassoc (attr := simp)]
 lemma pullback.lift_fst {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : OpenEmbedding i)
     (a : W ⟶ X) (b : W ⟶ Y) (w : a ≫ f = b ≫ i) : 
@@ -218,7 +222,6 @@ lemma pullback.hom_ext {X Y Z W : ExtrDisc} (f : X ⟶ Z) {i : Y ⟶ Z} (hi : Op
   apply Subtype.ext
   exact hfst
 
-
 def OpenEmbeddingLimitCone {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z} 
     (hi : OpenEmbedding i) : IsLimit (OpenEmbeddingCone f hi) :=
   Limits.PullbackCone.isLimitAux _
@@ -244,6 +247,33 @@ instance : HasPullbackOfIsIsodesc ExtrDisc := by
   erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
   simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
   assumption
+
+section Isos
+
+variable {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z}  (hi : OpenEmbedding i) [HasPullback f i]
+
+noncomputable
+def toExplicit : pullback f i ⟶ (OpenEmbeddingCone f hi).pt :=
+  pullback.lift f hi Limits.pullback.fst Limits.pullback.snd Limits.pullback.condition
+
+noncomputable
+def fromExplicit : (OpenEmbeddingCone f hi).pt ⟶ pullback f i :=
+  Limits.pullback.lift (pullback.fst _ hi) (pullback.snd _ hi) (pullback.condition f hi)
+
+@[simp]
+theorem toExplicitCompFromExcplict :
+    (toExplicit f hi ≫ fromExplicit f hi) = 𝟙 _ := by
+  refine' Limits.pullback.hom_ext (k := (toExplicit f hi ≫ fromExplicit f hi)) _ _
+  · simp [toExplicit, fromExplicit]
+  · rw [Category.id_comp, Category.assoc, fromExplicit, Limits.pullback.lift_snd,
+      toExplicit, pullback.lift_snd]
+    
+@[simp]
+theorem FromExcplictComptoExplicit :
+    (fromExplicit f hi ≫ toExplicit f hi) = 𝟙 _ :=
+  pullback.hom_ext f hi _ _ (by simp [toExplicit, fromExplicit])
+
+end Isos
 
 end ExtrDisc
 

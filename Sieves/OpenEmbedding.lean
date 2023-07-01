@@ -20,13 +20,13 @@ def fromFiniteCoproduct : finiteCoproduct Z ⟶ ∐ Z :=
   
 @[simp]
 theorem toFiniteCoproductCompFromFiniteCoproduct :
-  (toFiniteCoproduct Z ≫ fromFiniteCoproduct Z) = 𝟙 _ := by
+    (toFiniteCoproduct Z ≫ fromFiniteCoproduct Z) = 𝟙 _ := by
   ext
   simp [toFiniteCoproduct, fromFiniteCoproduct]
 
 @[simp]
 theorem FromFiniteCoproductComptToFiniteCoproduct :
-  (fromFiniteCoproduct Z ≫ toFiniteCoproduct Z) = 𝟙 _ := by
+    (fromFiniteCoproduct Z ≫ toFiniteCoproduct Z) = 𝟙 _ := by
   refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
   simp [toFiniteCoproduct, fromFiniteCoproduct]
 
