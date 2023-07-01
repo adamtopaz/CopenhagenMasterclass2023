@@ -43,11 +43,14 @@ lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := @fun α _ X Z i Y f H => by
   suffices IsIso (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
     · apply IsIso.of_isIso_comp_left Ψ.hom
   let φ := FromFiniteCoproductIso (fun a => (OpenEmbeddingCone f (hOpen a)).pt)
-  suffices IsIso (φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst)) by
+  suffices IsIso <| φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
     · apply IsIso.of_isIso_comp_left φ.hom
-  
-  sorry
-
+  suffices IsIso <| toCompHaus.map (φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst)) by
+   ·  apply isIso_of_fully_faithful toCompHaus
+  refine' CompHaus.isIso_of_bijective _ ⟨fun ⟨a₁, ⟨p₁, ⟨q₁, hq₁⟩⟩⟩ ⟨a₂, ⟨q₂, hq₂⟩⟩ hab => _, _⟩
+  · sorry
+  · sorry
+ 
 lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := by
   refine' fun P => ⟨(@fun X Y f e he => _)⟩
   have proj : Projective (toCompHaus.obj P) := inferInstanceAs (Projective P.compHaus)
