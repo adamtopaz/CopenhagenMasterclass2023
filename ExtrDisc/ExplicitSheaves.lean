@@ -29,7 +29,24 @@ instance : HasPullbackOfIsIsodesc ExtrDisc := by
   assumption 
 
 
-lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := sorry
+lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := @fun α _ X Z i Y f H => by
+  have hOpen : ∀ a, OpenEmbedding (i a) := by --This is the same code as above
+    intro a
+    have h₁ : OpenEmbedding (Sigma.desc i) :=
+    (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
+    have h₂ : OpenEmbedding (Sigma.ι Z a) := DagurOpenEmbedding _ _
+    have := OpenEmbedding.comp h₁ h₂
+    erw [← CategoryTheory.coe_comp (Sigma.ι Z a) (Sigma.desc i)] at this 
+    simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
+    assumption
+  let Ψ := Sigma.mapIso (fun a => fromExplicitIso f (hOpen a))
+  suffices IsIso (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
+    · apply IsIso.of_isIso_comp_left Ψ.hom
+  let φ := FromFiniteCoproductIso (fun a => (OpenEmbeddingCone f (hOpen a)).pt)
+  suffices IsIso (φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst)) by
+    · apply IsIso.of_isIso_comp_left φ.hom
+  
+  sorry
 
 lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := by
   refine' fun P => ⟨(@fun X Y f e he => _)⟩
