@@ -283,6 +283,39 @@ def fromExplicitIso : (OpenEmbeddingCone f hi).pt ≅ pullback f i where
 
 end Isos
 
+section compatibility
+
+variable {α : Type} [Fintype α] {Z : α → ExtrDisc.{u}} {X : ExtrDisc.{u}} {i : (a : α) → Z a ⟶ X}
+variable (hOpen : ∀ a, OpenEmbedding (i a)) (f : Y ⟶ X) --[∀ a, HasPullback f (i a)]
+
+
+noncomputable
+def η :
+    have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+    ∐ (fun a => pullback f (i a)) ⟶ ∐ Z :=
+  have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+  Sigma.desc (fun a => Limits.pullback.snd ≫ Sigma.ι Z a)
+
+noncomputable
+def ζ : finiteCoproduct (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶ finiteCoproduct Z :=
+  finiteCoproduct.desc _ (fun a => pullback.snd f (hOpen a) ≫finiteCoproduct.ι Z a )
+
+noncomputable
+def δ : finiteCoproduct (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶
+    ∐ (fun a => (OpenEmbeddingCone f (hOpen a)).pt) := fromFiniteCoproduct _
+
+noncomputable
+def θ :
+    have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+    ∐ (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶ 
+    ∐ (fun a => pullback f (i a)) :=
+  have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+  Sigma.desc (fun a => fromExplicit f (hOpen a) ≫ Sigma.ι (fun b => pullback f (i b)) a)
+
+theorem compatibility : δ hOpen f ≫ θ hOpen f ≫ η hOpen f = ζ hOpen f ≫ fromFiniteCoproduct Z := sorry
+  
+end compatibility
+
 end ExtrDisc
 
 end CategoryTheory

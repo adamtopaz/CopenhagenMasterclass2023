@@ -209,9 +209,8 @@ lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
   · exact isSheafForDagurSieveIso hSIso hF
   · exact isSheafForDagurSieveSingle hSSingle F
 
-lemma final (A : Type (u+2)) [Category.{u+1} A] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
+theorem final (A : Type (u+2)) [Category.{u+1} A] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
   exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
     ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
---  exacts [ExtrDisc.EverythingProj_ExtrDisc, ExtrDisc.Extensivity_ExtrDisc]
