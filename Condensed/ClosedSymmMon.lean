@@ -7,12 +7,15 @@ import Mathlib.Algebra.Category.ModuleCat.Monoidal.Closed
 import Mathlib.CategoryTheory.Monoidal.Transport
 import Mathlib
 
--- import Mathlib.Tactic.Widget.CommDiag
--- import ProofWidgets.Component.GoalTypePanel
--- -- with_panel_widgets [ProofWidgets.GoalTypePanel]
+-- These imports let you display commutative diagrams.
+--   import Mathlib.Tactic.Widget.CommDiag
+--   import ProofWidgets.Component.GoalTypePanel
 
--- TODO
-set_option autoImplicit false
+-- Just put the following inside any proof
+-- by
+--   with_panel_widgets [ProofWidgets.GoalTypePanel]
+--   · tactic block goes here
+
 
 noncomputable section
 
@@ -27,17 +30,20 @@ We shall use Day's reflection principle:
 https://ncatlab.org/nlab/show/Day%27s+reflection+theorem
 -/
 
-/-! TODO: This section, in particular the section `MonoidalClosed` herein,
+namespace CategoryTheory.Monoidal
+
+/-! Apparently we dont have the result in the library that the Functor category
+is closed monoidal if the target is. So we prove it in this section.
+
+TODO: This section, in particular the section `MonoidalClosed` herein,
 should go at the bottom of
 `Mathlib/CategoryTheory/Monoidal/FunctorCategory.lean` -/
-namespace CategoryTheory.Monoidal
+section MonoidalClosed
 
 universe u₁ u₂ v₁ v₂
 
 variable {C : Type u₁} [Category.{v₁} C]
 variable {D : Type u₂} [Category.{v₂} D] [MonoidalCategory.{v₂} D]
-
-section MonoidalClosed
 
 open CategoryTheory.MonoidalClosed
 
@@ -52,10 +58,13 @@ instance functorCategoryMonoidalClosed : MonoidalClosed (C ⥤ D) where
     sorry
 
 end MonoidalClosed
-end CategoryTheory.Monoidal
 
 
-section Ab.Monoidal
+
+/-! In this section we transport all variations of monoidal structures along an
+isomorphism. The library only knows `Monoidal.transport` so far , which transports
+the monoidal structure itself. -/
+section transport
 
 open MonoidalCategory
 
@@ -102,94 +111,157 @@ def MonoidalClosed.transport [MonoidalClosed C] (e : C ≌ D) :
   { closed := sorry
   }
 
-lemma moduleCat_int_equiv_ab : ModuleCat.{u} (ULift.{u} ℤ) ≌ Ab.{u} := sorry
+end transport
 
-/-- Transport relevant instances from `ℤ`-Modules to `Ab`. -/
 
-instance : MonoidalCategory Ab.{u} := Monoidal.transport moduleCat_int_equiv_ab
-instance : SymmetricCategory Ab.{u} := Symmetric.transport moduleCat_int_equiv_ab
-instance : MonoidalClosed Ab.{u} := MonoidalClosed.transport moduleCat_int_equiv_ab
+
+/-! In this section we proof that `Ab` is isomorphic to the cateogry of `ℤ`-modules
+and transport the closed symmetric monoidal structure over from there. -/
+section Ab
+
+open MonoidalCategory
+
+lemma moduleCat_int_equiv_ab : ModuleCat.{u} (ULift.{u} ℤ) ≌ Ab.{u} := sorry -- TODO: data
+
+/-- The monoidal structure on `Ab` is induced by the one on `ℤ`-modules. -/
+instance : MonoidalCategory Ab := Monoidal.transport moduleCat_int_equiv_ab
+
+/-- The symmetric monoidal structure on `Ab` is induced by the one on `ℤ`-modules. -/
+instance : SymmetricCategory Ab := Symmetric.transport moduleCat_int_equiv_ab
+
+/-- The closed monoidal structure on `Ab` is induced by the one on `ℤ`-modules. -/
+instance : MonoidalClosed Ab := MonoidalClosed.transport moduleCat_int_equiv_ab
+
+
+/- We get the closed symmetric monoidal structure for presheaves `(Cᵒᵖ ⥤ Ab.{u})` for free -/
+
+variable {C : Type _} [Category C] [MonoidalCategory C]
 
 /-
 The category of presheaves underlying condensed abelian groups
 is symmetric monoidal.
 -/
-example : SymmetricCategory (Cᵒᵖ ⥤ Ab.{u}) := inferInstance
+example : SymmetricCategory (Cᵒᵖ ⥤ Ab) := inferInstance
 
-#synth MonoidalCategory (Cᵒᵖ ⥤ Ab.{u})
-#synth MonoidalClosed (Cᵒᵖ ⥤ Ab.{u})
+#synth MonoidalCategory (Cᵒᵖ ⥤ Ab)
+#synth MonoidalClosed (Cᵒᵖ ⥤ Ab)
+
+end Ab
 
 
-end Ab.Monoidal
+
+/-! In this section we construct the closed symmetric monoidal structure on
+sheaves `(Cᵒᵖ ⥤ Ab)`, which are exactly condensed abelian groups.
+
+We work with sheaves here because we hope to generalise the results to a more generic
+target than `Ab`. -/
+section Condensed
+
+open MonoidalCategory GrothendieckTopology Limits
+
+-- TODO: Add this instance!
+variable [PreservesLimits (forget Ab.{u+1})]
+
+/-
+Comment: we want `Category.{u, u+1} C` and `Ab.{u+1}`.
+The objects of `C`, the objects of `Ab`, and the hom-sets of `Ab` are all
+proper classes while the hom-set of `C` should be a set.
+TODO: @Sina Is this correct?
+-/
+variable {C : Type (u+1)} [c : Category.{u} C] (J : GrothendieckTopology C)
+
+/-- Sheaves admit a monoidal structure given by `X ⊗ Y := S(X ⊗ Y)` where `S` is the
+"sheafification" and the tensor product is taken of underlying presheaves. -/
+instance Sheaf.monodialCategory :
+    MonoidalCategory <| Sheaf J Ab.{u+1} where
+  /- The monoidal structure is given by sheafification to the one gor presheaves. -/
+  tensorObj F G := (presheafToSheaf J Ab.{u+1}).obj <| tensorObj F.val G.val
+  tensorHom f g := (presheafToSheaf J Ab.{u+1}).map <| tensorHom f.val g.val
+  tensor_id := by aesop_cat
+  tensor_comp := by aesop_cat
+  tensorUnit' := (presheafToSheaf J Ab.{u+1}).obj tensorUnit'
+  associator F G H := sorry -- TODO: data
+  associator_naturality := sorry
+  leftUnitor F := sorry -- TODO: data
+  leftUnitor_naturality := sorry
+  rightUnitor := sorry -- TODO: data
+  rightUnitor_naturality := sorry
+  pentagon := sorry
+  triangle := sorry
+
+open BraidedCategory
+
+/-- The braiding on sheaves is the sheafification of the braiding of presheaves -/
+instance : BraidedCategory <| Sheaf J Ab.{u+1} where
+  braiding F G := (presheafToSheaf J Ab.{u+1}).mapIso (braiding F.val G.val)
+  braiding_naturality := sorry
+  hexagon_forward := sorry
+  hexagon_reverse := sorry
+
+instance : SymmetricCategory <| Sheaf J Ab.{u+1} where
+  symmetry := sorry
+
+instance : MonoidalClosed <| Sheaf J Ab.{u+1} where
+  closed := sorry
+
+/-!
+Now for the closed symmetric monoidal structure on `Condensed Ab` it
+seems that lean wants us to unfold the definition of `Condensed`
+-/
+
+instance : MonoidalCategory <| Condensed.{u} Ab.{u+1} := by
+  dsimp [Condensed]
+  infer_instance
+
+instance : BraidedCategory <| Condensed.{u} Ab.{u+1} := by
+  dsimp [Condensed]
+  infer_instance
+
+instance : SymmetricCategory <| Condensed.{u} Ab.{u+1} := by
+  dsimp [Condensed]
+  infer_instance
+
+instance : MonoidalClosed <| Condensed.{u} Ab.{u+1} := by
+  dsimp [Condensed]
+  infer_instance
+
+/-! Checks that we have the closed symmetric monoidal structure on `CondensedAb` -/
+
+#synth MonoidalCategory (CondensedAb.{u})
+#synth BraidedCategory (CondensedAb.{u})
+#synth SymmetricCategory (CondensedAb.{u})
+#synth MonoidalClosed (CondensedAb.{u})
+
+end Condensed
+
+end CategoryTheory.Monoidal
 
 
--- #check Condensed.{u, u, u}
+
+/-! The following is a start on Day's reflection, but not sure if we need it now… -/
 
 -- section Day
-
+--
 -- variable {C D : Type u} [Category C] [Category D] [MonoidalCategory D]
-
+--
 -- #check MonoidalCategory
-
+--
 -- open List in
 -- /--
 -- (Day) Let R:C→D be a fully faithful functor with left adjoint L:D→C, and suppose given a symmetric monoidal closed structure on D with tensor ⊗ and internal hom [−,−]. Then for objects c of C and d,d′ of D, the following are equivalent:
-
+--
 --     u[d,Rc]:[d,Rc]→RL[d,Rc] is an isomorphism;
-
+--
 --     [u,1]:[RLd,Rc]→[d,Rc] is an isomorphism;
-
+--
 --     L(u⊗1):L(d⊗d′)→L(RLd⊗d′) is an isomorphism;
-
+--
 --     L(u⊗u):L(d⊗d′)→L(RLd⊗RLd′) is an isomorphism.
 -- -/
 -- theorem day_reflection (R : C ⥤ D) [Full R] [Faithful R] [IsRightAdjoint R] :
 --     TFAE [
 --       R.leftAdjoint.obj (u ⊗ 𝟙_)
 --     ] := by sorry
-
+--
 -- end Day
-
--- #check Condensed.{u} Ab.{u}
-
-namespace CondensedAb
-
-
--- namespace MonoidalCategory
-
--- /-- (implementation) tensor product of R-modules -/
--- def tensorObj (M N : Condensed Ab) : Condensed Ab :=
---   ModuleCat.of R (M ⊗[R] N)
--- #align Module.monoidal_category.tensor_obj ModuleCat.MonoidalCategory.tensorObj
-
-
--- end MonoidalCategory
-
-open MonoidalCategory
-
-instance monoidalCategory : MonoidalCategory (CondensedAb.{u}) := sorry
--- where
-  -- tensorObj F G := _
-  -- tensorHom f g := _
-  -- tensor_id X Y := _
-  -- tensor_comp := _
-  -- tensorUnit' := _
-  -- associator := _
-  -- associator_naturality := _
-  -- leftUnitor := _
-  -- leftUnitor_naturality := _
-  -- rightUnitor := _
-  -- rightUnitor_naturality := _
-  -- pentagon := _
-  -- triangle := _
-
-instance symmetricCategory : SymmetricCategory CondensedAb.{u} := sorry
-
-instance monodialClosed : MonoidalClosed CondensedAb.{u} := sorry
-
-end CondensedAb
-
-/-
-We don't have the closed symmetric monoidal structure on the category of Abelian groups, but only on R-modules for any ring R.
--/
 
