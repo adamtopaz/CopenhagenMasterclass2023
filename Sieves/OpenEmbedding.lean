@@ -30,6 +30,14 @@ theorem FromFiniteCoproductComptToFiniteCoproduct :
   refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
   simp [toFiniteCoproduct, fromFiniteCoproduct]
 
+theorem IsIsotoFiniteCoproduct :
+    IsIso (toFiniteCoproduct Z) :=
+  ⟨fromFiniteCoproduct Z, by simp, by simp⟩
+
+theorem IsIsofromFiniteCoproduct :
+    IsIso (fromFiniteCoproduct Z) :=
+  ⟨toFiniteCoproduct Z, by simp, by simp⟩
+
 @[simp]
 theorem Sigma.ιCompToFiniteCoproduct (a : α) :
     (Sigma.ι Z a) ≫ toFiniteCoproduct Z = finiteCoproduct.ι Z a := by
