@@ -8,8 +8,8 @@ import Mathlib.CategoryTheory.Monoidal.Transport
 import Mathlib
 
 -- These imports let you display commutative diagrams.
---   import Mathlib.Tactic.Widget.CommDiag
---   import ProofWidgets.Component.GoalTypePanel
+import Mathlib.Tactic.Widget.CommDiag
+import ProofWidgets.Component.GoalTypePanel
 
 -- Just put the following inside any proof
 -- by
@@ -170,6 +170,21 @@ TODO: @Sina Is this correct?
 -/
 variable {C : Type (u+1)} [c : Category.{u} C] (J : GrothendieckTopology C)
 
+variable (G H : Sheaf J Ab.{u+1})
+
+def helper_1 (F G : Cᵒᵖ ⥤ Ab.{u+1}) :
+    (presheafToSheaf J Ab).obj (tensorObj (sheafify J F) G) ≅
+    (presheafToSheaf J Ab).obj (tensorObj F G) :=
+  sorry -- TODO: data
+
+
+def helper_2 (F G : Cᵒᵖ ⥤ Ab.{u+1}) :
+    (presheafToSheaf J Ab).obj (tensorObj F (sheafify J G)) ≅
+    (presheafToSheaf J Ab).obj (tensorObj F G) :=
+  sorry -- TODO: data
+
+-- NOTE: Before proving any  sorrys in here one probably needs to fill the sorries in
+-- `helper_1` and `helper_2`
 /-- Sheaves admit a monoidal structure given by `X ⊗ Y := S(X ⊗ Y)` where `S` is the
 "sheafification" and the tensor product is taken of underlying presheaves. -/
 instance Sheaf.monodialCategory :
@@ -177,32 +192,66 @@ instance Sheaf.monodialCategory :
   /- The monoidal structure is given by sheafification to the one gor presheaves. -/
   tensorObj F G := (presheafToSheaf J Ab.{u+1}).obj <| tensorObj F.val G.val
   tensorHom f g := (presheafToSheaf J Ab.{u+1}).map <| tensorHom f.val g.val
-  tensor_id := by aesop_cat
-  tensor_comp := by aesop_cat
+  tensor_id := sorry -- by aesop_cat
+  tensor_comp := sorry -- by aesop_cat
   tensorUnit' := (presheafToSheaf J Ab.{u+1}).obj tensorUnit'
-  associator F G H := sorry -- TODO: data
-  associator_naturality := sorry
-  leftUnitor F := sorry -- TODO: data
-  leftUnitor_naturality := sorry
-  rightUnitor := sorry -- TODO: data
-  rightUnitor_naturality := sorry
-  pentagon := sorry
-  triangle := sorry
+  associator F G H :=
+    helper_1 J (tensorObj F.val G.val) H.val ≪≫
+    (presheafToSheaf J Ab.{u+1}).mapIso (α_ F.val G.val H.val) ≪≫
+    (helper_2 J F.val (tensorObj G.val H.val)).symm
+  associator_naturality f g h := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  leftUnitor F :=
+    helper_1 J tensorUnit' F.val ≪≫ (presheafToSheaf J Ab.{u+1}).mapIso (leftUnitor F.val) ≪≫
+    (sheafificationIso F).symm
+  leftUnitor_naturality f := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  rightUnitor F :=
+    helper_2 J F.val tensorUnit' ≪≫ (presheafToSheaf J Ab.{u+1}).mapIso (rightUnitor F.val) ≪≫
+    (sheafificationIso F).symm
+  rightUnitor_naturality F := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  pentagon := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  triangle := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
 
 open BraidedCategory
 
 /-- The braiding on sheaves is the sheafification of the braiding of presheaves -/
 instance : BraidedCategory <| Sheaf J Ab.{u+1} where
   braiding F G := (presheafToSheaf J Ab.{u+1}).mapIso (braiding F.val G.val)
-  braiding_naturality := sorry
-  hexagon_forward := sorry
-  hexagon_reverse := sorry
+  braiding_naturality f g := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  hexagon_forward F G H := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
+  hexagon_reverse F G H := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
 
 instance : SymmetricCategory <| Sheaf J Ab.{u+1} where
-  symmetry := sorry
+  symmetry F G := by
+    dsimp
+    with_panel_widgets [ProofWidgets.GoalTypePanel]
+      sorry
 
 instance : MonoidalClosed <| Sheaf J Ab.{u+1} where
-  closed := sorry
+  closed F := sorry -- TODO: contains data in form of a left-adjoint to `(· ⊗ ·)`
 
 /-!
 Now for the closed symmetric monoidal structure on `Condensed Ab` it
