@@ -1,8 +1,6 @@
 import ExtrDisc.Basic
 import ExtrDisc.Coherent
 import Mathlib.CategoryTheory.Sites.Sheaf
-import Mathlib.CategoryTheory.Limits.Preserves.Finite
-import Mathlib.CategoryTheory.Limits.Shapes.FiniteProducts
 import Sieves.isSheafForPullbackSieve
 import Sieves.dagur
 import Sieves.OpenEmbedding
