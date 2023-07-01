@@ -8,8 +8,8 @@ open CategoryTheory Limits
 universe u
 
 theorem sheafCondition {A : Type (u+2)} [Category.{u+1} A] (F : ExtrDisc.{u}ᵒᵖ ⥤ A) :
-  Nonempty (PreservesFiniteProducts F) ↔ 
-  Presheaf.IsSheaf (coherentTopology ExtrDisc) F := sorry
+  Presheaf.IsSheaf (coherentTopology ExtrDisc) F ↔ 
+  Nonempty (PreservesFiniteProducts F) := sorry
 
 namespace Sheaf
 
@@ -19,9 +19,32 @@ variable {J : Type (u+1)} [SmallCategory J]
 
 variable (F : J ⥤ ExtrDisc.{u}ᵒᵖ ⥤ A)
 
-theorem isSheafColimitAux [HasColimit F] 
-  (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) : 
-  Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (colimit F) := sorry
+def preservesFiniteProductsAux [HasColimit F] 
+    {α : Type} [Fintype α] (X : α → ExtrDisc.{u}ᵒᵖ)
+    (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) :
+    PreservesLimit (Discrete.functor X) (colimit F) := 
+  sorry
+
+noncomputable
+def preservesFiniteProducts [HasColimit F] 
+    (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) :
+    PreservesFiniteProducts (colimit F) where
+  preserves := fun α _ => by
+    constructor ; intro K
+    let e : K ≅ Discrete.functor fun a => K.obj { as := a } := 
+      Discrete.natIsoFunctor
+    suffices PreservesLimit (Discrete.functor fun a => K.obj { as := a }) (colimit F) by
+      apply preservesLimitOfIsoDiagram _ e.symm
+    apply preservesFiniteProductsAux 
+    assumption
+  
+
+theorem isSheafColimitAux 
+    [HasColimit F] 
+    (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) : 
+    Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (colimit F) := by
+  rw [sheafCondition]
+  exact ⟨preservesFiniteProducts _ h⟩ 
 
 theorem isSheafColimit (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A) 
     [HasColimit (F ⋙ sheafToPresheaf _ _)] : 
