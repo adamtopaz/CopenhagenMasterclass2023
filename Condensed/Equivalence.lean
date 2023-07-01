@@ -91,14 +91,6 @@ lemma coverDense :
         (fun (_ : Unit) => B.presentationπ)
       apply (this.out 0 2).mpr
       intro b
-<<<<<<< HEAD
-      refine ⟨(), ?_⟩ 
-      have hπ : 
-        Function.Surjective B.presentationπ := sorry
-      exact hπ b
-  convert hS
-  sorry
-=======
       refine ⟨(), ?_⟩
       have hπ :
         Function.Surjective B.presentationπ := by
@@ -128,7 +120,6 @@ lemma coverDense :
       lift := h
       map := CompHaus.presentationπ B
       fac := rfl }
->>>>>>> master
 
 theorem coverDense.inducedTopology_Sieve_iff_EffectiveEpiFamily (X : ExtrDisc) (S : Sieve X) :
     (∃ (α : Type) (_ : Fintype α) (Y : α → ExtrDisc) (π : (a : α) → (Y a ⟶ X)),
