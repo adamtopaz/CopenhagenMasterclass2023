@@ -30,6 +30,13 @@ theorem FromFiniteCoproductComptToFiniteCoproduct :
   refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
   simp [toFiniteCoproduct, fromFiniteCoproduct]
 
+noncomputable
+def FromFiniteCoproductIso : finiteCoproduct Z ≅ ∐ Z where
+  hom := fromFiniteCoproduct Z
+  inv := toFiniteCoproduct Z
+  hom_inv_id := FromFiniteCoproductComptToFiniteCoproduct Z
+  inv_hom_id := toFiniteCoproductCompFromFiniteCoproduct Z
+
 theorem IsIsotoFiniteCoproduct :
     IsIso (toFiniteCoproduct Z) :=
   ⟨fromFiniteCoproduct Z, by simp, by simp⟩
