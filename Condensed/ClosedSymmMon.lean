@@ -55,7 +55,7 @@ is also symmetric.
 -/
 instance functorCategoryMonoidalClosed : MonoidalClosed (C ⥤ D) where
   closed F := by
-    sorry
+    sorry -- TODO: Data in form of a left-adjoint to (· ⊗ ·)
 
 end MonoidalClosed
 
@@ -85,8 +85,15 @@ def Braided.transport [BraidedCategory C] (e : C ≌ D) :
       dsimp only [Monoidal.transport_tensorObj, Monoidal.transport_tensorHom, Functor.mapIso_hom]
       rw [← Functor.map_comp e.functor, ← Functor.map_comp e.functor]
       rw [BraidedCategory.braiding_naturality (e.inverse.map f) (e.inverse.map g)]
-    hexagon_forward := sorry
-    hexagon_reverse := sorry }
+    hexagon_forward:= fun X Y Z => by
+      dsimp
+      with_panel_widgets [ProofWidgets.GoalTypePanel]
+        sorry
+    hexagon_reverse := fun X Y Z => by
+      dsimp
+      with_panel_widgets [ProofWidgets.GoalTypePanel]
+        sorry
+  }
 
 /-- Transport a symmetric monoidal structure along an equivalence of (plain) categories. -/
 @[simps!]
@@ -108,7 +115,7 @@ def MonoidalClosed.transport [MonoidalClosed C] (e : C ≌ D) :
     letI : MonoidalCategory D := Monoidal.transport e
     MonoidalClosed.{v₂} D :=
   letI : MonoidalCategory D := Monoidal.transport e
-  { closed := sorry
+  { closed := sorry -- TODO: data in form of a left adjoint to `(· ⊗ ·)`
   }
 
 end transport
