@@ -31,31 +31,7 @@ variable (C : Type u) [Category.{v} C]
 
 open Sieve CategoryTheory.Limits
 
-@[ext]
-structure DCoverage where
-  covering : ∀ (X : C), Set (Sieve X)
-  pullback : ∀ ⦃X Y : C⦄ (f : Y ⟶ X) (S : Presieve X) (_ : S ∈ (arrows)'' (covering X)),
-    ∃ (T : Presieve Y), T ∈ (arrows)'' (covering Y) ∧ T.FactorsThruAlong S f
-
 variable {C}
-
-def DCoverage.toCoverage (F : DCoverage C) : Coverage C where
-  covering := fun X => (arrows)'' (F.covering X)
-  pullback := F.pullback
-    
-def Coverage.toDCoverage (F : Coverage C) : DCoverage C where
-  covering := fun X ↦ generate '' (F.covering X)
-  pullback := fun X Y f S hS ↦ by
-    obtain ⟨T, ⟨W, hW⟩, hT⟩ := hS 
-    obtain ⟨R,hR⟩ := F.pullback f W hW.1
-    refine' ⟨(Sieve.generate R).arrows, ⟨⟨Sieve.generate R, ⟨⟨R, ⟨hR.1, rfl⟩⟩, rfl⟩⟩, _⟩⟩    
-    dsimp [Presieve.FactorsThruAlong] at *  
-    simp only [forall_exists_index, and_imp]
-    intro Z φ K ψ τ hτ hh
-    obtain ⟨W_1, i, e, h⟩ := hR.2 hτ 
-    refine' ⟨W_1, ψ ≫ i, e, ⟨_, by rw [← hh, Category.assoc, Category.assoc, h.2]⟩⟩
-    rw [← hT, ← hW.2]
-    exact ⟨W_1, 𝟙 _, e, ⟨h.1, by simp⟩⟩ 
 
 def DagurSieveIso [HasFiniteCoproducts C] (B : C) := { S | ∃ (α : Type) (_ : Fintype α) (X : α → C)
   (π : (a : α) → (X a ⟶ B)),
@@ -66,41 +42,19 @@ def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.of
 
 variable [HasFiniteCoproducts C] (C)
 
--- -- @[reducible]
-def Extensivity /- (C : Type _) [Category C]  [HasFiniteCoproducts C] -/ [HasPullbackOfIsIsodesc C] : Prop :=
+def Extensivity [HasPullbackOfIsIsodesc C] : Prop :=
   ∀ {α : Type} [Fintype α] {X : C} {Z : α → C} (π : (a : α) → Z a ⟶ X)
   {Y : C} (f : Y ⟶ X) (_ : IsIso (Sigma.desc π)),
      IsIso (Sigma.desc ((fun _ ↦ pullback.fst) : (a : α) → pullback f (π a) ⟶ _))
 
-
--- -- @[reducible]
-def EverythingIsProjective /- (C : Type _) [Category C]  -/: Prop :=
+def EverythingIsProjective : Prop :=
   ∀ X : C, Projective X
 
--- -- -- @[reducible]
--- def IsMono_ι /- (C : Type (u+1)) [Category C]  -/[HasFiniteCoproducts C] : Prop :=
---   ∀ {α : Type} [Fintype α] {Z : α → C} {a : α}, Mono (Sigma.ι Z a)
-
--- lemma MonoOfIsMono_ι [HasFiniteCoproducts C] (h_mono_ι : IsMono_ι C) {α : Type} [Fintype α]
---   (Z : α → C) (a : α) : Mono (Sigma.ι Z a) := sorry
-
-def dagurCoverage /- (C : Type _) [Category C] -/ [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
-    (h_proj : EverythingIsProjective C) /- (h_mono_ι : IsMono_ι C) -/ (h_ext : Extensivity C) 
-    : Coverage C where
+def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
+    (h_proj : EverythingIsProjective C) (h_ext : Extensivity C) : Coverage C where
   covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
-    -- · have foo : ∀ a : α, Mono (π a)
-    --   · intro a
-    --     have : π a = Sigma.ι Z a ≫ (Sigma.desc π)
-    --     · simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
-    --     rw [this]
-    --     have inj_one : Mono (Sigma.ι Z a)
-    --     · exact h_mono_ι
-    --     --exact @MonoOfIsMono_ι C _ _ h_mono_ι α hα Z a
-    --     have inj_two : Mono (Sigma.desc π)
-    --     · infer_instance
-    --     apply mono_comp
     · let Z' : α → C := fun a ↦ pullback f (π a)
       set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
       set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
@@ -150,10 +104,6 @@ lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso
     {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
   refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
   sorry
-
-lemma two (F : DCoverage C) : F.toCoverage.toDCoverage = F := sorry
-
-lemma three (F : Coverage C) : F.toGrothendieck = F.toDCoverage.toCoverage.toGrothendieck := sorry
 
 end CategoryTheory
 
