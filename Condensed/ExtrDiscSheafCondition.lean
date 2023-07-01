@@ -19,11 +19,56 @@ variable {J : Type (u+1)} [SmallCategory J]
 
 variable (F : J ⥤ ExtrDisc.{u}ᵒᵖ ⥤ A)
 
+noncomputable
+abbrev productComparison 
+    [HasColimit F]
+    {α : Type} [Fintype α] (X : α → ExtrDisc.{u}ᵒᵖ) :
+    (colimit F).obj (∏ X) ⟶ ∏ fun i => (colimit F).obj (X i) := 
+  Pi.lift fun _ => (colimit F).map <| Pi.π _ _ 
+
+-- Key
+lemma isIsoProductComparison 
+    [HasColimit F]
+    {α : Type} [Fintype α] (X : α → ExtrDisc.{u}ᵒᵖ) 
+    (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) :
+    IsIso (productComparison F X) := sorry
+
+noncomputable
+def isLimitMapFan 
+    [HasColimit F]
+    {α : Type} [Fintype α] (X : α → ExtrDisc.{u}ᵒᵖ)
+    (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) :
+    IsLimit (colimit F |>.mapCone <| limit.cone (Discrete.functor X)) :=
+  letI : IsIso (productComparison F X) := isIsoProductComparison _ _ h
+{ lift := fun S => Pi.lift (fun i => S.π.app _) ≫ inv (productComparison F X)
+  fac := by
+    intro S ⟨j⟩
+    dsimp
+    rw [Category.assoc]
+    have : inv (productComparison F X) ≫ (colimit F).map (Pi.π X j) = Pi.π _ j := by
+      rw [IsIso.inv_comp_eq]
+      simp
+    rw [this]
+    simp
+  uniq := by
+    intro S m hm
+    dsimp at *
+    rw [IsIso.eq_comp_inv]
+    apply limit.hom_ext
+    intro ⟨j⟩
+    simp only [Discrete.functor_obj, Functor.mapCone_pt, limit.cone_x, Category.assoc, 
+      limit.lift_π, Fan.mk_pt, Fan.mk_π_app]
+    apply hm
+}
+
+noncomputable
 def preservesFiniteProductsAux [HasColimit F] 
     {α : Type} [Fintype α] (X : α → ExtrDisc.{u}ᵒᵖ)
     (h : ∀ j : J, Presheaf.IsSheaf (coherentTopology ExtrDisc.{u}) (F.obj j)) :
-    PreservesLimit (Discrete.functor X) (colimit F) := 
-  sorry
+    PreservesLimit (Discrete.functor X) (colimit F) := by
+  apply preservesLimitOfPreservesLimitCone (hF := isLimitMapFan _ _ _)
+  · exact limit.isLimit _
+  · intro ; assumption
 
 noncomputable
 def preservesFiniteProducts [HasColimit F] 
