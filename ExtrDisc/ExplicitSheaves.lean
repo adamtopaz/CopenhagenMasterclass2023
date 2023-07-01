@@ -253,8 +253,17 @@ instance : HasPullbackOfRightMono ExtrDisc := by
 
 lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := sorry
 
-lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := sorry
-
+lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := by
+  refine' fun P => ⟨(@fun X Y f e he => _)⟩
+  have proj : Projective (toCompHaus.obj P) := inferInstanceAs (Projective P.compHaus)
+  have : Epi (toCompHaus.map e) := by --TODO state a general lemma
+    rw [CompHaus.epi_iff_surjective]
+    change Function.Surjective e
+    rwa [← ExtrDisc.epi_iff_surjective]
+  set g := toCompHaus.preimage <| Projective.factorThru (toCompHaus.map f) (toCompHaus.map e) with hg
+  refine' ⟨g, toCompHaus.map_injective _⟩
+  rw [map_comp, hg, image_preimage, Projective.factorThru_comp]
+  
 -- lemma Is_Mono_ι_ExtrDisc : IsMono_ι ExtrDisc := sorry
 
 end ExtrDisc
