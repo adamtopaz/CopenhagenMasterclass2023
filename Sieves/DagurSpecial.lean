@@ -237,19 +237,17 @@ lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z
   use OpenEmbeddingCone f hi 
   exact ExtrDisc.OpenEmbeddingLimitCone f hi
 
---This is false, right?
-/-instance : HasPullbackOfRightMono ExtrDisc := by
+instance aaa : HasPullbackOfIsIsodesc ExtrDisc := by
   constructor 
   intro X Z α f Y i _ _ _ a 
   apply HasPullbackOpenEmbedding 
   have h₁ : OpenEmbedding (Sigma.desc i) :=
     (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-  have h₂ : OpenEmbedding (Sigma.ι Y a) := DagurOpenEmbedding _ _
+  have h₂ : OpenEmbedding (Sigma.ι Y a) := ExtrDisc.DagurOpenEmbedding _ _
   have := OpenEmbedding.comp h₁ h₂ 
   erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
   simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
-  assumption-/
-
+  assumption
 
 
 lemma ExtensivityExtrDisc {α : Type} {Y : ExtrDisc} [Fintype α]
