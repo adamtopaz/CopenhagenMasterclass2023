@@ -171,8 +171,11 @@ def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
   map f := f
 
 /-- The functor from extremally disconnected spaces to profinite spaces is full. -/
-instance : Full toProfinite := sorry
-instance : Faithful toProfinite := sorry
+instance : Full toProfinite := by
+  fconstructor ; intro X Y f ; exact f ; simp
+
+instance : Faithful toProfinite := by
+  fconstructor ; intro X Y f g h ; assumption
 
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus :=
   rfl
