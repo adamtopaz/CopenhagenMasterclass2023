@@ -66,8 +66,8 @@ instance (F : J ⥤ Sheaf (coherentTopology ExtrDisc.{u}) A) :
 
 instance : CreatesColimits
     (sheafToPresheaf (coherentTopology ExtrDisc.{u}) A) := by
-  constructor ; unfold autoParam ; intro J _ 
-  constructor ; unfold autoParam ; intro K
+  constructor ; intro J _ 
+  constructor ; intro K
   infer_instance
 
 end Sheaf
