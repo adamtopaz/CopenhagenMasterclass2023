@@ -237,7 +237,7 @@ lemma HasPullbackOpenEmbedding {X Y Z : ExtrDisc.{u}} (f : X ⟶ Z) {i : Y ⟶ Z
   use OpenEmbeddingCone f hi 
   exact ExtrDisc.OpenEmbeddingLimitCone f hi
 
-instance aaa : HasPullbackOfIsIsodesc ExtrDisc := by
+instance : HasPullbackOfIsIsodesc ExtrDisc := by
   constructor 
   intro X Z α f Y i _ _ _ a 
   apply HasPullbackOpenEmbedding 
