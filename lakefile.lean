@@ -14,6 +14,7 @@ require find_with_gpt from git
 @[default_target]
 lean_lib «CopenhagenMasterclass2023» {
   globs := #[
+    .andSubmodules `TopCat,
     .andSubmodules `Condensed, 
     .andSubmodules `Profinite,
     .andSubmodules `ExtrDisc,
