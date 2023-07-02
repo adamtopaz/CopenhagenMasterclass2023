@@ -312,8 +312,13 @@ def θ :
   have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
   Sigma.desc (fun a => fromExplicit f (hOpen a) ≫ Sigma.ι (fun b => pullback f (i b)) a)
 
-theorem compatibility : δ hOpen f ≫ θ hOpen f ≫ η hOpen f = ζ hOpen f ≫ fromFiniteCoproduct Z := sorry
-  
+theorem compatibility : δ hOpen f ≫ θ hOpen f ≫ η hOpen f = ζ hOpen f ≫ fromFiniteCoproduct Z := by
+  refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+  have := HasPullbackOpenEmbedding f (hOpen a)
+  rw [← Category.assoc, δ, fromFiniteCoproduct, finiteCoproduct.ι_desc]
+  simp [ζ, θ, η, fromExplicit]
+
+
 end compatibility
 
 end ExtrDisc
