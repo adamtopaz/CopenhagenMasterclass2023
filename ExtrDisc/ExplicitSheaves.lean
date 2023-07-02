@@ -16,41 +16,88 @@ open CategoryTheory.Limits
 
 namespace ExtrDisc
 
+lemma OpenEmbedding_of_Sigma_desc_Iso {α : Type} [Fintype α] {X : ExtrDisc.{u}}
+    {Z : α → ExtrDisc.{u}} {i : (a : α) → Z a ⟶ X} (HIso : IsIso (Sigma.desc i)) :
+    ∀ a, OpenEmbedding (i a) := by
+  intro a
+  have h₁ : OpenEmbedding (Sigma.desc i) :=
+    (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
+  have h₂ : OpenEmbedding (Sigma.ι Z a) := DagurOpenEmbedding _ _
+  have := OpenEmbedding.comp h₁ h₂
+  erw [← CategoryTheory.coe_comp (Sigma.ι Z a) (Sigma.desc i)] at this 
+  simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
+  assumption
+
 instance : HasPullbackOfIsIsodesc ExtrDisc := by
   constructor 
   intro X Z α f Y i _ _ _ a 
   apply HasPullbackOpenEmbedding 
-  have h₁ : OpenEmbedding (Sigma.desc i) :=
-    (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-  have h₂ : OpenEmbedding (Sigma.ι Y a) := DagurOpenEmbedding _ _
-  have := OpenEmbedding.comp h₁ h₂ 
-  erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
-  simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
-  assumption 
+  apply OpenEmbedding_of_Sigma_desc_Iso inferInstance
 
+lemma isIso_of_bijective {X Y : ExtrDisc.{u}} {f : X ⟶ Y} (hf : Function.Bijective f) : IsIso f := by
+  suffices IsIso <| toCompHaus.map f by
+    · apply isIso_of_fully_faithful toCompHaus
+  exact CompHaus.isIso_of_bijective _ hf
+
+lemma Extensivity_ExtrDisc_injective {α : Type} [Fintype α] {X : ExtrDisc.{u}}
+    {Z : α → ExtrDisc.{u}} {π : (a : α) → Z a ⟶ X} {Y : ExtrDisc.{u}} (f : Y ⟶ X)
+    (HIso : IsIso (finiteCoproduct.desc _ π)) (hOpen : ∀ a, OpenEmbedding (π a)) :
+    Function.Injective (finiteCoproduct.desc _ ((fun a => pullback.fst f (hOpen a)))) := by
+  let ζ := finiteCoproduct.desc _ (fun a => pullback.snd f (hOpen a) ≫ finiteCoproduct.ι Z a )
+  let α := finiteCoproduct.desc _ ((fun a => pullback.fst f (hOpen a)))
+  let β := finiteCoproduct.desc _ π
+  have comm : ζ ≫ β = α ≫ f := by
+     refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+     simp [← Category.assoc, finiteCoproduct.ι_desc, pullback.condition]
+  intro R₁ R₂ hR
+  have himage : (ζ ≫ β) R₁ = (ζ ≫ β) R₂ := by
+    rw [comm]; change f (α R₁) = f (α R₂); rw [hR]
+  replace himage := congr_arg (inv β) himage
+  change ((ζ ≫ β ≫ inv β) R₁) = ((ζ ≫ β ≫ inv β) R₂) at himage
+  rw [IsIso.hom_inv_id, Category.comp_id] at himage
+  have Hfst : R₁.fst = R₂.fst := by
+    suffices (ζ R₁).1 = R₁.1 ∧ (ζ R₂).1 = R₂.1 by
+      · rw [← this.1, ← this.2, himage]
+    constructor <;> rfl
+  exact Sigma.subtype_ext Hfst hR 
+
+lemma Extensivity_ExtrDisc_explicit {α : Type} [Fintype α] {X : ExtrDisc.{u}}
+    {Z : α → ExtrDisc.{u}} {π : (a : α) → Z a ⟶ X} {Y : ExtrDisc.{u}} (f : Y ⟶ X)
+    (HIso : IsIso (finiteCoproduct.desc _ π)) (hOpen : ∀ a, OpenEmbedding (π a)) :
+     IsIso (finiteCoproduct.desc _ ((fun a => pullback.fst f (hOpen a)))) := by
+  let β := finiteCoproduct.desc _ π
+  refine' isIso_of_bijective ⟨Extensivity_ExtrDisc_injective f HIso hOpen, fun y => _⟩
+  refine' ⟨⟨(inv β (f y)).1, ⟨y, (inv β (f y)).2, _⟩⟩, rfl⟩
+  have inj : Function.Injective (inv β) := by --this should be obvious
+    intros r s hrs
+    convert congr_arg β hrs <;> change _ = (inv β ≫ β) _<;> simp only [IsIso.inv_hom_id]<;> rfl  
+  apply inj
+  suffices ∀ a, π a ≫ inv β = finiteCoproduct.ι _ a by
+    · change (_ ≫ inv β) _ = _
+      rw [this]
+      rfl
+  intro a
+  simp only [IsIso.comp_inv_eq, finiteCoproduct.ι_desc]
 
 lemma Extensivity_ExtrDisc : Extensivity ExtrDisc := @fun α _ X Z i Y f H => by
-  have hOpen : ∀ a, OpenEmbedding (i a) := by --This is the same code as above
-    intro a
-    have h₁ : OpenEmbedding (Sigma.desc i) :=
-    (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-    have h₂ : OpenEmbedding (Sigma.ι Z a) := DagurOpenEmbedding _ _
-    have := OpenEmbedding.comp h₁ h₂
-    erw [← CategoryTheory.coe_comp (Sigma.ι Z a) (Sigma.desc i)] at this 
-    simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
-    assumption
-  let Ψ := Sigma.mapIso (fun a => fromExplicitIso f (hOpen a))
-  suffices IsIso (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
-    · apply IsIso.of_isIso_comp_left Ψ.hom
-  let φ := FromFiniteCoproductIso (fun a => (OpenEmbeddingCone f (hOpen a)).pt)
-  suffices IsIso <| φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
-    · apply IsIso.of_isIso_comp_left φ.hom
-  suffices IsIso <| toCompHaus.map (φ.hom ≫ (Ψ.hom ≫ Sigma.desc fun x => Limits.pullback.fst)) by
-   ·  apply isIso_of_fully_faithful toCompHaus
-  refine' CompHaus.isIso_of_bijective _ ⟨fun ⟨a₁, ⟨p₁, ⟨q₁, hq₁⟩⟩⟩ ⟨a₂, ⟨q₂, hq₂⟩⟩ hab => _, _⟩
-  · sorry
-  · sorry
- 
+  have hOpen := OpenEmbedding_of_Sigma_desc_Iso H
+  let θ := Sigma.mapIso (fun a => fromExplicitIso f (hOpen a))
+  suffices IsIso (θ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
+    · apply IsIso.of_isIso_comp_left θ.hom
+  let δ := FromFiniteCoproductIso (fun a => (OpenEmbeddingCone f (hOpen a)).pt)
+  suffices IsIso <| δ.hom ≫ (θ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
+    · apply IsIso.of_isIso_comp_left δ.hom
+  have HIso : IsIso (finiteCoproduct.desc _ i) := by
+    let ε := ToFiniteCoproductIso Z
+    suffices IsIso <| ε.hom ≫ (finiteCoproduct.desc _ i) by
+      · apply IsIso.of_isIso_comp_left ε.hom 
+    convert H
+    refine' Sigma.hom_ext _ _ (fun a => _)
+    simp [← Category.assoc]
+  convert Extensivity_ExtrDisc_explicit f HIso hOpen
+  refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+  simp [← Category.assoc, finiteCoproduct.ι_desc, fromExplicit]
+
 lemma EverythingProj_ExtrDisc : EverythingIsProjective ExtrDisc := by
   refine' fun P => ⟨(@fun X Y f e he => _)⟩
   have proj : Projective (toCompHaus.obj P) := inferInstanceAs (Projective P.compHaus)
