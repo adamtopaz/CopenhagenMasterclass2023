@@ -98,7 +98,12 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
 variable [HasPullbackOfIsIsodesc C] {C}
 
 lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
-  (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := sorry
+    (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
+  rcases hS with ⟨α, _, Z, π, hS, HIso⟩ 
+  intro Y₁ Y₂ f hf g hg
+  rw [hS] at hf hg
+  cases' hg with b
+  apply HasPullbackOfIsIsodesc.HasPullback f
 
 lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
     {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
