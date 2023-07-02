@@ -38,6 +38,14 @@ def FromFiniteCoproductIso : finiteCoproduct Z ≅ ∐ Z where
   hom_inv_id := FromFiniteCoproductComptToFiniteCoproduct Z
   inv_hom_id := toFiniteCoproductCompFromFiniteCoproduct Z
 
+@[simps]
+noncomputable
+def ToFiniteCoproductIso : ∐ Z ≅ finiteCoproduct Z where
+  hom := toFiniteCoproduct Z
+  inv := fromFiniteCoproduct Z
+  hom_inv_id := toFiniteCoproductCompFromFiniteCoproduct Z
+  inv_hom_id := FromFiniteCoproductComptToFiniteCoproduct Z
+
 theorem IsIsotoFiniteCoproduct :
     IsIso (toFiniteCoproduct Z) :=
   ⟨fromFiniteCoproduct Z, by simp, by simp⟩

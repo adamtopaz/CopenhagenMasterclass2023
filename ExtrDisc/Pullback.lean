@@ -298,7 +298,34 @@ def η :
 
 noncomputable
 def ζ : finiteCoproduct (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶ finiteCoproduct Z :=
-  finiteCoproduct.desc _ (fun a => pullback.snd f (hOpen a) ≫finiteCoproduct.ι Z a )
+  finiteCoproduct.desc _ (fun a => pullback.snd f (hOpen a) ≫ finiteCoproduct.ι Z a )
+
+noncomputable
+def γ :
+    have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+    finiteCoproduct (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶
+    finiteCoproduct (fun a => pullback f (i a)) :=
+  have := fun a => HasPullbackOpenEmbedding f (hOpen a)
+  finiteCoproduct.desc _ (fun a => (fromExplicit f (hOpen a)) ≫
+    finiteCoproduct.ι (fun b => pullback f (i b)) a)
+
+noncomputable
+def ε := fromFiniteCoproduct Z
+
+noncomputable
+def φ :
+    have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+    finiteCoproduct (fun a => pullback f (i a)) ⟶ ∐ (fun a => pullback f (i a)) :=
+  fromFiniteCoproduct _
+
+noncomputable
+def ψ :
+    have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+    finiteCoproduct (fun a => pullback f (i a)) ⟶ finiteCoproduct Z :=
+  have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
+  finiteCoproduct.desc _ (fun a => Limits.pullback.snd ≫ finiteCoproduct.ι _ a)
+
+--lemma ζcomp : ζ hOpen = ≫ := sorry 
 
 noncomputable
 def δ : finiteCoproduct (fun a => (OpenEmbeddingCone f (hOpen a)).pt) ⟶
@@ -312,11 +339,11 @@ def θ :
   have : ∀ a, HasPullback f (i a) := fun a => HasPullbackOpenEmbedding f (hOpen a)
   Sigma.desc (fun a => fromExplicit f (hOpen a) ≫ Sigma.ι (fun b => pullback f (i b)) a)
 
-theorem compatibility : δ hOpen f ≫ θ hOpen f ≫ η hOpen f = ζ hOpen f ≫ fromFiniteCoproduct Z := by
+theorem compatibility : δ hOpen f ≫ θ hOpen f ≫ η hOpen f = ζ hOpen f ≫ ε := by
   refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
   have := HasPullbackOpenEmbedding f (hOpen a)
   rw [← Category.assoc, δ, fromFiniteCoproduct, finiteCoproduct.ι_desc]
-  simp [ζ, θ, η, fromExplicit]
+  simp [ε, ζ, θ, η, fromExplicit]
 
 
 end compatibility
