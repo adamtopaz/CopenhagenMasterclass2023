@@ -108,6 +108,13 @@ lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
 lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
     {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
   refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
+  rcases hS with ⟨α, _, Z, π, hS, HIso⟩
+  rw [Limits.Types.type_equalizer_iff_unique]
+  dsimp [Equalizer.FirstObj]
+  intro y hy
+  
+    
+
   sorry
 
 end CategoryTheory
