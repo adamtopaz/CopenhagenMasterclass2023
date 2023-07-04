@@ -1,6 +1,7 @@
 import ExtrDisc.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
-import Mathlib.CategoryTheory.Limits.Shapes.FiniteProducts
+import Mathlib.CategoryTheory.Limits.Preserves.Shapes.Products
+import Mathlib.CategoryTheory.Limits.Preserves.Opposites
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
 import Sieves.isSheafForPullbackSieve
 
@@ -113,20 +114,26 @@ lemma DagurSieveIsoFinite {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X) 
     (fun ⟨Y, ⟨f, hf⟩⟩ => _))
   cases' (hS ▸ hf) with a h
   exact ⟨a, rfl⟩
-  
 
 lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
-    {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by    
-  refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
+    {F : Cᵒᵖ ⥤ Type max u v}
+    (hF : PreservesFiniteProducts F) :
+    Presieve.IsSheafFor F S := by    
   have hFinite := DagurSieveIsoFinite hS
+  obtain ⟨n, ⟨e⟩⟩ := finite_iff_exists_equiv_fin.1 hFinite
+  let E := (Discrete.equivalence e).symm
+  refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
   rcases hS with ⟨α, _, Z, π, hS, HIso⟩
   rw [Limits.Types.type_equalizer_iff_unique]
-  dsimp [Equalizer.FirstObj]
   intro y hy
-  let φ : F.obj (∏ fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1)) ≅ ∏ fun f : ΣY, { f : Y ⟶ X // S f } => F.obj (op f.1) := sorry
-
-
-    
+  have hpreserves : PreservesLimitsOfShape (Discrete (ΣY, { f : Y ⟶ X // S f })) F := by
+    suffices PreservesLimitsOfShape (Discrete (Fin n)) F by
+      · exact Limits.preservesLimitsOfShapeOfEquiv E F
+    have := (hF.preserves (Fin n))
+    infer_instance
+  let φ : F.obj (∏ fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1)) ≅
+      ∏ fun f : ΣY, { f : Y ⟶ X // S f } => F.obj (op f.1) :=
+    Limits.PreservesProduct.iso F (fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1))
 
   sorry
 
