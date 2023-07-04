@@ -126,11 +126,8 @@ lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso
   rcases hS with ⟨α, _, Z, π, hS, HIso⟩
   rw [Limits.Types.type_equalizer_iff_unique]
   intro y hy
-  have hpreserves : PreservesLimitsOfShape (Discrete (ΣY, { f : Y ⟶ X // S f })) F := by
-    suffices PreservesLimitsOfShape (Discrete (Fin n)) F by
-      · exact Limits.preservesLimitsOfShapeOfEquiv E F
-    have := (hF.preserves (Fin n))
-    infer_instance
+  have : PreservesLimitsOfShape (Discrete (ΣY, { f : Y ⟶ X // S f })) F := by
+    have := (hF.preserves (Fin n)); exact Limits.preservesLimitsOfShapeOfEquiv  E F
   let φ : F.obj (∏ fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1)) ≅
       ∏ fun f : ΣY, { f : Y ⟶ X // S f } => F.obj (op f.1) :=
     Limits.PreservesProduct.iso F (fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1))
