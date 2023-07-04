@@ -107,12 +107,11 @@ lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
 
 lemma DagurSieveIsoFinite {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X) :
     Finite (ΣY, { f : Y ⟶ X // S f }) := by
-  rcases hS with ⟨α, _, Z, π, hS, HIso⟩
-  let φ : α → (ΣY, { f : Y ⟶ X // S f }) := fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩
+  rcases hS with ⟨α, _, Z, π, hS, _⟩
   classical
-  refine' Fintype.finite (Fintype.ofSurjective φ (fun ⟨Y, ⟨f, hf⟩⟩ => _))
-  rw [hS] at hf
-  cases' hf with a h
+  refine' Fintype.finite (Fintype.ofSurjective (fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩)
+    (fun ⟨Y, ⟨f, hf⟩⟩ => _))
+  cases' (hS ▸ hf) with a h
   exact ⟨a, rfl⟩
   
 
