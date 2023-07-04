@@ -29,7 +29,7 @@ namespace CategoryTheory
 
 variable (C : Type u) [Category.{v} C] 
 
-open Sieve CategoryTheory.Limits
+open Sieve CategoryTheory.Limits Opposite
 
 variable {C}
 
@@ -105,14 +105,28 @@ lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
   cases' hg with b
   apply HasPullbackOfIsIsodesc.HasPullback f
 
+lemma DagurSieveIsoFinite {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X) :
+    Finite (ΣY, { f : Y ⟶ X // S f }) := by
+  rcases hS with ⟨α, _, Z, π, hS, HIso⟩
+  let φ : α → (ΣY, { f : Y ⟶ X // S f }) := fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩
+  classical
+  refine' Fintype.finite (Fintype.ofSurjective φ (fun ⟨Y, ⟨f, hf⟩⟩ => _))
+  rw [hS] at hf
+  cases' hf with a h
+  exact ⟨a, rfl⟩
+  
+
 lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
-    {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by
+    {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F) : Presieve.IsSheafFor F S := by    
   refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
+  have hFinite := DagurSieveIsoFinite hS
   rcases hS with ⟨α, _, Z, π, hS, HIso⟩
   rw [Limits.Types.type_equalizer_iff_unique]
   dsimp [Equalizer.FirstObj]
   intro y hy
-  
+  let φ : F.obj (∏ fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1)) ≅ ∏ fun f : ΣY, { f : Y ⟶ X // S f } => F.obj (op f.1) := sorry
+
+
     
 
   sorry
