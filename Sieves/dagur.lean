@@ -96,6 +96,44 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
           exact h_proj Y
           exact @Projective.factorThru_comp C _ Y X Z this f π h_epi
 
+def EpiPullbackOfEpi [HasPullbacks C] : Prop := ∀ {X Y Z : C} (f : Y ⟶ X) (π : Z ⟶ X) [Epi π], 
+    Epi (@pullback.fst _ _ _ _ _ f π _)
+
+def dagurCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPullbackOfEpi C) 
+    (h_ext : Extensivity C) : Coverage C where
+  covering B := (DagurSieveIso B) ∪ (DagurSieveSingle B) 
+  pullback := by 
+    rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
+    · let Z' : α → C := fun a ↦ pullback f (π a)
+      set π' : (a : α) → Z' a ⟶ Y := fun a ↦ pullback.fst with hπ'
+      set S' := @Presieve.ofArrows C _ _ α Z' π' with hS'
+      use S'
+      constructor
+      · rw [Set.mem_union]
+        apply Or.intro_left
+        rw [DagurSieveIso]
+        constructor
+        refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
+        · rw [hπ']
+          exact h_ext (fun x => π x) f h_iso
+      · rw [hS', Presieve.FactorsThruAlong]
+        intro W g hg
+        rcases hg with ⟨a⟩
+        refine ⟨Z a, pullback.snd, π a, ?_, by rw [CategoryTheory.Limits.pullback.condition]⟩
+        rw [hS]
+        refine Presieve.ofArrows.mk a
+    · set S' := Presieve.singleton (@pullback.fst _ _ _ _ _ f π _) with hS'
+      use S'
+      constructor
+      · right 
+        rw [DagurSieveSingle]
+        refine' ⟨(pullback f π), _, by {rw [Presieve.ofArrows_pUnit _]}, h_epi_epi f π⟩
+      · rw [hS', Presieve.FactorsThruAlong]
+        rintro _ _ ⟨⟩ 
+        refine' ⟨Z, pullback.snd, π, ⟨_, by rw [pullback.condition]⟩⟩
+        rw [hπ] 
+        exact Presieve.ofArrows.mk ()
+
 variable [HasPullbackOfIsIsodesc C] {C}
 
 lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
