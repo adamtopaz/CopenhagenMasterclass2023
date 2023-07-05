@@ -71,9 +71,7 @@ def CoprodToProd : op (∐ Z) ≅ ∏ (fun z => op (Z z)) :=
   isLimitOppositeFan Z |>.conePointUniqueUpToIso <| limit.isLimit _
 
 lemma CoprodToProdInvComp.ι (b : α) : ((CoprodToProd Z).inv ≫ (Sigma.ι (fun a => Z a) b).op) =
-    Pi.π (fun a => op (Z a)) b := by
-  exact IsLimit.conePointUniqueUpToIso_inv_comp (isLimitOppositeFan Z) (limit.isLimit _) ⟨b⟩
-   
-  
+    Pi.π (fun a => op (Z a)) b :=
+  IsLimit.conePointUniqueUpToIso_inv_comp (isLimitOppositeFan Z) (limit.isLimit _) ⟨b⟩
 
 end CoprodToProd

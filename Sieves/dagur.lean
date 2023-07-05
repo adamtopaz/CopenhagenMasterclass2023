@@ -1,11 +1,11 @@
 import ExtrDisc.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
 import Mathlib.CategoryTheory.Limits.Preserves.Shapes.Products
-import Mathlib.CategoryTheory.Limits.Preserves.Opposites
+import Sieves.ProdCoprod
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
 import Sieves.isSheafForPullbackSieve
 
-universe u v
+universe u v w
 section HasPullbackOfRightMono
 
 open CategoryTheory Opposite CategoryTheory.Limits Functor
@@ -63,7 +63,7 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
       constructor
       · rw [Set.mem_union]
         apply Or.intro_left
-        rw [DagurSieveIso]
+        rw [DagurSieveIso] 
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
@@ -153,24 +153,137 @@ lemma DagurSieveIsoFinite {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X) 
   cases' (hS ▸ hf) with a h
   exact ⟨a, rfl⟩
 
+def v {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) : α → Σ(Y : C), { f : Y ⟶ X // S f } :=
+  fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩
+
+lemma vsurj {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) : Function.Surjective (v hS) := fun ⟨Y, ⟨f, hf⟩⟩ => by
+  cases' (hS ▸ hf) with a h
+  exact ⟨a, rfl⟩
+
+lemma v.fst {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (a : α) : (v hS a).1 = Z a := rfl
+
+lemma v.snd {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (a : α) : (v hS a).2.1 = π a := rfl
+
+noncomputable
+def w {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) : (Σ(Y : C), { f : Y ⟶ X // S f }) → α :=
+  Classical.choose (vsurj hS).hasRightInverse
+
+lemma vw {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) : Function.RightInverse (w hS) (v hS) :=
+  Classical.choose_spec _
+
+lemma Zf {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (f : (Y : C) × { f // S f }) : Z (w hS f) = f.fst := by
+    nth_rewrite 2 [← (vw hS) f]
+    exact v.fst hS (w hS f)
+
+noncomputable
+def IsotoZ {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (f : (Σ(Y : C), { f : Y ⟶ X // S f })) :
+  op (f.1) ≅ op (Z ((w hS) f)) := Iso.op <| eqToIso (Zf hS f)
+
+
+noncomputable
+def FintypeT {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+     (hS: S = Presieve.ofArrows Z π) : Fintype (Σ(Y : C), { f : Y ⟶ X // S f }) := by
+  classical
+  exact Fintype.ofSurjective _ (vsurj hS)
+
+lemma HasProductT {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+     (hS: S = Presieve.ofArrows Z π) : HasProduct
+     fun (f : (Σ(Y : C), { f : Y ⟶ X // S f })) => (op f.1) := by
+  suffices Finite (Σ(Y : C), { f : Y ⟶ X // S f }) by
+    · infer_instance
+  exact Fintype.finite <| FintypeT hS
+
+noncomputable
+def E {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+     (hS: S = Presieve.ofArrows Z π) :
+     haveI := FintypeT hS
+     (Σ(Y : C), { f : Y ⟶ X // S f }) ≃
+     Fin (Fintype.card (Σ(Y : C), { f : Y ⟶ X // S f })) :=  
+  @Fintype.equivFin _ (_)
+
+noncomputable
+def comparison {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (F : Cᵒᵖ ⥤ Type max u v) :
+    haveI := HasProductT hS
+    (∏ fun a => F.obj (op (Z a))) ⟶ 
+    ∏ fun (f : (Σ(Y : C), { f : Y ⟶ X // S f })) => F.obj (op f.1) :=
+  haveI := HasProductT hS
+  Pi.lift (fun f => Pi.π _ _ ≫ F.map (IsotoZ hS f).inv)
+
+noncomputable
+def comparisoninv {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) (F : Cᵒᵖ ⥤ Type max u v) :
+    haveI := HasProductT hS
+    (∏ fun (f : (Σ(Y : C), { f : Y ⟶ X // S f })) => F.obj (op f.1)) ⟶
+    ∏ fun a => F.obj (op (Z a)) :=
+  haveI := HasProductT hS
+  Pi.lift (fun a => Pi.π _ (v hS a) ≫ F.map (Quiver.Hom.op (𝟙 _))) 
+  
+noncomputable
+def fromFirst {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
+    (hS: S = Presieve.ofArrows Z π) {F : Cᵒᵖ ⥤ Type max u v} (hF : PreservesFiniteProducts F)
+    (HIso : IsIso (Sigma.desc π)) :
+    Equalizer.FirstObj F S ⟶ F.obj (op X) :=
+  haveI : PreservesLimit (Discrete.functor fun a => op (Z a)) F := by
+    haveI := (hF.preserves α); infer_instance
+  comparisoninv hS F ≫ ((Limits.PreservesProduct.iso F (fun a => op <| Z a)).inv ≫
+    F.map (CoprodToProd Z).inv ≫ F.map (inv (Sigma.desc π).op))
+
+lemma piCompInvdesc {α : Type} [Fintype α] {Z : α → C} {X : C} (π : (a : α) → Z a ⟶ X)
+    (HIso : IsIso (Sigma.desc π)) (a : α) : π a ≫ inv (Sigma.desc π) = Sigma.ι _ a := by
+  simp
+
+lemma PreservesProduct.isoInvCompMap {C : Type u} [Category C] {D : Type v} [Category D] (F : C ⥤ D)
+    {J : Type w} {f : J → C} [HasProduct f] [HasProduct (fun j => F.obj (f j))]
+    [PreservesLimit (Discrete.functor f) F] (j : J) :
+    (PreservesProduct.iso F f).inv ≫ F.map (Pi.π _ j) = Pi.π _ j :=
+  IsLimit.conePointUniqueUpToIso_inv_comp _ (limit.isLimit _) (⟨j⟩ : Discrete J)
+
+lemma isSheafForDagurSieveIsIsoFork {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
+    {F : Cᵒᵖ ⥤ Type max u v}
+    (hF : PreservesFiniteProducts F) :
+    IsIso (Equalizer.forkMap F S) := by
+  rcases hS with ⟨α, _, Z, π, hS, HIso⟩
+  refine' ⟨fromFirst hS hF HIso, _, _⟩
+  · sorry
+  · haveI : PreservesLimit (Discrete.functor fun a => op (Z a)) F := by
+      haveI := (hF.preserves α); infer_instance
+    refine' Limits.Pi.hom_ext _ _ (fun f => _)
+    dsimp [Equalizer.forkMap]
+    rw [Category.id_comp, Category.assoc, limit.lift_π, Limits.Fan.mk_π_app]
+    simp only
+    obtain ⟨a, ha⟩ := vsurj hS f
+    unfold fromFirst
+    simp only [Category.assoc]
+    rw [← Functor.map_comp, ← op_inv, ← op_comp, ← ha, v.snd hS, piCompInvdesc,
+      ← Functor.map_comp, CoprodToProdInvComp.ι, @PreservesProduct.isoInvCompMap _ _ _ _ F _ _ _ _ (_) a]
+    simp only [comparisoninv, op_id, limit.lift_π, Fan.mk_pt, Fan.mk_π_app]
+    erw [F.map_id, Category.comp_id]    
+
 lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
     {F : Cᵒᵖ ⥤ Type max u v}
     (hF : PreservesFiniteProducts F) :
     Presieve.IsSheafFor F S := by    
-  have hFinite := DagurSieveIsoFinite hS
-  obtain ⟨n, ⟨e⟩⟩ := finite_iff_exists_equiv_fin.1 hFinite
-  let E := (Discrete.equivalence e).symm
   refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
-  rcases hS with ⟨α, _, Z, π, hS, HIso⟩
   rw [Limits.Types.type_equalizer_iff_unique]
-  intro y hy
-  have : PreservesLimitsOfShape (Discrete (ΣY, { f : Y ⟶ X // S f })) F := by
-    have := (hF.preserves (Fin n)); exact Limits.preservesLimitsOfShapeOfEquiv  E F
-  let φ : F.obj (∏ fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1)) ≅
-      ∏ fun f : ΣY, { f : Y ⟶ X // S f } => F.obj (op f.1) :=
-    Limits.PreservesProduct.iso F (fun f : ΣY, { f : Y ⟶ X // S f } => (op f.1))
-
-  sorry
+  dsimp [Equalizer.FirstObj]
+  suffices IsIso (Equalizer.forkMap F S) by
+    · intro y _
+      refine' ⟨inv (Equalizer.forkMap F S) y, _, fun y₁ hy₁ => _⟩
+      · change (inv (Equalizer.forkMap F S) ≫ (Equalizer.forkMap F S)) y = y 
+        rw [IsIso.inv_hom_id, types_id_apply]
+      · replace hy₁ := congr_arg (inv (Equalizer.forkMap F S)) hy₁
+        change ((Equalizer.forkMap F S) ≫ inv (Equalizer.forkMap F S)) _ = _ at hy₁
+        rwa [IsIso.hom_inv_id, types_id_apply] at hy₁
+  exact isSheafForDagurSieveIsIsoFork hS hF
 
 end CategoryTheory
 
