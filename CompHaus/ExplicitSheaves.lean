@@ -1,4 +1,6 @@
 import Sieves.dagur
+import CompHaus.Pullback
+import CompHaus.Coproduct
 import Mathlib.Topology.Category.CompHaus.EffectiveEpi
 import Mathlib.CategoryTheory.Sites.Sheaf
 
@@ -6,9 +8,78 @@ open CategoryTheory CompHaus Opposite CategoryTheory.Limits Functor Presieve
  
 namespace CompHaus
 
-lemma extensivity : Extensivity CompHaus := sorry
+lemma extensivity_injective {α : Type} [Fintype α] {X : CompHaus.{u}}
+    {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} {Y : CompHaus.{u}} (f : Y ⟶ X)
+    (HIso : IsIso (finiteCoproduct.desc _ π)) :
+    Function.Injective (finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))) := by
+  let ζ := finiteCoproduct.desc _ (fun a => pullback.snd f (π a) ≫ finiteCoproduct.ι Z a )
+  let α := finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))
+  let β := finiteCoproduct.desc _ π
+  have comm : ζ ≫ β = α ≫ f := by
+     refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+     simp [← Category.assoc, finiteCoproduct.ι_desc, pullback.condition]
+  intro R₁ R₂ hR
+  have himage : (ζ ≫ β) R₁ = (ζ ≫ β) R₂ := by
+    rw [comm]; change f (α R₁) = f (α R₂); rw [hR]
+  replace himage := congr_arg (inv β) himage
+  change ((ζ ≫ β ≫ inv β) R₁) = ((ζ ≫ β ≫ inv β) R₂) at himage
+  rw [IsIso.hom_inv_id, Category.comp_id] at himage
+  have Hfst : R₁.fst = R₂.fst := by
+    suffices (ζ R₁).1 = R₁.1 ∧ (ζ R₂).1 = R₂.1 by
+      · rw [← this.1, ← this.2, himage]
+    constructor <;> rfl
+  sorry -- exact Sigma.subtype_ext Hfst hR
 
-lemma epi_pullback_of_epi : EpiPullbackOfEpi CompHaus := sorry
+lemma extensivity_explicit {α : Type} [Fintype α] {X : CompHaus.{u}}
+    {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} {Y : CompHaus.{u}} (f : Y ⟶ X)
+    (HIso : IsIso (finiteCoproduct.desc _ π)) :
+     IsIso (finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))) := by
+  let β := finiteCoproduct.desc _ π
+  apply isIso_of_bijective _ 
+  refine' ⟨extensivity_injective f HIso, fun y => _⟩
+  refine' ⟨⟨(inv β (f y)).1, ⟨⟨y, (inv β (f y)).2⟩, _⟩⟩, rfl⟩
+  have inj : Function.Injective (inv β) := by --this should be obvious
+    intros r s hrs
+    convert congr_arg β hrs <;> change _ = (inv β ≫ β) _<;> simp only [IsIso.inv_hom_id]<;> rfl  
+  apply inj
+  suffices ∀ a, π a ≫ inv β = finiteCoproduct.ι _ a by
+    · apply Eq.symm
+      change (_ ≫ inv β) _ = _
+      rw [this]
+      rfl
+  intro a
+  simp only [IsIso.comp_inv_eq, finiteCoproduct.ι_desc]
+
+lemma extensivity : Extensivity CompHaus := @fun α _ X Z i Y f H => by
+  let θ := Sigma.mapIso (fun a => fromExplicitIso f (i a))
+  suffices IsIso (θ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
+    · apply IsIso.of_isIso_comp_left θ.hom
+  let δ := FromFiniteCoproductIso (fun a => CompHaus.pullback f (i a))
+  suffices IsIso <| δ.hom ≫ (θ.hom ≫ Sigma.desc fun x => Limits.pullback.fst) by
+    · apply IsIso.of_isIso_comp_left δ.hom
+  have HIso : IsIso (finiteCoproduct.desc _ i) := by
+    let ε := ToFiniteCoproductIso Z
+    suffices IsIso <| ε.hom ≫ (finiteCoproduct.desc _ i) by
+      · apply IsIso.of_isIso_comp_left ε.hom 
+    convert H
+    refine' Sigma.hom_ext _ _ (fun a => _)
+    simp [← Category.assoc]
+  convert extensivity_explicit f HIso
+  refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+  simp [← Category.assoc, finiteCoproduct.ι_desc, fromExplicit]
+
+lemma epi_pullback_of_epi : EpiPullbackOfEpi CompHaus := by
+  intro X Y Z f π hπ  
+  suffices : Epi (fromExplicit f π ≫ (Limits.pullback.fst : Limits.pullback f π ⟶ Y))
+  · exact @epi_of_epi _ _ _ _ _ _ _ this
+  rw [CompHaus.epi_iff_surjective] at hπ ⊢   
+  intro y 
+  obtain ⟨z,hz⟩ := hπ (f y) 
+  have : fromExplicit f π ≫ Limits.pullback.fst = CompHaus.pullback.fst f π
+  · dsimp [fromExplicit]
+    simp only [limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app] 
+  rw [this] 
+  exact ⟨⟨(y, z), hz.symm⟩, rfl⟩ 
 
 lemma one' : (dagurCoverage' CompHaus epi_pullback_of_epi 
     extensivity).toGrothendieck = 
