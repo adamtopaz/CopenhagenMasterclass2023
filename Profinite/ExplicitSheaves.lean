@@ -121,4 +121,20 @@ lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi
         · assumption
         · assumption   
 
+lemma isSheafFor_of_Dagur {X : Profinite} {S : Presieve X}
+    (hS : S ∈ (dagurCoverage' Profinite epi_pullback_of_epi extensivity).covering X)
+    {F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)} (hFpfp : PreservesFiniteProducts F) 
+    (hFecs : ∀ {S : Presieve X} (_ : S ∈ DagurSieveSingle X), IsSheafFor F S) : 
+    S.IsSheafFor F := by
+  cases' hS with hSIso hSSingle
+  · exact isSheafForDagurSieveIso hSIso hFpfp
+  · exact hFecs hSSingle 
+
+-- theorem final (A : Type (u+2)) [Category.{u+1} A] {F : Profinite.{u}ᵒᵖ ⥤ A}
+--     (hFpfp : PreservesFiniteProducts F) (hFecs : ?) : 
+--     Presheaf.IsSheaf (coherentTopology Profinite) F := by sorry
+--   rw [← one']
+--   exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
+--     ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+
 end Profinite

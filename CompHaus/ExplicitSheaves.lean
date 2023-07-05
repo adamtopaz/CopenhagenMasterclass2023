@@ -121,4 +121,13 @@ lemma one' : (dagurCoverage' CompHaus epi_pullback_of_epi
         · assumption
         · assumption   
 
+lemma isSheafFor_of_Dagur {X : CompHaus} {S : Presieve X}
+    (hS : S ∈ (dagurCoverage' CompHaus epi_pullback_of_epi extensivity).covering X)
+    {F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)} (hFpfp : PreservesFiniteProducts F) 
+    (hFecs : ∀ {S : Presieve X} (_ : S ∈ DagurSieveSingle X), IsSheafFor F S) : 
+    S.IsSheafFor F := by
+  cases' hS with hSIso hSSingle
+  · exact isSheafForDagurSieveIso hSIso hFpfp
+  · exact hFecs hSSingle 
+
 end CompHaus
