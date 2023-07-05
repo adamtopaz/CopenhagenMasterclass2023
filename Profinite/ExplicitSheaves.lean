@@ -10,7 +10,7 @@ lemma extensivity : Extensivity Profinite := sorry
 
 lemma epi_pullback_of_epi : EpiPullbackOfEpi Profinite := sorry
 
-lemma Profinite.one' : (dagurCoverage' Profinite epi_pullback_of_epi 
+lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi 
     extensivity).toGrothendieck = 
     (coherentTopology Profinite) := by
   ext X S  
