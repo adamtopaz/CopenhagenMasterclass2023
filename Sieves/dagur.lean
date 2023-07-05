@@ -225,7 +225,7 @@ def comparisoninv {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α)
     (∏ fun (f : (Σ(Y : C), { f : Y ⟶ X // S f })) => F.obj (op f.1)) ⟶
     ∏ fun a => F.obj (op (Z a)) :=
   haveI := HasProductT hS
-  Pi.lift (fun a => Pi.π _ (v hS a) ≫ F.map (Quiver.Hom.op (𝟙 _))) 
+  Pi.lift (fun a => Pi.π _ (v hS a) ≫ F.map (𝟙 _)) 
   
 noncomputable
 def fromFirst {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
@@ -252,11 +252,26 @@ lemma isSheafForDagurSieveIsIsoFork {X : C} {S : Presieve X} (hS : S ∈ DagurSi
     (hF : PreservesFiniteProducts F) :
     IsIso (Equalizer.forkMap F S) := by
   rcases hS with ⟨α, _, Z, π, hS, HIso⟩
-  refine' ⟨fromFirst hS hF HIso, _, _⟩
-  · sorry
-  · haveI : PreservesLimit (Discrete.functor fun a => op (Z a)) F := by
+  haveI : PreservesLimit (Discrete.functor fun a => op (Z a)) F := by
       haveI := (hF.preserves α); infer_instance
-    refine' Limits.Pi.hom_ext _ _ (fun f => _)
+  refine' ⟨fromFirst hS hF HIso, _, _⟩
+  · unfold fromFirst 
+    simp only [← Category.assoc]
+    rw [Functor.map_inv, IsIso.comp_inv_eq, Category.id_comp, ← Functor.mapIso_inv,
+      Iso.comp_inv_eq, Functor.mapIso_hom, Iso.comp_inv_eq, ← Functor.map_comp, descOpCompCoprodToProd]
+    have : F.map (Pi.lift fun a => (π a).op) ≫ (PreservesProduct.iso F fun a => op (Z a)).hom =
+      Pi.lift (fun a => F.map ((Sigma.ι Z a ≫ (Sigma.desc π)).op)) := by simp --this can be a general lemma
+    erw [this]
+    refine' funext (fun s => _)
+    simp only [types_comp_apply, colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app]
+    ext a
+    rw [Types.Limit.lift_π_apply]
+    dsimp [comparisoninv]
+    simp_rw [v.fst]
+    simp only [Functor.map_id, Category.comp_id]
+    rw [Types.Limit.lift_π_apply]
+    simp only [Fan.mk_pt, Equalizer.forkMap, Fan.mk_π_app, Types.pi_lift_π_apply, v.snd]
+  · refine' Limits.Pi.hom_ext _ _ (fun f => _)
     dsimp [Equalizer.forkMap]
     rw [Category.id_comp, Category.assoc, limit.lift_π, Limits.Fan.mk_π_app]
     simp only

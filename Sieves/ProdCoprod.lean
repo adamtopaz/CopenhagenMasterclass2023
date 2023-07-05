@@ -74,4 +74,13 @@ lemma CoprodToProdInvComp.ι (b : α) : ((CoprodToProd Z).inv ≫ (Sigma.ι (fun
     Pi.π (fun a => op (Z a)) b :=
   IsLimit.conePointUniqueUpToIso_inv_comp (isLimitOppositeFan Z) (limit.isLimit _) ⟨b⟩
 
+variable {X : C} (π : (a : α) → Z a ⟶ X)
+
+lemma descOpCompCoprodToProd {X : C} (π : (a : α) → Z a ⟶ X) :
+    (Sigma.desc π).op ≫ (CoprodToProd Z).hom = Pi.lift (fun a => Quiver.Hom.op (π a)) := by
+  refine' limit.hom_ext (fun a => _)
+  simp only [CoprodToProd, Category.assoc, limit.conePointUniqueUpToIso_hom_comp, oppositeFan_pt, 
+    oppositeFan_π_app, limit.lift_π, Fan.mk_pt, Fan.mk_π_app, ← op_comp, colimit.ι_desc]
+  rfl
+
 end CoprodToProd
