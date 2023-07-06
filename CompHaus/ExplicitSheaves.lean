@@ -1,6 +1,5 @@
 import Sieves.ExtensiveRegular
-import CompHaus.Pullback
-import CompHaus.Coproduct
+import CompHaus.ExplicitLimits
 import Mathlib.Topology.Category.CompHaus.EffectiveEpi
 import Mathlib.CategoryTheory.Sites.Sheaf
 

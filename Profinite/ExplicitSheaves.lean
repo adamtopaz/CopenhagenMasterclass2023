@@ -1,8 +1,7 @@
 import Sieves.ExtensiveRegular
 import Profinite.Coherent
 import Mathlib.CategoryTheory.Sites.Sheaf
-import Profinite.Pullback
-import Profinite.Coproduct
+import Profinite.ExplicitLimits
 
 open CategoryTheory Profinite Opposite CategoryTheory.Limits Functor Presieve
  
