@@ -8,28 +8,6 @@ open CategoryTheory CompHaus Opposite CategoryTheory.Limits Functor Presieve
  
 namespace CompHaus
 
--- lemma finiteCoproduct_ext {α : Type} [Fintype α] {X : CompHaus.{u}}
---     {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} {R₁ R₂ : finiteCoproduct Z} 
---     (Hfst : R₁.fst = R₂.fst) 
---     (hR : finiteCoproduct.desc Z π R₁ = finiteCoproduct.desc Z π R₂) : R₁ = R₂ := by
---   refine' Sigma.ext Hfst _ 
---   have e : (Z R₁.fst).toTop.α = (Z R₂.fst).toTop.α  
---   · rw [Hfst] 
---   apply heq_of_cast_eq e 
---   dsimp [cast]
---   sorry
-
--- lemma finiteCoproduct_ext' {α : Type} [Fintype α] {Z : α → CompHaus.{u}} {R₁ R₂ : finiteCoproduct Z} 
---     (Hfst : R₁.fst = R₂.fst) 
---     (hR : finiteCoproduct.desc Z (fun a ↦ finiteCoproduct.ι Z a) R₁ = 
---     finiteCoproduct.desc Z (fun a ↦ finiteCoproduct.ι Z a) R₂) : R₁ = R₂ := by
---   refine' Sigma.ext Hfst _ 
---   have e : (Z R₁.fst).toTop.α = (Z R₂.fst).toTop.α  
---   · rw [Hfst] 
---   apply heq_of_cast_eq e 
---   dsimp [cast]
---   sorry
-
 lemma finiteCoproduct.ι_injective {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
     (a : α) : Function.Injective (finiteCoproduct.ι Z a) := by
   intro x y hxy 
@@ -39,18 +17,6 @@ lemma finiteCoproduct.ι_jointly_surjective {α : Type} [Fintype α] {Z : α →
     (R : finiteCoproduct Z) : ∃ (a : α) (r : Z a), R = finiteCoproduct.ι Z a r := by
   exact ⟨R.fst, R.snd, rfl⟩
 
-lemma finiteCoproduct.ι_jointly_surjective' {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
-    (R : finiteCoproduct Z) (a : α) (ha : a = R.fst) : ∃ (r : Z a), R = ι Z a r := by
-  obtain ⟨a',r,h⟩ := ι_jointly_surjective R 
-  have : a = a'
-  · rw [ha, h]
-    dsimp [ι]
-    rfl
-  rw [← this] at r 
-  use r 
-  rw [h] 
-  sorry
-
 lemma finiteCoproduct.ι_desc_apply {α : Type} [Fintype α] {X : CompHaus.{u}}
     {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} (a : α) : 
     ∀ x, finiteCoproduct.desc Z π (finiteCoproduct.ι Z a x) = π a x := by
@@ -58,107 +24,66 @@ lemma finiteCoproduct.ι_desc_apply {α : Type} [Fintype α] {X : CompHaus.{u}}
   change (ι Z a ≫ desc Z π) _ = _ 
   simp only [ι_desc]
 
-lemma finiteCoproduct.injective_of {α : Type} [Fintype α] {Z : α → CompHaus.{u}} {X :CompHaus}
-    {f : finiteCoproduct Z ⟶ X} (hf : ∀ (a : α), Function.Injective ((ι Z a) ≫ f)) :
-    Function.Injective f := by
-  sorry
-  -- intro r s
-  -- contrapose 
-  -- intro h 
-  -- by_cases hrs : r.fst = s.fst 
-  -- · sorry
-  -- · sorry
-
-  --  h 
-  -- obtain ⟨ar, xr , hr⟩ := ι_jointly_surjective r 
-  -- obtain ⟨as, xs , hs⟩ := ι_jointly_surjective s
-  -- rw [hr, hs]
-  -- rw [hr] at h 
-  -- rw [hs] at h
-  -- sorry
-  -- change (ι Z ar ≫ f) _ = _ at h 
-  -- have h' := h.symm 
-  -- change (ι Z as ≫ f) _ = _ at h' 
-
-  -- rw [← mono_iff_injective]
-  -- constructor 
-  -- intro Y g h hhg
-  
-  
+lemma finiteCoproduct.range_eq {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
+    {a b : α} (h : a = b) : Set.range (ι Z a) = Set.range (ι Z b) := by
+  rw [h]
 
 lemma extensivity_injective {α : Type} [Fintype α] {X : CompHaus.{u}}
     {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} {Y : CompHaus.{u}} (f : Y ⟶ X)
     (HIso : IsIso (finiteCoproduct.desc _ π)) :
     Function.Injective (finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))) := by
-  apply finiteCoproduct.injective_of 
-  intro a 
-  simp only [finiteCoproduct.ι_desc]  
-  intro x y h 
-  have h₁ := h
-  apply_fun f at h 
-  change (pullback.fst f (π a) ≫ f) x = _ at h 
-  have h' := h.symm
-  change (pullback.fst f (π a) ≫ f) y = _ at h'
-  rw [pullback.condition] at h' 
-  have : Function.Injective (π a)
-  · intro r s hrs
-    rw [← finiteCoproduct.ι_desc_apply] at hrs
-    have hrs' := hrs.symm 
-    rw [← finiteCoproduct.ι_desc_apply] at hrs' 
-    have : Function.Injective (finiteCoproduct.desc (fun a ↦ Z a) π)
-    · apply Function.Bijective.injective 
-      exact ConcreteCategory.bijective_of_isIso _ 
-    exact (finiteCoproduct.ι_injective a (this hrs')).symm
-  have h₂ := this h' 
-  suffices : x.val = y.val 
-  · exact Subtype.ext this 
-  exact Prod.ext h₁ h₂.symm
-  -- let ζ := finiteCoproduct.desc _ (fun a => pullback.snd f (π a) ≫ finiteCoproduct.ι Z a )
-  -- let σ := finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))
-  -- let β := finiteCoproduct.desc _ π
-  -- have comm : ζ ≫ β = σ ≫ f := by
-  --    refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
-  --    simp [← Category.assoc, finiteCoproduct.ι_desc, pullback.condition]
-  -- intro R₁ R₂ hR
-  -- have himage : (ζ ≫ β) R₁ = (ζ ≫ β) R₂ := by
-  --   rw [comm]; change f (σ R₁) = f (σ R₂); rw [hR]
-  -- replace himage := congr_arg (inv β) himage
-  -- change ((ζ ≫ β ≫ inv β) R₁) = ((ζ ≫ β ≫ inv β) R₂) at himage
-  -- rw [IsIso.hom_inv_id, Category.comp_id] at himage
-  -- have Hfst : R₁.fst = R₂.fst := by
-  --   suffices (ζ R₁).1 = R₁.1 ∧ (ζ R₂).1 = R₂.1 by
-  --     · rw [← this.1, ← this.2, himage]
-  --   constructor <;> rfl
-  -- obtain ⟨a₁, r₁, h₁⟩ := finiteCoproduct.ι_jointly_surjective R₁  
-  -- dsimp at r₁
-  -- obtain ⟨a₂, r₂, h₂⟩ := finiteCoproduct.ι_jointly_surjective R₂
-  -- dsimp at r₂ 
-  -- rw [h₁, h₂, finiteCoproduct.ι_desc_apply, finiteCoproduct.ι_desc_apply] at hR
-  
-  -- -- have h₁ : ∃ r, R₁ = finiteCoproduct.ι _ R₁.fst r := sorry 
-  -- have h₂ : ∃ r, R₂ = finiteCoproduct.ι _ R₁.fst r := sorry 
-  -- -- obtain ⟨r₁,hr₁⟩ := h₁ 
-  -- obtain ⟨r₂,hr₂⟩ := h₂ 
-  -- rw [hr₂] at hR
-  
-  -- have h_inj : ∀ (a : α) b, Function.Injective (finiteCoproduct.ι b a) := sorry 
-  -- apply h_inj R₁.fst _
-  -- rcases R₁ with ⟨a₁, ⟨⟨y₁, z₁⟩, h₁⟩⟩ 
-  -- rcases R₂ with ⟨a₂, ⟨⟨y₂, z₂⟩, h₂⟩⟩ 
-  -- congr
-  
-  -- congr 
-  -- dsimp at Hfst 
-  -- conv =>
-  --   congr
-  --   · rw [Hfst]
-        
-  -- refine' Sigma.ext Hfst _ 
-  -- have h₁ : R₁.snd.val.fst = R₂.snd.val.fst := hR
-  -- have h₂ : HEq R₁.snd.val.snd R₂.snd.val.snd := sorry
-  -- suffices : HEq R₁.snd.val R₂.snd.val
-  -- · sorry
-  -- cases' R₁.snd.val with y₁ z₁
+  let ζ := finiteCoproduct.desc _ (fun a => pullback.snd f (π a) ≫ finiteCoproduct.ι Z a )
+  let σ := finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))
+  let β := finiteCoproduct.desc _ π
+  have comm : ζ ≫ β = σ ≫ f := by
+     refine' finiteCoproduct.hom_ext _ _ _ (fun a => _)
+     simp [← Category.assoc, finiteCoproduct.ι_desc, pullback.condition]
+  intro R₁ R₂ hR
+  have himage : (ζ ≫ β) R₁ = (ζ ≫ β) R₂ := by
+    rw [comm]; change f (σ R₁) = f (σ R₂); rw [hR]
+  replace himage := congr_arg (inv β) himage
+  change ((ζ ≫ β ≫ inv β) R₁) = ((ζ ≫ β ≫ inv β) R₂) at himage
+  rw [IsIso.hom_inv_id, Category.comp_id] at himage
+  have Hfst : R₁.fst = R₂.fst := by
+    suffices (ζ R₁).1 = R₁.1 ∧ (ζ R₂).1 = R₂.1 by
+      · rw [← this.1, ← this.2, himage]
+    constructor <;> rfl
+  obtain ⟨a₁, r₁, h₁⟩ := finiteCoproduct.ι_jointly_surjective R₁
+  obtain ⟨a₂, r₂, h₂⟩ := finiteCoproduct.ι_jointly_surjective R₂ 
+  have ha₁ : a₁ = R₁.fst := (congrArg Sigma.fst h₁).symm 
+  have ha₂ : a₂ = R₂.fst := (congrArg Sigma.fst h₂).symm  
+  have ha : a₁ = a₂ := by rwa [ha₁, ha₂] 
+  have : R₁ ∈ Set.range (finiteCoproduct.ι _ a₂) 
+  · rw [← finiteCoproduct.range_eq ha, h₁]
+    simp only [Set.mem_range, exists_apply_eq_apply] 
+  obtain ⟨xr', hr'⟩ := this 
+  rw [← hr', h₂] at hR 
+  have hf : ∀ (a : α), Function.Injective 
+      ((finiteCoproduct.ι _ a) ≫ (finiteCoproduct.desc _ ((fun a => pullback.fst f (π a)))))
+  · intro a 
+    simp only [finiteCoproduct.ι_desc]  
+    intro x y h 
+    have h₁ := h
+    apply_fun f at h 
+    change (pullback.fst f (π a) ≫ f) x = _ at h 
+    have h' := h.symm
+    change (pullback.fst f (π a) ≫ f) y = _ at h'
+    rw [pullback.condition] at h' 
+    have : Function.Injective (π a)
+    · intro r s hrs
+      rw [← finiteCoproduct.ι_desc_apply] at hrs
+      have hrs' := hrs.symm 
+      rw [← finiteCoproduct.ι_desc_apply] at hrs' 
+      have : Function.Injective (finiteCoproduct.desc (fun a ↦ Z a) π)
+      · apply Function.Bijective.injective 
+        exact ConcreteCategory.bijective_of_isIso _ 
+      exact (finiteCoproduct.ι_injective a (this hrs')).symm
+    have h₂ := this h' 
+    suffices : x.val = y.val 
+    · exact Subtype.ext this 
+    exact Prod.ext h₁ h₂.symm
+  have := hf a₂ hR 
+  rw [← hr', h₂, this]
 
 lemma extensivity_explicit {α : Type} [Fintype α] {X : CompHaus.{u}}
     {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} {Y : CompHaus.{u}} (f : Y ⟶ X)
