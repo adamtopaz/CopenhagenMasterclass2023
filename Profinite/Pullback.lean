@@ -92,4 +92,18 @@ def fromExplicitIso : Profinite.pullback f i ≅ Limits.pullback f i where
 
 end Isos
 
+section Commutativity
+
+theorem fst_comp_fromExplicit : 
+    Profinite.pullback.fst f i = fromExplicit f i ≫ Limits.pullback.fst := by  
+  dsimp [fromExplicit] 
+  simp only [limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app]
+
+theorem snd_comp_fromExplicit : 
+    Profinite.pullback.snd f i = fromExplicit f i ≫ Limits.pullback.snd := by  
+  dsimp [fromExplicit] 
+  simp only [limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app]
+
+end Commutativity
+
 end Profinite

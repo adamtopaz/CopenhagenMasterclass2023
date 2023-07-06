@@ -372,4 +372,25 @@ lemma isSheafFor_of_Dagur {B : CompHaus} {S : Presieve B}
       apply_fun (EqualizerFirstObjIso F π).hom at hz
       exact hx.2 z hz
     
+theorem final (A : Type (u+2)) [Category.{u+1} A] {F : CompHaus.{u}ᵒᵖ ⥤ A}
+    (hF : PreservesFiniteProducts F) 
+    (hF' : ∀ (E : A), EqualizerCondition (F ⋙ coyoneda.obj (op E))) : 
+  Presheaf.IsSheaf (coherentTopology CompHaus) F := by
+  rw [← one']
+  refine' fun E => (Presieve.isSheaf_coverage _ _).2 _ 
+  intro B S hS
+  apply isSheafFor_of_Dagur hS 
+  · exact ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+  · exact hF' E 
+
+theorem final' (A : Type (u+2)) [Category.{u+1} A] {G : A ⥤ Type (u+1)}
+    [HasLimits A] [PreservesLimits G] [ReflectsIsomorphisms G] 
+    {F : CompHaus.{u}ᵒᵖ ⥤ A}
+    (hF : PreservesFiniteProducts (F ⋙ G)) (hF' : EqualizerCondition (F ⋙ G)) : 
+    Presheaf.IsSheaf (coherentTopology CompHaus) F := by
+  rw [Presheaf.isSheaf_iff_isSheaf_forget (coherentTopology CompHaus) F G,
+    isSheaf_iff_isSheaf_of_type, ← one', Presieve.isSheaf_coverage]
+  intro B S' hS 
+  exact isSheafFor_of_Dagur hS hF hF'
+
 end CompHaus

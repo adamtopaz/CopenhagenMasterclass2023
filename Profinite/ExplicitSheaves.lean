@@ -247,20 +247,150 @@ lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi
         · assumption
         · assumption   
 
-lemma isSheafFor_of_Dagur {X : Profinite} {S : Presieve X}
-    (hS : S ∈ (dagurCoverage' Profinite epi_pullback_of_epi extensivity).covering X)
+def MapToEqualizer (P : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) {W X B : Profinite} (f : X ⟶ B) 
+    (g₁ g₂ : W ⟶ X) (w : g₁ ≫ f = g₂ ≫ f) : 
+    P.obj (op B) → { x : P.obj (op X) | P.map g₁.op x = P.map g₂.op x } :=
+  fun t ↦ ⟨P.map f.op t, by 
+    change (P.map _ ≫ P.map _) _ = (P.map _ ≫ P.map _) _ ;
+    simp_rw [← P.map_comp, ← op_comp, w] ⟩
+
+def EqualizerCondition (P : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) : Prop := ∀
+  (X B : Profinite) (π : X ⟶ B) (_ : Function.Surjective π),
+  Function.Bijective (MapToEqualizer P π (Profinite.pullback.fst π π) (Profinite.pullback.snd π π)
+      (Profinite.pullback.condition _ _))
+    
+noncomputable
+def EqualizerFirstObjIso (F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) {B X : Profinite} (π : X ⟶ B)
+     : Equalizer.FirstObj F (Presieve.singleton π) ≅ F.obj (op X) := 
+  CategoryTheory.Equalizer.firstObjEqFamily F (Presieve.singleton π) ≪≫ 
+  { hom := fun e ↦ e π (Presieve.singleton_self π)  
+    inv := fun e _ _ h ↦ by 
+      induction h with
+      | mk => exact e
+    hom_inv_id := by
+      funext _ _ _ h
+      induction h with
+      | mk => rfl
+    inv_hom_id := by aesop }
+
+noncomputable
+def EqualizerSecondObjIso_aux (F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) {B X : Profinite} (π : X ⟶ B) :
+    Equalizer.Presieve.SecondObj F (Presieve.singleton π) ≅ F.obj (op (Limits.pullback π π)) := 
+  Types.productIso.{u+1, u+1} _ ≪≫ 
+  { hom := fun e ↦ e (⟨X, ⟨π, Presieve.singleton_self π⟩⟩, ⟨X, ⟨π, Presieve.singleton_self π⟩⟩)
+    inv := fun x ⟨⟨_, ⟨_, h₁⟩⟩ , ⟨_, ⟨_, h₂⟩⟩⟩ ↦ by
+      induction h₁ 
+      induction h₂ 
+      exact x
+    hom_inv_id := by
+      funext _ ⟨⟨_, ⟨_, h₁⟩⟩ , ⟨_, ⟨_, h₂⟩⟩⟩
+      induction h₁
+      induction h₂ 
+      rfl
+    inv_hom_id := by aesop }
+
+noncomputable
+def EqualizerSecondObjIso (F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) {B X : Profinite} (π : X ⟶ B) :
+    Equalizer.Presieve.SecondObj F (Presieve.singleton π) ≅ F.obj (op (Profinite.pullback π π)) := 
+  EqualizerSecondObjIso_aux F π ≪≫ (F.mapIso ((fromExplicitIso π π).op : 
+    op (Limits.pullback π π) ≅ op (Profinite.pullback π π)))
+
+lemma isSheafFor_of_Dagur {B : Profinite} {S : Presieve B}
+    (hS : S ∈ (dagurCoverage' Profinite epi_pullback_of_epi extensivity).covering B)
     {F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)} (hFpfp : PreservesFiniteProducts F) 
-    (hFecs : ∀ {S : Presieve X} (_ : S ∈ DagurSieveSingle X), IsSheafFor F S) : 
+    (hFecs : EqualizerCondition F) : 
     S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
   · exact isSheafForDagurSieveIso hSIso hFpfp
-  · exact hFecs hSSingle 
+  · rw [Equalizer.Presieve.sheaf_condition, Limits.Types.type_equalizer_iff_unique]
+    intro y h 
+    dsimp [DagurSieveSingle] at hSSingle 
+    obtain ⟨X, π, ⟨hS, πsurj⟩⟩ := hSSingle 
+    rw [Presieve.ofArrows_pUnit] at hS 
+    subst hS
+    rw [Profinite.epi_iff_surjective] at πsurj 
+    specialize hFecs X B π πsurj 
+    have fork_comp : Equalizer.forkMap F (Presieve.singleton π) ≫ (EqualizerFirstObjIso F π).hom = 
+        F.map π.op
+    · dsimp [EqualizerFirstObjIso, Equalizer.forkMap]
+      ext b
+      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply]
+    have fmap_comp : (EqualizerFirstObjIso F π).hom ≫ F.map (pullback.fst π π).op = 
+        Equalizer.Presieve.firstMap F (Presieve.singleton π) ≫ (EqualizerSecondObjIso F π).hom
+    · dsimp [EqualizerSecondObjIso]
+      rw [Profinite.fst_comp_fromExplicit, op_comp, Functor.map_comp]
+      suffices : (EqualizerFirstObjIso F π).hom ≫ F.map Limits.pullback.fst.op = 
+          Equalizer.Presieve.firstMap F (Presieve.singleton π) ≫
+          (EqualizerSecondObjIso_aux F π).hom 
+      · simp only [← Category.assoc] 
+        rw [this]
+      dsimp [EqualizerFirstObjIso, Equalizer.Presieve.firstMap, EqualizerSecondObjIso_aux]
+      ext b
+      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply]
+    have smap_comp : (EqualizerFirstObjIso F π).hom ≫ F.map (pullback.snd π π).op = 
+        Equalizer.Presieve.secondMap F (Presieve.singleton π) ≫ (EqualizerSecondObjIso F π).hom 
+    · dsimp [EqualizerSecondObjIso]
+      rw [Profinite.snd_comp_fromExplicit, op_comp, Functor.map_comp]
+      suffices : (EqualizerFirstObjIso F π).hom ≫ F.map Limits.pullback.snd.op = 
+          Equalizer.Presieve.secondMap F (Presieve.singleton π) ≫
+          (EqualizerSecondObjIso_aux F π).hom 
+      · simp only [← Category.assoc] 
+        rw [this]
+      dsimp [EqualizerFirstObjIso, Equalizer.Presieve.secondMap, EqualizerSecondObjIso_aux]
+      ext b
+      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply] 
+    have iy_mem : F.map (pullback.fst π π).op ((EqualizerFirstObjIso F π).hom y) = 
+        F.map (pullback.snd π π).op ((EqualizerFirstObjIso F π).hom y)
+    · change ((EqualizerFirstObjIso F π).hom ≫ _) y = _ 
+      apply Eq.symm -- how do I avoid this ugly hack?
+      change ((EqualizerFirstObjIso F π).hom ≫ _) y = _  
+      rw [fmap_comp, smap_comp]
+      dsimp 
+      rw [h]
+    have uniq_F : ∃! x, F.map π.op x = (EqualizerFirstObjIso F π).hom y
+    · rw [Function.bijective_iff_existsUnique] at hFecs 
+      specialize hFecs ⟨(EqualizerFirstObjIso F π).hom y, iy_mem⟩ 
+      obtain ⟨x, hx⟩ := hFecs 
+      refine' ⟨x, _⟩   
+      dsimp [MapToEqualizer] at *
+      refine' ⟨Subtype.ext_iff.mp hx.1,_⟩ 
+      intro z hz 
+      apply hx.2 
+      rwa [Subtype.ext_iff] 
+    obtain ⟨x,hx⟩ := uniq_F 
+    dsimp at hx
+    rw [← fork_comp] at hx
+    use x   
+    dsimp 
+    constructor 
+    · apply_fun (EqualizerFirstObjIso F π).hom 
+      · exact hx.1 
+      · apply Function.Bijective.injective 
+        rw [← isIso_iff_bijective] 
+        exact inferInstance
+    · intro z hz
+      apply_fun (EqualizerFirstObjIso F π).hom at hz
+      exact hx.2 z hz
+    
+theorem final (A : Type (u+2)) [Category.{u+1} A] {F : Profinite.{u}ᵒᵖ ⥤ A}
+    (hF : PreservesFiniteProducts F) 
+    (hF' : ∀ (E : A), EqualizerCondition (F ⋙ coyoneda.obj (op E))) : 
+  Presheaf.IsSheaf (coherentTopology Profinite) F := by
+  rw [← one']
+  refine' fun E => (Presieve.isSheaf_coverage _ _).2 _ 
+  intro B S hS
+  apply isSheafFor_of_Dagur hS 
+  · exact ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+  · exact hF' E 
 
--- theorem final (A : Type (u+2)) [Category.{u+1} A] {F : Profinite.{u}ᵒᵖ ⥤ A}
---     (hFpfp : PreservesFiniteProducts F) (hFecs : ?) : 
---     Presheaf.IsSheaf (coherentTopology Profinite) F := by sorry
---   rw [← one']
---   exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
---     ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩
+theorem final' (A : Type (u+2)) [Category.{u+1} A] {G : A ⥤ Type (u+1)}
+    [HasLimits A] [PreservesLimits G] [ReflectsIsomorphisms G] 
+    {F : Profinite.{u}ᵒᵖ ⥤ A}
+    (hF : PreservesFiniteProducts (F ⋙ G)) (hF' : EqualizerCondition (F ⋙ G)) : 
+    Presheaf.IsSheaf (coherentTopology Profinite) F := by
+  rw [Presheaf.isSheaf_iff_isSheaf_forget (coherentTopology Profinite) F G,
+    isSheaf_iff_isSheaf_of_type, ← one', Presieve.isSheaf_coverage]
+  intro B S' hS 
+  exact isSheafFor_of_Dagur hS hF hF'
 
 end Profinite
