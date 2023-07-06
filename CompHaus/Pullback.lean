@@ -4,9 +4,9 @@ open CategoryTheory Limits
 
 namespace CompHaus
 
-section Isos
-
 variable {X Y Z : CompHaus.{u}} (f : X ⟶ Z) (i : Y ⟶ Z) 
+
+section Isos
 
 noncomputable
 def toExplicit : Limits.pullback f i ⟶ CompHaus.pullback f i :=
@@ -38,5 +38,19 @@ def fromExplicitIso : CompHaus.pullback f i ≅ Limits.pullback f i where
   inv_hom_id := toExplicitCompFromExcplict f i
 
 end Isos
+
+section Commutativity
+
+theorem fst_comp_fromExplicit : 
+    CompHaus.pullback.fst f i = fromExplicit f i ≫ Limits.pullback.fst := by  
+  dsimp [fromExplicit] 
+  simp only [limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app]
+
+theorem snd_comp_fromExplicit : 
+    CompHaus.pullback.snd f i = fromExplicit f i ≫ Limits.pullback.snd := by  
+  dsimp [fromExplicit] 
+  simp only [limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app]
+
+end Commutativity
 
 end CompHaus

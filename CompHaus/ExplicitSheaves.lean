@@ -274,8 +274,8 @@ def EqualizerFirstObjIso (F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) {B X : CompHaus
     inv_hom_id := by aesop }
 
 noncomputable
-def EqualizerSecondObjIso (F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) {B X : CompHaus} (π : X ⟶ B)
-     : Equalizer.Presieve.SecondObj F (Presieve.singleton π) ≅ F.obj (op (CompHaus.pullback π π)) := 
+def EqualizerSecondObjIso_aux (F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) {B X : CompHaus} (π : X ⟶ B) :
+    Equalizer.Presieve.SecondObj F (Presieve.singleton π) ≅ F.obj (op (Limits.pullback π π)) := 
   Types.productIso.{u+1, u+1} _ ≪≫ 
   { hom := fun e ↦ e (⟨X, ⟨π, Presieve.singleton_self π⟩⟩, ⟨X, ⟨π, Presieve.singleton_self π⟩⟩)
     inv := fun x ⟨⟨_, ⟨_, h₁⟩⟩ , ⟨_, ⟨_, h₂⟩⟩⟩ ↦ by
@@ -287,7 +287,12 @@ def EqualizerSecondObjIso (F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) {B X : CompHau
       induction h₁
       induction h₂ 
       rfl
-    inv_hom_id := by aesop } ≪≫ (F.mapIso ((fromExplicitIso π π).op : 
+    inv_hom_id := by aesop }
+
+noncomputable
+def EqualizerSecondObjIso (F : CompHaus.{u}ᵒᵖ ⥤ Type (u+1)) {B X : CompHaus} (π : X ⟶ B) :
+    Equalizer.Presieve.SecondObj F (Presieve.singleton π) ≅ F.obj (op (CompHaus.pullback π π)) := 
+  EqualizerSecondObjIso_aux F π ≪≫ (F.mapIso ((fromExplicitIso π π).op : 
     op (Limits.pullback π π) ≅ op (CompHaus.pullback π π)))
 
 lemma isSheafFor_of_Dagur {B : CompHaus} {S : Presieve B}
@@ -305,20 +310,35 @@ lemma isSheafFor_of_Dagur {B : CompHaus} {S : Presieve B}
     subst hS
     rw [CompHaus.epi_iff_surjective] at πsurj 
     specialize hFecs X B π πsurj 
-    have fork_comp : Equalizer.forkMap F (Presieve.singleton π) ≫ (EqualizerFirstObjIso F π).hom = F.map π.op
+    have fork_comp : Equalizer.forkMap F (Presieve.singleton π) ≫ (EqualizerFirstObjIso F π).hom = 
+        F.map π.op
     · dsimp [EqualizerFirstObjIso, Equalizer.forkMap]
       ext b
       simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply]
     have fmap_comp : (EqualizerFirstObjIso F π).hom ≫ F.map (pullback.fst π π).op = 
         Equalizer.Presieve.firstMap F (Presieve.singleton π) ≫ (EqualizerSecondObjIso F π).hom
-    · dsimp [EqualizerFirstObjIso, EqualizerSecondObjIso, Equalizer.Presieve.firstMap, fromExplicit,
-        Types.productIso, limit.isoLimitCone]
+    · dsimp [EqualizerSecondObjIso]
+      rw [CompHaus.fst_comp_fromExplicit, op_comp, Functor.map_comp]
+      suffices : (EqualizerFirstObjIso F π).hom ≫ F.map Limits.pullback.fst.op = 
+          Equalizer.Presieve.firstMap F (Presieve.singleton π) ≫
+          (EqualizerSecondObjIso_aux F π).hom 
+      · simp only [← Category.assoc] 
+        rw [this]
+      dsimp [EqualizerFirstObjIso, Equalizer.Presieve.firstMap, EqualizerSecondObjIso_aux]
       ext b
-      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom]
-      sorry
+      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply]
     have smap_comp : (EqualizerFirstObjIso F π).hom ≫ F.map (pullback.snd π π).op = 
         Equalizer.Presieve.secondMap F (Presieve.singleton π) ≫ (EqualizerSecondObjIso F π).hom 
-    · sorry 
+    · dsimp [EqualizerSecondObjIso]
+      rw [CompHaus.snd_comp_fromExplicit, op_comp, Functor.map_comp]
+      suffices : (EqualizerFirstObjIso F π).hom ≫ F.map Limits.pullback.snd.op = 
+          Equalizer.Presieve.secondMap F (Presieve.singleton π) ≫
+          (EqualizerSecondObjIso_aux F π).hom 
+      · simp only [← Category.assoc] 
+        rw [this]
+      dsimp [EqualizerFirstObjIso, Equalizer.Presieve.secondMap, EqualizerSecondObjIso_aux]
+      ext b
+      simp only [types_comp_apply, Equalizer.firstObjEqFamily_hom, Types.pi_lift_π_apply] 
     have iy_mem : F.map (pullback.fst π π).op ((EqualizerFirstObjIso F π).hom y) = 
         F.map (pullback.snd π π).op ((EqualizerFirstObjIso F π).hom y)
     · change ((EqualizerFirstObjIso F π).hom ≫ _) y = _ 
