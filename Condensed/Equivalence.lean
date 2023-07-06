@@ -11,8 +11,6 @@ import Mathlib.CategoryTheory.Sites.DenseSubsite
 import Mathlib.CategoryTheory.Sites.InducedTopology
 import Mathlib.CategoryTheory.Sites.Closed
 import FindWithGpt
-import Mathlib.Topology.Category.CompHaus.Basic
-import Mathlib.CategoryTheory.Preadditive.Projective
 /-!
 # Sheaves on CompHaus are equivalent to sheaves on ExtrDisc
 
@@ -29,37 +27,8 @@ construction of the equivalence of the categories of sheaves, given these three 
 
 * `Condensed.coverDense`, `Condensed.coverPreserving`, `Condensed.coverLifting`: the
 three conditions needed to guarantee the equivalence of the categories of sheaves
-on the two sites.
-
-## TODO
-
-Prove the three main theorems!
+on the two sites. 
 -/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 open CategoryTheory Limits
 
