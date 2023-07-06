@@ -144,15 +144,6 @@ lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
   cases' hg with b
   apply HasPullbackOfIsIsodesc.HasPullback f
 
-lemma DagurSieveIsoFinite {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X) :
-    Finite (ΣY, { f : Y ⟶ X // S f }) := by
-  rcases hS with ⟨α, _, Z, π, hS, _⟩
-  classical
-  refine' Fintype.finite (Fintype.ofSurjective (fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩)
-    (fun ⟨Y, ⟨f, hf⟩⟩ => _))
-  cases' (hS ▸ hf) with a h
-  exact ⟨a, rfl⟩
-
 def v {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
     (hS: S = Presieve.ofArrows Z π) : α → Σ(Y : C), { f : Y ⟶ X // S f } :=
   fun a => ⟨Z a, π a, hS ▸ Presieve.ofArrows.mk a⟩
@@ -169,26 +160,6 @@ lemma v.snd {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S 
     (hS: S = Presieve.ofArrows Z π) (a : α) : (v hS a).2.1 = π a := rfl
 
 noncomputable
-def w {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-    (hS: S = Presieve.ofArrows Z π) : (Σ(Y : C), { f : Y ⟶ X // S f }) → α :=
-  Classical.choose (vsurj hS).hasRightInverse
-
-lemma vw {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-    (hS: S = Presieve.ofArrows Z π) : Function.RightInverse (w hS) (v hS) :=
-  Classical.choose_spec _
-
-lemma Zf {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-    (hS: S = Presieve.ofArrows Z π) (f : (Y : C) × { f // S f }) : Z (w hS f) = f.fst := by
-    nth_rewrite 2 [← (vw hS) f]
-    exact v.fst hS (w hS f)
-
-noncomputable
-def IsotoZ {α : Type} {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-    (hS: S = Presieve.ofArrows Z π) (f : (Σ(Y : C), { f : Y ⟶ X // S f })) :
-  op (f.1) ≅ op (Z ((w hS) f)) := Iso.op <| eqToIso (Zf hS f)
-
-
-noncomputable
 def FintypeT {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
      (hS: S = Presieve.ofArrows Z π) : Fintype (Σ(Y : C), { f : Y ⟶ X // S f }) := by
   classical
@@ -200,23 +171,6 @@ lemma HasProductT {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α)
   suffices Finite (Σ(Y : C), { f : Y ⟶ X // S f }) by
     · infer_instance
   exact Fintype.finite <| FintypeT hS
-
-noncomputable
-def E {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-     (hS: S = Presieve.ofArrows Z π) :
-     haveI := FintypeT hS
-     (Σ(Y : C), { f : Y ⟶ X // S f }) ≃
-     Fin (Fintype.card (Σ(Y : C), { f : Y ⟶ X // S f })) :=  
-  @Fintype.equivFin _ (_)
-
-noncomputable
-def comparison {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
-    (hS: S = Presieve.ofArrows Z π) (F : Cᵒᵖ ⥤ Type max u v) :
-    haveI := HasProductT hS
-    (∏ fun a => F.obj (op (Z a))) ⟶ 
-    ∏ fun (f : (Σ(Y : C), { f : Y ⟶ X // S f })) => F.obj (op f.1) :=
-  haveI := HasProductT hS
-  Pi.lift (fun f => Pi.π _ _ ≫ F.map (IsotoZ hS f).inv)
 
 noncomputable
 def comparisoninv {α : Type} [Fintype α] {Z : α → C} {X : C} {π : (a : α) → Z a ⟶ X} {S : Presieve X}
