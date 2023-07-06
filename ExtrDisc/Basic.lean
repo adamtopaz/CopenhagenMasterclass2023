@@ -57,6 +57,36 @@ structure ExtrDisc where
 -- the fields of the structure don't need docstrings
 attribute [nolint docBlame] ExtrDisc.compHaus ExtrDisc.extrDisc
 
+namespace CompHaus
+
+-- Proj implies ExtrDisc
+@[simps!]
+def toExtrDisc (X : CompHaus.{u}) [Projective X] :
+    ExtrDisc where
+  compHaus := X
+  extrDisc := by
+    apply CompactT2.Projective.extremallyDisconnected
+    intro A B _ _ _ _ _ _ f g hf hg hsurj
+    have : CompactSpace (TopCat.of A) := by assumption
+    have : T2Space (TopCat.of A) := by assumption
+    have : CompactSpace (TopCat.of B) := by assumption
+    have : T2Space (TopCat.of B) := by assumption
+    let A' : CompHaus := ⟨TopCat.of A⟩ 
+    let B' : CompHaus := ⟨TopCat.of B⟩ 
+    let f' : X ⟶ B' := ⟨f, hf⟩
+    let g' : A' ⟶ B' := ⟨g,hg⟩  
+    have : Epi g' := by
+      rw [CompHaus.epi_iff_surjective]
+      assumption
+    obtain ⟨h,hh⟩ := Projective.factors f' g'
+    refine ⟨h,h.2,?_⟩ 
+    ext t
+    apply_fun (fun e => e t) at hh
+    exact hh
+   
+
+end CompHaus
+
 namespace ExtrDisc
 
 /-- Extremally disconnected spaces form a large category. -/
@@ -141,8 +171,11 @@ def toProfinite : ExtrDisc.{u} ⥤ Profinite.{u} where
   map f := f
 
 /-- The functor from extremally disconnected spaces to profinite spaces is full. -/
-instance : Full toProfinite := sorry
-instance : Faithful toProfinite := sorry
+instance : Full toProfinite := by
+  fconstructor ; intro X Y f ; exact f ; simp
+
+instance : Faithful toProfinite := by
+  fconstructor ; intro X Y f g h ; assumption
 
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus :=
   rfl
@@ -363,3 +396,18 @@ instance hasFiniteCoproducts : HasFiniteCoproducts ExtrDisc.{u} where
 end FiniteCoproducts
 
 end ExtrDisc
+
+namespace CompHaus
+
+lemma Gleason (X : CompHaus.{u}) : 
+    Projective X ↔ ExtremallyDisconnected X := by
+  constructor
+  · intro h
+    show ExtremallyDisconnected X.toExtrDisc
+    infer_instance
+  · intro h
+    let X' : ExtrDisc := ⟨X⟩ 
+    show Projective X'.compHaus
+    apply ExtrDisc.instProjectiveCompHausCategoryCompHaus
+
+end CompHaus

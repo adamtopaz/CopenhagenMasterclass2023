@@ -67,7 +67,6 @@ universe u w
 
 namespace ExtrDiscCompHaus
 
-#check Sieve.coverByImage
 lemma coverDense :
     CoverDense (coherentTopology _) ExtrDisc.toCompHaus := by
   constructor
