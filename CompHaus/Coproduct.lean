@@ -82,4 +82,24 @@ theorem toFiniteCoproduct.OpenEmbedding : OpenEmbedding (toFiniteCoproductHomeo 
 
 end Iso
 
+lemma finiteCoproduct.ι_injective {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
+    (a : α) : Function.Injective (finiteCoproduct.ι Z a) := by
+  intro x y hxy 
+  exact eq_of_heq (Sigma.ext_iff.mp hxy).2
+
+lemma finiteCoproduct.ι_jointly_surjective {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
+    (R : finiteCoproduct Z) : ∃ (a : α) (r : Z a), R = finiteCoproduct.ι Z a r := by
+  exact ⟨R.fst, R.snd, rfl⟩
+
+lemma finiteCoproduct.ι_desc_apply {α : Type} [Fintype α] {X : CompHaus.{u}}
+    {Z : α → CompHaus.{u}} {π : (a : α) → Z a ⟶ X} (a : α) : 
+    ∀ x, finiteCoproduct.desc Z π (finiteCoproduct.ι Z a x) = π a x := by
+  intro x 
+  change (ι Z a ≫ desc Z π) _ = _ 
+  simp only [ι_desc]
+
+lemma finiteCoproduct.range_eq {α : Type} [Fintype α] {Z : α → CompHaus.{u}} 
+    {a b : α} (h : a = b) : Set.range (ι Z a) = Set.range (ι Z b) := by
+  rw [h]
+
 end CompHaus
