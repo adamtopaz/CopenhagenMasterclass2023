@@ -115,8 +115,8 @@ lemma epi_pullback_of_epi : EpiPullbackOfEpi Profinite := by
   rw [this] 
   exact ⟨⟨(y, z), hz.symm⟩, rfl⟩ 
 
-lemma one' : (ExtensiveRegularCoverage' Profinite epi_pullback_of_epi 
-    extensivity).toGrothendieck = 
+lemma extensiveRegular_generates_coherent : 
+    (ExtensiveRegularCoverage' Profinite epi_pullback_of_epi extensivity).toGrothendieck = 
     (coherentTopology Profinite) := by
   ext X S  
   constructor
@@ -355,7 +355,7 @@ theorem final (A : Type (u+2)) [Category.{u+1} A] {F : Profinite.{u}ᵒᵖ ⥤ A
     (hF : PreservesFiniteProducts F) 
     (hF' : ∀ (E : A), EqualizerCondition (F ⋙ coyoneda.obj (op E))) : 
   Presheaf.IsSheaf (coherentTopology Profinite) F := by
-  rw [← one']
+  rw [← extensiveRegular_generates_coherent]
   refine' fun E => (Presieve.isSheaf_coverage _ _).2 _ 
   intro B S hS
   apply isSheafFor_of_Dagur hS 
@@ -368,7 +368,7 @@ theorem final' (A : Type (u+2)) [Category.{u+1} A] {G : A ⥤ Type (u+1)}
     (hF : PreservesFiniteProducts (F ⋙ G)) (hF' : EqualizerCondition (F ⋙ G)) : 
     Presheaf.IsSheaf (coherentTopology Profinite) F := by
   rw [Presheaf.isSheaf_iff_isSheaf_forget (coherentTopology Profinite) F G,
-    isSheaf_iff_isSheaf_of_type, ← one', Presieve.isSheaf_coverage]
+    isSheaf_iff_isSheaf_of_type, ← extensiveRegular_generates_coherent, Presieve.isSheaf_coverage]
   intro B S' hS 
   exact isSheafFor_of_Dagur hS hF hF'
 
