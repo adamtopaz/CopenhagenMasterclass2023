@@ -2,7 +2,7 @@ import ExtrDisc.Basic
 import ExtrDisc.Coherent
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Sieves.isSheafForPullbackSieve
-import Sieves.dagur
+import Sieves.ExtensiveRegular
 import Sieves.OpenEmbedding
 import ExtrDisc.Pullback
 
@@ -22,7 +22,7 @@ lemma OpenEmbedding_of_Sigma_desc_Iso {α : Type} [Fintype α] {X : ExtrDisc.{u}
   intro a
   have h₁ : OpenEmbedding (Sigma.desc i) :=
     (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-  have h₂ : OpenEmbedding (Sigma.ι Z a) := DagurOpenEmbedding _ _
+  have h₂ : OpenEmbedding (Sigma.ι Z a) := openEmbedding_ι _ _
   have := OpenEmbedding.comp h₁ h₂
   erw [← CategoryTheory.coe_comp (Sigma.ι Z a) (Sigma.desc i)] at this 
   simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
@@ -113,7 +113,7 @@ end ExtrDisc
 
 end CategoryTheory
 
-lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
+lemma one' : (ExtensiveRegularCoverage ExtrDisc EverythingProj_ExtrDisc
    Extensivity_ExtrDisc).toGrothendieck = 
     (coherentTopology ExtrDisc) := by
   ext X S  
@@ -124,7 +124,7 @@ lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
     | of Y T hT => 
       · apply Coverage.saturate.of 
         dsimp [coherentCoverage]
-        dsimp [dagurCoverage] at hT 
+        dsimp [ExtensiveRegularCoverage] at hT 
         apply Or.elim hT
         <;> intro h
         · obtain ⟨α, x, Xmap, π, h⟩ := h
@@ -174,7 +174,7 @@ lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
           (Presieve.ofArrows (fun (_ : Unit) ↦ Xs) (fun (_ : Unit) ↦ F)) 
         apply Coverage.saturate.transitive Y Zf
         · apply Coverage.saturate.of 
-          dsimp [dagurCoverage]
+          dsimp [ExtensiveRegularCoverage]
           simp only [Set.mem_union, Set.mem_setOf_eq]
           right
           use Xs 
@@ -188,16 +188,16 @@ lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
           induction hW
           rw [← hW', Sieve.pullback_comp Z]
           suffices : Sieve.pullback ψ ((Sieve.pullback F) Z) ∈ GrothendieckTopology.sieves
-            (dagurCoverage _ _ _).toGrothendieck R 
+            (ExtensiveRegularCoverage _ _ _).toGrothendieck R 
           · exact this 
           apply GrothendieckTopology.pullback_stable' 
           dsimp [Coverage.toGrothendieck]
-          suffices : Coverage.saturate (dagurCoverage _ _ _) Xs (Z.pullback F)
+          suffices : Coverage.saturate (ExtensiveRegularCoverage _ _ _) Xs (Z.pullback F)
           · exact this
           suffices : Sieve.generate (Presieve.ofArrows Xmap φ) ≤ Z.pullback F
           · apply Coverage.saturate_of_superset _ this
             apply Coverage.saturate.of 
-            dsimp [dagurCoverage] 
+            dsimp [ExtensiveRegularCoverage] 
             left
             refine' ⟨I, hI, Xmap, φ, ⟨rfl, _⟩⟩ 
             suffices : Sigma.desc φ = 𝟙 _ 
@@ -224,7 +224,7 @@ lemma one' : (dagurCoverage ExtrDisc EverythingProj_ExtrDisc
         · assumption
         · assumption   
 
-lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ DagurSieveSingle X)
+lemma isSheafForRegularSieve {X : ExtrDisc} {S : Presieve X} (hS : S ∈ RegularSieve X)
     (F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)) : IsSheafFor F S := by
   obtain ⟨Y, f, rfl, hf⟩ := hS
   have proj : Projective (toCompHaus.obj X) := inferInstanceAs (Projective X.compHaus)
@@ -248,16 +248,16 @@ lemma isSheafForDagurSieveSingle {X : ExtrDisc} {S : Presieve X} (hS : S ∈ Dag
     rwa [← types_comp_apply (F.map f.op) (F.map g.op), ← F.map_comp, ← op_comp, hfg, op_id,
       F.map_id, types_id_apply] at this
 
-lemma isSheafFor_of_Dagur {X : ExtrDisc} {S : Presieve X}
-  (hS : S ∈ (dagurCoverage ExtrDisc EverythinProj_ExtrDisc
+lemma isSheafFor_of_extensiveRegular {X : ExtrDisc} {S : Presieve X}
+  (hS : S ∈ (ExtensiveRegularCoverage ExtrDisc EverythinProj_ExtrDisc
     Extensivity_ExtrDisc).covering X)
   {F : ExtrDisc.{u}ᵒᵖ ⥤ Type (u+1)} (hF : PreservesFiniteProducts F) : S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
-  · exact isSheafForDagurSieveIso hSIso hF
-  · exact isSheafForDagurSieveSingle hSSingle F
+  · exact isSheafForExtensiveSieve hSIso hF
+  · exact isSheafForRegularSieve hSSingle F
 
 theorem final (A : Type (u+2)) [Category.{u+1} A] {F : ExtrDisc.{u}ᵒᵖ ⥤ A}
     (hF : PreservesFiniteProducts F) : Presheaf.IsSheaf (coherentTopology ExtrDisc) F := by
   rw [← one']
-  exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_Dagur hS
+  exact fun E => (Presieve.isSheaf_coverage _ _).2 <| fun S hS => isSheafFor_of_extensiveRegular hS
     ⟨fun J inst => have := hF.1; compPreservesLimitsOfShape _ _⟩

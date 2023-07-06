@@ -90,7 +90,7 @@ lemma finiteCoproduct.ιOpenEmbedding {α : Type} [Fintype α] (Z : α → ExtrD
     OpenEmbedding (finiteCoproduct.ι Z a) := by
   exact openEmbedding_sigmaMk (σ := fun a => (Z a))
 
-lemma DagurOpenEmbedding {α : Type} [Fintype α] (Z : α → ExtrDisc.{u}) (a : α) :
+lemma openEmbedding_ι {α : Type} [Fintype α] (Z : α → ExtrDisc.{u}) (a : α) :
     OpenEmbedding (Sigma.ι Z a) := by
   refine' OpenEmbedding.of_comp _ (toFiniteCoproduct.OpenEmbedding Z) _
   convert finiteCoproduct.ιOpenEmbedding Z a

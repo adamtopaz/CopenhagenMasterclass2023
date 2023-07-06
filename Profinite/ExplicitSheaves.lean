@@ -1,4 +1,4 @@
-import Sieves.dagur
+import Sieves.ExtensiveRegular
 import Profinite.Coherent
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Profinite.Pullback
@@ -136,7 +136,7 @@ lemma epi_pullback_of_epi : EpiPullbackOfEpi Profinite := by
   rw [this] 
   exact ⟨⟨(y, z), hz.symm⟩, rfl⟩ 
 
-lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi 
+lemma one' : (ExtensiveRegularCoverage' Profinite epi_pullback_of_epi 
     extensivity).toGrothendieck = 
     (coherentTopology Profinite) := by
   ext X S  
@@ -147,7 +147,7 @@ lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi
     | of Y T hT => 
       · apply Coverage.saturate.of 
         dsimp [coherentCoverage]
-        dsimp [dagurCoverage'] at hT 
+        dsimp [ExtensiveRegularCoverage'] at hT 
         apply Or.elim hT
         <;> intro h
         · obtain ⟨α, x, Xmap, π, h⟩ := h
@@ -197,7 +197,7 @@ lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi
           (Presieve.ofArrows (fun (_ : Unit) ↦ Xs) (fun (_ : Unit) ↦ F)) 
         apply Coverage.saturate.transitive Y Zf
         · apply Coverage.saturate.of 
-          dsimp [dagurCoverage']
+          dsimp [ExtensiveRegularCoverage']
           simp only [Set.mem_union, Set.mem_setOf_eq]
           right
           use Xs 
@@ -211,16 +211,16 @@ lemma one' : (dagurCoverage' Profinite epi_pullback_of_epi
           induction hW
           rw [← hW', Sieve.pullback_comp Z]
           suffices : Sieve.pullback ψ ((Sieve.pullback F) Z) ∈ GrothendieckTopology.sieves
-            (dagurCoverage' _ _ _).toGrothendieck R 
+            (ExtensiveRegularCoverage' _ _ _).toGrothendieck R 
           · exact this 
           apply GrothendieckTopology.pullback_stable' 
           dsimp [Coverage.toGrothendieck]
-          suffices : Coverage.saturate (dagurCoverage' _ _ _) Xs (Z.pullback F)
+          suffices : Coverage.saturate (ExtensiveRegularCoverage' _ _ _) Xs (Z.pullback F)
           · exact this
           suffices : Sieve.generate (Presieve.ofArrows Xmap φ) ≤ Z.pullback F
           · apply Coverage.saturate_of_superset _ this
             apply Coverage.saturate.of 
-            dsimp [dagurCoverage'] 
+            dsimp [ExtensiveRegularCoverage'] 
             left
             refine' ⟨I, hI, Xmap, φ, ⟨rfl, _⟩⟩ 
             suffices : Sigma.desc φ = 𝟙 _ 
@@ -296,15 +296,15 @@ def EqualizerSecondObjIso (F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)) {B X : Profin
     op (Limits.pullback π π) ≅ op (Profinite.pullback π π)))
 
 lemma isSheafFor_of_Dagur {B : Profinite} {S : Presieve B}
-    (hS : S ∈ (dagurCoverage' Profinite epi_pullback_of_epi extensivity).covering B)
+    (hS : S ∈ (ExtensiveRegularCoverage' Profinite epi_pullback_of_epi extensivity).covering B)
     {F : Profinite.{u}ᵒᵖ ⥤ Type (u+1)} (hFpfp : PreservesFiniteProducts F) 
     (hFecs : EqualizerCondition F) : 
     S.IsSheafFor F := by
   cases' hS with hSIso hSSingle
-  · exact isSheafForDagurSieveIso hSIso hFpfp
+  · exact isSheafForExtensiveSieve hSIso hFpfp
   · rw [Equalizer.Presieve.sheaf_condition, Limits.Types.type_equalizer_iff_unique]
     intro y h 
-    dsimp [DagurSieveSingle] at hSSingle 
+    dsimp [RegularSieve] at hSSingle 
     obtain ⟨X, π, ⟨hS, πsurj⟩⟩ := hSSingle 
     rw [Presieve.ofArrows_pUnit] at hS 
     subst hS

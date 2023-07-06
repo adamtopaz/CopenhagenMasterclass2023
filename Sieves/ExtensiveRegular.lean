@@ -34,11 +34,11 @@ open Sieve CategoryTheory.Limits Opposite
 
 variable {C}
 
-def DagurSieveIso [HasFiniteCoproducts C] (B : C) := { S | ∃ (α : Type) (_ : Fintype α) (X : α → C)
+def ExtensiveSieve [HasFiniteCoproducts C] (B : C) := { S | ∃ (α : Type) (_ : Fintype α) (X : α → C)
   (π : (a : α) → (X a ⟶ B)),
     S = Presieve.ofArrows X π ∧ IsIso (Sigma.desc π) }
 
-def DagurSieveSingle (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X)
+def RegularSieve (B : C) := { S | ∃ (X : C) (f : X ⟶ B), S = Presieve.ofArrows (fun (_ : Unit) ↦ X)
       (fun (_ : Unit) ↦ f) ∧ Epi f }
 
 variable [HasFiniteCoproducts C] (C)
@@ -51,9 +51,9 @@ def Extensivity [HasPullbackOfIsIsodesc C] : Prop :=
 def EverythingIsProjective : Prop :=
   ∀ X : C, Projective X
 
-def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
+def ExtensiveRegularCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
     (h_proj : EverythingIsProjective C) (h_ext : Extensivity C) : Coverage C where
-  covering B :=   (DagurSieveIso B) ∪ (DagurSieveSingle B)
+  covering B :=   (ExtensiveSieve B) ∪ (RegularSieve B)
   pullback := by
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · let Z' : α → C := fun a ↦ pullback f (π a)
@@ -63,7 +63,7 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
       constructor
       · rw [Set.mem_union]
         apply Or.intro_left
-        rw [DagurSieveIso] 
+        rw [ExtensiveSieve] 
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
@@ -78,7 +78,7 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
       use S'
       constructor
       · apply Or.intro_right
-        rw [DagurSieveSingle]
+        rw [RegularSieve]
         refine ⟨Y, 𝟙 _, by {rw [Presieve.ofArrows_pUnit (𝟙 Y)]}, instEpiIdToCategoryStruct Y⟩
       · rw [hS', Presieve.FactorsThruAlong]
         intro W g hg
@@ -99,9 +99,9 @@ def dagurCoverage [HasFiniteCoproducts C] [HasPullbackOfIsIsodesc C]
 def EpiPullbackOfEpi [HasPullbacks C] : Prop := ∀ {X Y Z : C} (f : Y ⟶ X) (π : Z ⟶ X) [Epi π], 
     Epi (@pullback.fst _ _ _ _ _ f π _)
 
-def dagurCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPullbackOfEpi C) 
+def ExtensiveRegularCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPullbackOfEpi C) 
     (h_ext : Extensivity C) : Coverage C where
-  covering B := (DagurSieveIso B) ∪ (DagurSieveSingle B) 
+  covering B := (ExtensiveSieve B) ∪ (RegularSieve B) 
   pullback := by 
     rintro X Y f S (⟨α, hα, Z, π, hS, h_iso⟩ | ⟨Z, π, hπ, h_epi⟩)
     · let Z' : α → C := fun a ↦ pullback f (π a)
@@ -111,7 +111,7 @@ def dagurCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPull
       constructor
       · rw [Set.mem_union]
         apply Or.intro_left
-        rw [DagurSieveIso]
+        rw [ExtensiveSieve]
         constructor
         refine ⟨hα, Z', π', ⟨by simp only, ?_⟩⟩
         · rw [hπ']
@@ -126,7 +126,7 @@ def dagurCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPull
       use S'
       constructor
       · right 
-        rw [DagurSieveSingle]
+        rw [RegularSieve]
         refine' ⟨(pullback f π), _, by {rw [Presieve.ofArrows_pUnit _]}, h_epi_epi f π⟩
       · rw [hS', Presieve.FactorsThruAlong]
         rintro _ _ ⟨⟩ 
@@ -136,8 +136,8 @@ def dagurCoverage' [HasFiniteCoproducts C] [HasPullbacks C] (h_epi_epi : EpiPull
 
 variable [HasPullbackOfIsIsodesc C] {C}
 
-lemma isPullbackSieve_DagurSieveIso {X : C} {S : Presieve X}
-    (hS : S ∈ DagurSieveIso X) : isPullbackPresieve S := by
+lemma isPullbackSieve_ExtensiveSieve {X : C} {S : Presieve X}
+    (hS : S ∈ ExtensiveSieve X) : isPullbackPresieve S := by
   rcases hS with ⟨α, _, Z, π, hS, HIso⟩ 
   intro Y₁ Y₂ f hf g hg
   rw [hS] at hf hg
@@ -201,7 +201,7 @@ lemma PreservesProduct.isoInvCompMap {C : Type u} [Category C] {D : Type v} [Cat
     (PreservesProduct.iso F f).inv ≫ F.map (Pi.π _ j) = Pi.π _ j :=
   IsLimit.conePointUniqueUpToIso_inv_comp _ (limit.isLimit _) (⟨j⟩ : Discrete J)
 
-lemma isSheafForDagurSieveIsIsoFork {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
+lemma isSheafForDagurSieveIsIsoFork {X : C} {S : Presieve X} (hS : S ∈ ExtensiveSieve X)
     {F : Cᵒᵖ ⥤ Type max u v}
     (hF : PreservesFiniteProducts F) :
     IsIso (Equalizer.forkMap F S) := by
@@ -237,11 +237,11 @@ lemma isSheafForDagurSieveIsIsoFork {X : C} {S : Presieve X} (hS : S ∈ DagurSi
     simp only [comparisoninv, op_id, limit.lift_π, Fan.mk_pt, Fan.mk_π_app]
     erw [F.map_id, Category.comp_id]    
 
-lemma isSheafForDagurSieveIso {X : C} {S : Presieve X} (hS : S ∈ DagurSieveIso X)
+lemma isSheafForExtensiveSieve {X : C} {S : Presieve X} (hS : S ∈ ExtensiveSieve X)
     {F : Cᵒᵖ ⥤ Type max u v}
     (hF : PreservesFiniteProducts F) :
     Presieve.IsSheafFor F S := by    
-  refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_DagurSieveIso hS).2 _
+  refine' (Equalizer.Presieve.sheaf_condition' F <| isPullbackSieve_ExtensiveSieve hS).2 _
   rw [Limits.Types.type_equalizer_iff_unique]
   dsimp [Equalizer.FirstObj]
   suffices IsIso (Equalizer.forkMap F S) by

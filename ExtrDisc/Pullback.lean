@@ -2,7 +2,7 @@ import ExtrDisc.Basic
 import ExtrDisc.Coherent
 import Mathlib.CategoryTheory.Sites.Sheaf
 import Sieves.isSheafForPullbackSieve
-import Sieves.dagur
+import Sieves.ExtensiveRegular
 import Sieves.OpenEmbedding
 
 universe u v
@@ -242,7 +242,7 @@ instance : HasPullbackOfIsIsodesc ExtrDisc := by
   apply HasPullbackOpenEmbedding 
   have h₁ : OpenEmbedding (Sigma.desc i) :=
     (ExtrDisc.homeoOfIso (asIso (Sigma.desc i))).openEmbedding
-  have h₂ : OpenEmbedding (Sigma.ι Y a) := DagurOpenEmbedding _ _
+  have h₂ : OpenEmbedding (Sigma.ι Y a) := openEmbedding_ι _ _
   have := OpenEmbedding.comp h₁ h₂ 
   erw [← CategoryTheory.coe_comp (Sigma.ι Y a) (Sigma.desc i)] at this 
   simp only [colimit.ι_desc, Cofan.mk_pt, Cofan.mk_ι_app] at this 
