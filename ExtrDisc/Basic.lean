@@ -140,6 +140,35 @@ instance (X : ExtrDisc.{u}) : T2Space X :=
 instance (X : ExtrDisc.{u}) : ExtremallyDisconnected X :=
   X.2
 
+open ExtremallyDisconnected
+instance [TopologicalSpace X] [CompactSpace X] [T2Space X] [ExtremallyDisconnected X] : TotallyDisconnectedSpace X := by
+  constructor
+  -- have := open_closure (Set.univ : Set X) (by apply?) -- TODO fail replace
+  intro t _ hpt
+
+  by_contra ht
+  rw [Set.not_subsingleton_iff] at ht
+  -- rcases? ht -- TODO
+  rcases ht with ⟨x, hx, y, hy, hxy⟩
+  rcases T2Space.t2 x y hxy with ⟨U, V, hU, hV, hxU, hyV, hUV⟩
+  have := open_closure U hU
+  -- specialize hpt U (Uᶜ) hU -- TODO why bracket
+  specialize hpt (closure U) ((closure U)ᶜ) (open_closure U hU) -- TODO why
+    (isOpen_compl_iff.mpr isClosed_closure) (by simp) ⟨x, by simp [*, subset_closure hxU]⟩
+    _
+  use y
+  simp only [*, Set.mem_inter_iff, Set.mem_compl_iff, true_and]
+  rw [mem_closure_iff]
+  push_neg
+  -- simp? -- TODO not nonempoty
+  use V
+  simp only [*, Set.not_nonempty_iff_eq_empty, true_and] -- simp? only doesn't make *'s
+  rw [Set.inter_comm]
+  exact Disjoint.inter_eq hUV
+  simp at hpt
+
+
+
 /-- Extremally disconnected spaces are totally disconnected. -/
 instance (X : ExtrDisc.{u}) : TotallySeparatedSpace X :=
 { isTotallySeparated_univ := by
