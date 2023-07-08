@@ -1,28 +1,63 @@
 import Mathlib.Topology.ExtremallyDisconnected
 import Mathlib.Topology.Homeomorph
 
-variable {A B C D : Type _} {E : Set D} [TopologicalSpace A] [TopologicalSpace B]
-  [TopologicalSpace C] [TopologicalSpace D]
-  {ρ : E → A} (ρ_cont : Continuous ρ) (ρ_surj : ρ.Surjective)
-  {π : D → A} (π_cont : Continuous π) (π_surj : π.Surjective)
-  (image_ne_top : ∀ E₀ : Set E, E₀ ≠ ⊤ → IsClosed E₀ → ρ '' E₀ ≠ ⊤)
-
 open Function Set
 
-/-- Lemma 2.1 -/
-lemma image_subset_closure_compl_image_compl {G : Set E} (hG : IsOpen G) :
-    ρ '' G ⊆ closure ((ρ '' Gᶜ)ᶜ) := by
+section
+
+variable {A : Type u} {B : Set A} {C : Set B}
+
+private lemma mem_coe_of_mem {a : A} (ha : a ∈ B) (ha' : ⟨a, ha⟩ ∈ C) : a ∈ (C : Set A) :=
+  ⟨_, ⟨⟨_, rfl⟩, _, ⟨ha', rfl⟩, rfl⟩⟩
+
+private lemma coe_subset : (C : Set A) ⊆ B := by
+  rintro _ ⟨_, ⟨⟨⟨_, ha⟩, rfl⟩, _, ⟨_, rfl⟩, _⟩⟩; convert ha
+
+private lemma mem_of_mem_coe {a : A} (ha : a ∈ (C : Set A)) : ⟨a, coe_subset ha⟩ ∈ C := by
+  rcases ha with ⟨_, ⟨_, rfl⟩, _, ⟨ha, rfl⟩, _⟩; convert ha
+
+private lemma eq_univ_of_coe_eq (hC : (C : Set A) = B) : C = univ :=
+  eq_univ_of_forall fun ⟨_, ha⟩ => mem_of_mem_coe <| hC.symm ▸ ha
+
+private lemma IsClosed.trans [TopologicalSpace A] (hC : IsClosed C) (hB : IsClosed B) :
+    IsClosed (C : Set A) := by
+  rcases isClosed_induced_iff.mp hC with ⟨D, hD, rfl⟩
+  convert IsClosed.inter hB hD
+  ext
+  exact ⟨fun h => ⟨coe_subset h, mem_of_mem_coe h⟩, fun ⟨hB, hD⟩ => mem_coe_of_mem hB hD⟩
+
+private lemma image_coe_eq_restrict_image {f : A → E} : f '' C = B.restrict f '' C :=
+  ext fun _ =>
+    ⟨fun ⟨_, h, ha⟩ => ⟨_, mem_of_mem_coe h, ha⟩, fun ⟨_, h, ha⟩ => ⟨_, mem_coe_of_mem _ h, ha⟩⟩
+
+private lemma not_nonempty_iff_eq_empty : ¬Nonempty B ↔ B = ∅ := by
+  rw [nonempty_subtype, not_exists, eq_empty_iff_forall_not_mem]
+
+private lemma nonempty_iff_ne_empty : Nonempty B ↔ B ≠ ∅ :=
+  not_nonempty_iff_eq_empty.not_right
+
+end
+
+variable {A B C D : Type u} {E : Set D}
+  [TopologicalSpace A] [TopologicalSpace B] [TopologicalSpace C] [TopologicalSpace D]
+
+/-- Gleason's Lemma 2.1: if $\rho$ is a continuous surjection from a topological space $E$ to a
+topological space $A$ satisfying the "Zorn subset condition", then $\rho(G)$ is contained in the
+closure of $A \setminus \rho(E \setminus G)}$ for any open set $G$ of $E$. -/
+lemma image_subset_closure_compl_image_compl_of_isOpen {ρ : E → A} (ρ_cont : Continuous ρ)
+    (ρ_surj : ρ.Surjective) (zorn_subset : ∀ E₀ : Set E, E₀ ≠ univ → IsClosed E₀ → ρ '' E₀ ≠ univ)
+    {G : Set E} (hG : IsOpen G) : ρ '' G ⊆ closure ((ρ '' Gᶜ)ᶜ) := by
   by_cases G_empty : G = ∅
   · simpa only [G_empty, image_empty] using empty_subset _
   · intro a ha
     rw [mem_closure_iff]
-    intro N hN ha'
+    intro N N_open hN
     rcases (G.mem_image ρ a).mp ha with ⟨e, he, rfl⟩
-    have non_empty : (G ∩ ρ⁻¹' N).Nonempty := ⟨e, mem_inter he <| mem_preimage.mpr ha'⟩
-    have is_open : IsOpen <| G ∩ ρ⁻¹' N := hG.inter <| hN.preimage ρ_cont
-    have ne_top : ρ '' (G ∩ ρ⁻¹' N)ᶜ ≠ ⊤ := image_ne_top _ (compl_ne_univ.mpr non_empty)
-                                              is_open.isClosed_compl
-    rcases nonempty_compl.mpr ne_top with ⟨x, hx⟩
+    have nonempty : (G ∩ ρ⁻¹' N).Nonempty := ⟨e, mem_inter he <| mem_preimage.mpr hN⟩
+    have is_open : IsOpen <| G ∩ ρ⁻¹' N := hG.inter <| N_open.preimage ρ_cont
+    have ne_univ : ρ '' (G ∩ ρ⁻¹' N)ᶜ ≠ univ := zorn_subset _ (compl_ne_univ.mpr nonempty)
+                                                  is_open.isClosed_compl
+    rcases nonempty_compl.mpr ne_univ with ⟨x, hx⟩
     have hx' : x ∈ (ρ '' Gᶜ)ᶜ := (compl_subset_compl.mpr <| image_subset ρ <|
                                     compl_subset_compl.mpr <| G.inter_subset_left _) hx
     rcases ρ_surj x with ⟨y, rfl⟩
@@ -30,139 +65,78 @@ lemma image_subset_closure_compl_image_compl {G : Set E} (hG : IsOpen G) :
                                   (mem_compl_iff _ _).mp hx
     exact ⟨ρ y, mem_inter (mem_preimage.mp <| mem_of_mem_inter_right hy) hx'⟩
 
-/-- Lemma 2.2 -/
-lemma disjoint_of_extremally_disconnected [ExtremallyDisconnected A] {U₁ U₂ : Set A}
-    (h : Disjoint U₁ U₂) (hU₁ : IsOpen U₁) (hU₂ : IsOpen U₂) : Disjoint (closure U₁) (closure U₂) :=
-  Disjoint.closure_left (h.closure_right hU₁) <| ExtremallyDisconnected.open_closure U₂ hU₂
+/-- Gleason's Lemma 2.2: in an extremally disconnected space, if $U_1$ and $U_2$ are disjoint open
+sets, then $\overline{U_1}$ and $\overline{U_2}$ are also disjoint. -/
+lemma ExtremallyDisconnected.disjoint_closure_of_disjoint_IsOpen [ExtremallyDisconnected A]
+    {U₁ U₂ : Set A} (h : Disjoint U₁ U₂) (hU₁ : IsOpen U₁) (hU₂ : IsOpen U₂) :
+    Disjoint (closure U₁) (closure U₂) :=
+  (h.closure_right hU₁).closure_left <| open_closure U₂ hU₂
 
-lemma compact_to_T2_injective [T2Space A] [ExtremallyDisconnected A] [T2Space E] [CompactSpace E] :
+private lemma ExtremallyDisconnected.homeoCompactToT2_injective [ExtremallyDisconnected A]
+    [T2Space A] [T2Space E] [CompactSpace E] {ρ : E → A} (ρ_cont : Continuous ρ)
+    (ρ_surj : ρ.Surjective) (zorn_subset : ∀ E₀ : Set E, E₀ ≠ univ → IsClosed E₀ → ρ '' E₀ ≠ univ) :
     ρ.Injective := by
-  intro x y h_eq_im
-  by_contra h
-  rcases t2_separation h with ⟨G₁, G₂, hG₁, hG₂, hxG₁, hyG₂, hG⟩
-  have open1 : IsOpen ((ρ '' (G₁ᶜ))ᶜ)
-  · simp only [isOpen_compl_iff]
-    apply IsCompact.isClosed
-    refine' IsCompact.image (IsClosed.isCompact _) ρ_cont
-    simpa only [isClosed_compl_iff]
-  have open2 : IsOpen ((ρ '' (G₂ᶜ))ᶜ)
-  · simp only [isOpen_compl_iff]
-    apply IsCompact.isClosed
-    refine' IsCompact.image (IsClosed.isCompact _) ρ_cont
-    simpa only [isClosed_compl_iff]
-  have disj : Disjoint ((ρ '' (G₁ᶜ))ᶜ) ((ρ '' (G₂ᶜ))ᶜ)
-  · rw [disjoint_compl_left_iff_subset]
-    refine' subset_trans (subset_image_compl ρ_surj) _
-    simp only [compl_compl, image_subset_iff]
-    refine' subset_trans _ (subset_preimage_image _ _)
-    rw [← disjoint_compl_left_iff_subset]
-    simpa only [compl_compl]
-  replace disj := disjoint_of_extremally_disconnected disj open1 open2
-  have oups₁ := image_subset_closure_compl_image_compl ρ_cont ρ_surj image_ne_top hG₁
-  have oups₂ := image_subset_closure_compl_image_compl ρ_cont ρ_surj image_ne_top hG₂
-  have mem₁ : ρ x ∈ ρ '' G₁
-  · exact mem_image_of_mem _ hxG₁
-  have mem₂ : ρ x ∈ ρ '' G₂
-  · rw [h_eq_im]
-    exact mem_image_of_mem _ hyG₂
-  have mem : ρ x ∈ (closure ((ρ '' G₁ᶜ)ᶜ)) ∩ (closure ((ρ '' G₂ᶜ)ᶜ)) := ⟨oups₁ mem₁, oups₂ mem₂⟩
-  exact (disj.ne_of_mem mem.1 mem.2) rfl
+  intro x₁ x₂ hρx
+  by_contra hx
+  rcases t2_separation hx with ⟨G₁, G₂, G₁_open, G₂_open, hx₁, hx₂, disj⟩
+  have G₁_comp : IsCompact <| G₁ᶜ := IsClosed.isCompact G₁_open.isClosed_compl
+  have G₂_comp : IsCompact <| G₂ᶜ := IsClosed.isCompact G₂_open.isClosed_compl
+  have G₁_open' : IsOpen ((ρ '' G₁ᶜ)ᶜ) := (G₁_comp.image ρ_cont).isClosed.isOpen_compl
+  have G₂_open' : IsOpen ((ρ '' G₂ᶜ)ᶜ) := (G₂_comp.image ρ_cont).isClosed.isOpen_compl
+  have disj' : Disjoint ((ρ '' G₁ᶜ)ᶜ) ((ρ '' G₂ᶜ)ᶜ) := by
+    rw [disjoint_iff_inter_eq_empty, ← compl_union, ← image_union, ← compl_inter,
+      disjoint_iff_inter_eq_empty.mp disj, compl_empty, compl_empty_iff,
+      image_univ_of_surjective ρ_surj]
+  have disj'' : Disjoint (closure <| (ρ '' G₁ᶜ)ᶜ) (closure <| (ρ '' G₂ᶜ)ᶜ) :=
+    disjoint_closure_of_disjoint_IsOpen disj' G₁_open' G₂_open'
+  have hx₁' := image_subset_closure_compl_image_compl_of_isOpen ρ_cont ρ_surj zorn_subset G₁_open <|
+    mem_image_of_mem ρ hx₁
+  have hx₂' := image_subset_closure_compl_image_compl_of_isOpen ρ_cont ρ_surj zorn_subset G₂_open <|
+    mem_image_of_mem ρ hx₂
+  exact disj''.ne_of_mem hx₁' hx₂' hρx
 
-/-- Lemma 2.3 -/
-noncomputable def compact_to_T2_homeomorph [T2Space A] [ExtremallyDisconnected A] [T2Space E]
-    [CompactSpace E] : E ≃ₜ A :=
-  Continuous.homeoOfEquivCompactToT2
-    (f := Equiv.ofBijective ρ ⟨compact_to_T2_injective ρ_cont ρ_surj image_ne_top, ρ_surj⟩) ρ_cont
+/-- Gleason's Lemma 2.3: a continuous surjection from a compact Hausdorff space to an extremally
+disconnected Hausdorff space satisfying the "Zorn subset condition" is a homeomorphism. -/
+noncomputable def ExtremallyDisconnected.homeoCompactToT2 [ExtremallyDisconnected A] [T2Space A]
+    [T2Space E] [CompactSpace E] {ρ : E → A} (ρ_cont : Continuous ρ) (ρ_surj : ρ.Surjective)
+    (zorn_subset : ∀ E₀ : Set E, E₀ ≠ univ → IsClosed E₀ → ρ '' E₀ ≠ univ) : E ≃ₜ A :=
+  ρ_cont.homeoOfEquivCompactToT2
+    (f := Equiv.ofBijective ρ ⟨homeoCompactToT2_injective ρ_cont ρ_surj zorn_subset, ρ_surj⟩)
 
-lemma h1 {E₀ : Set E} (h : E₀ ≠ ⊤) : (E₀ : Set D) ⊂ E := by
-  sorry
+/-- Gleason's Lemma 2.4: a continuous surjection $\rho$ from a compact space $D$ to a Fréchet space
+$A$ restricts to a compact subset $E$ of $D$, such that $\rho$ maps $E$ onto $A$ and satisfies the
+"Zorn subset condition", where $\rho(E_0) \ne A$ for any proper closed subset $E_0 \subsetneq E$. -/
+lemma exists_compact_surjective_zorn_subset [T1Space A] [CompactSpace D] {π : D → A}
+    (π_cont : Continuous π) (π_surj : π.Surjective) : ∃ E : Set D, CompactSpace E ∧ π '' E = univ ∧
+    ∀ E₀ : Set E, E₀ ≠ univ → IsClosed E₀ → E.restrict π '' E₀ ≠ univ := by
+  let S : Set <| Set D := {E : Set D | IsClosed E ∧ π '' E = univ}
+  suffices ∀ (C : Set <| Set D) (_ : C ⊆ S) (_ : IsChain (· ⊆ ·) C), ∃ s ∈ S, ∀ c ∈ C, s ⊆ c by
+    rcases zorn_superset S this with ⟨E, ⟨E_closed, E_surj⟩, E_min⟩
+    refine ⟨E, isCompact_iff_compactSpace.mp E_closed.isCompact, E_surj, ?_⟩
+    intro E₀ E₀_min E₀_closed
+    contrapose! E₀_min
+    exact eq_univ_of_coe_eq <|
+      E_min E₀ ⟨E₀_closed.trans E_closed, image_coe_eq_restrict_image ▸ E₀_min⟩ coe_subset
+  intro C C_sub C_chain
+  refine ⟨iInter (fun c : C => c), ⟨isClosed_iInter fun ⟨_, h⟩ => (C_sub h).left, ?_⟩,
+    fun c hc _ h => mem_iInter.mp h ⟨c, hc⟩⟩
+  by_cases hC : Nonempty C
+  · refine eq_univ_of_forall fun a => inter_nonempty_iff_exists_left.mp ?_
+    refine iInter_inter (ι := C) (π ⁻¹' {a}) _ ▸
+      IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed _
+      ?_ (fun c => ?_) (fun c => IsClosed.isCompact ?_) (fun c => ?_)
+    · replace C_chain : IsChain (· ⊇ ·) C := C_chain.symm
+      have : ∀ s t : Set D, s ⊇ t → _ ⊇ _ := fun _ _ => inter_subset_inter_left <| π ⁻¹' {a}
+      exact (directedOn_iff_directed.mp C_chain.directedOn).mono_comp (· ⊇ ·) this
+    · rw [← image_inter_nonempty_iff, (C_sub c.mem).right, univ_inter]
+      exact singleton_nonempty a
+    all_goals exact (C_sub c.mem).left.inter <| (T1Space.t1 a).preimage π_cont
+  · rw [@iInter_of_empty _ _ <| not_nonempty_iff.mp hC, image_univ_of_surjective π_surj]
 
-lemma h2 {E₀ : Set E} (h : IsClosed E₀) : IsClosed (E₀ : Set D) := by
-  sorry
-
-lemma h3 {E₀ : Set E} (h : restrict E π '' E₀ = ⊤) : π '' E₀ = ⊤ := by
-  sorry
-
-/-- Lemma 2.4 -/
-lemma exists_image_ne_top [T2Space A] [CompactSpace A] [T2Space D] [CompactSpace D] :
-    ∃ E : Set D, CompactSpace E ∧ π '' E = ⊤ ∧
-    ∀ E₀ : Set E, E₀ ≠ ⊤ → IsClosed E₀ → E.restrict π '' E₀ ≠ ⊤ := by
-  -- Define the set of closed subsets of D for which the map onto A is surjective
-  let S := { E : Set D | IsClosed E ∧ π '' E = univ}
-  -- Checking the Chain condition
-  have chain_cond : (∀ (c : Set (Set ↑(D))),
-      c ⊆ S →
-      IsChain (fun x x_1 => x ⊆ x_1) c → ∃ lb, lb ∈ S ∧ ∀ (s : Set ↑(D)), s ∈ c → lb ⊆ s) := by
-    intro Ch h hCh
-    let M := sInter Ch
-    use M
-    constructor
-    · constructor
-      · apply isClosed_sInter
-        intro N hN
-        exact (h hN).1
-      --Next, we need to show that the image of M is all of A
-      · by_cases h₂ : Nonempty Ch
-        rotate_left 1
-        -- Case that `Ch` is empty
-        · simp at h₂
-          rw [←eq_empty_iff_forall_not_mem] at h₂
-          revert M
-          rw [h₂, sInter_empty]
-          simp
-          exact range_iff_surjective.mpr π_surj
-        -- Now we assume that `Ch` is nonempty
-        · ext x
-          refine' ⟨ fun _ => trivial , fun _ => _ ⟩
-          rw [mem_image]
-          change Set.Nonempty {x_1 : D | x_1 ∈ M ∧ π x_1 = x}
-          let Z : Ch → Set (D) := fun X => X ∩ π⁻¹' {x}
-          suffices Set.Nonempty <| ⋂ (X : Ch), (X: Set (D)) ∩ π⁻¹' {x} by
-            convert this
-            rw [← iInter_inter, ←  sInter_eq_iInter]
-            rw [←setOf_inter_eq_sep, inter_comm]
-            congr
-          -- Using this result `nonempty_iInter_of_...` introduces a lot of unnecessary checks
-          have assumps : ∀ (i : ↑Ch), Set.Nonempty (Z i) ∧ IsCompact (Z i) ∧ IsClosed (Z i) := by
-            intro X
-            -- `Z X` nonempty
-            simp
-            have h₃ := (h (Subtype.mem X)).2
-            rw [←image_inter_nonempty_iff, h₃]
-            simp
-            -- `Z X` is Closed
-            have := (h (Subtype.mem X)).1
-            have h_cl := IsClosed.inter this (IsClosed.preimage π_cont <| T1Space.t1 x)
-            exact And.intro (IsClosed.isCompact h_cl) h_cl
-          apply IsCompact.nonempty_iInter_of_directed_nonempty_compact_closed Z _
-              (fun X => (assumps X).1) (fun X => (assumps X).2.1) (fun X => (assumps X).2.2)
-        -- Need to show the `Directed` assumption for the inclusion, which is annoying...
-          change Directed _ ((fun X => X ∩ _) ∘ (fun X => X: ↑Ch → Set (D)))
-          refine' Directed.mono_comp _ _ _
-          · exact fun x y => x ⊇ y
-          · exact fun ⦃x y⦄ a => inter_subset_inter_left _ a
-          refine Iff.mp directedOn_iff_directed ?_
-          refine IsChain.directedOn ?H
-          dsimp [IsChain, Pairwise] at hCh ⊢
-          exact fun ⦃x⦄ a ⦃y⦄ a_1 a_2 =>  Or.comm.mp (hCh a a_1 a_2)
-    · intro X hX
-      exact sInter_subset_of_mem hX
-  have := zorn_superset S chain_cond
-  rcases this with ⟨E, ⟨⟨hE₁,hE₂⟩, hE₃⟩⟩
-  use E
-  constructor
-  · exact isCompact_iff_compactSpace.mp hE₁.isCompact
-  constructor
-  · exact hE₂
-  --Now, it's just rephrasing the conclusion of Zorn's Lemma
-  · intro E₀ h₁ h₂
-    replace hE₃ := hE₃ E₀
-    by_contra h₃
-    replace hE₃ := hE₃ (And.intro (h2 h₂) (h3 h₃)) (subset_of_ssubset (h1 h₁))
-    exact (ne_of_ssubset (h1 h₁)) hE₃
-
-/-- Theorem 2.5 (Gleason) -/
-instance [T2Space A] [CompactSpace A] [ExtremallyDisconnected A] : CompactT2.Projective A := by
+/-- Gleason's Theorem 2.5: in the category of compact spaces and continuous maps, the
+projective spaces are precisely the extremally disconnected spaces. -/
+protected theorem CompactT2.ExtremallyDisconnected.projective [ExtremallyDisconnected A]
+    [CompactSpace A] [T2Space A] : CompactT2.Projective A := by
   intro B C _ _ _ _ _ _ φ f φ_cont f_cont f_surj
   let D : Set <| A × B := {x | φ x.fst = f x.snd}
   have D_comp : CompactSpace D := isCompact_iff_compactSpace.mp
@@ -170,16 +144,16 @@ instance [T2Space A] [CompactSpace A] [ExtremallyDisconnected A] : CompactT2.Pro
   let π₁ : D → A := Prod.fst ∘ Subtype.val
   have π₁_cont : Continuous π₁ := continuous_fst.comp continuous_subtype_val
   have π₁_surj : π₁.Surjective := fun a => ⟨⟨⟨a, _⟩, (f_surj <| φ a).choose_spec.symm⟩, rfl⟩
-  rcases exists_image_ne_top π₁_cont π₁_surj with ⟨E, _, E_surj, E_proper⟩
+  rcases exists_compact_surjective_zorn_subset π₁_cont π₁_surj with ⟨E, _, E_onto, E_min⟩
   let ρ : E → A := E.restrict π₁
   have ρ_cont : Continuous ρ := π₁_cont.continuousOn.restrict
   have ρ_surj : ρ.Surjective := fun a => by
-    rcases (E_surj ▸ Set.mem_univ a : a ∈ π₁ '' E) with ⟨d, ⟨hd, rfl⟩⟩; exact ⟨⟨d, hd⟩, rfl⟩
-  let ρ' := compact_to_T2_homeomorph ρ_cont ρ_surj E_proper
+    rcases (E_onto ▸ mem_univ a : a ∈ π₁ '' E) with ⟨d, ⟨hd, rfl⟩⟩; exact ⟨⟨d, hd⟩, rfl⟩
+  let ρ' := ExtremallyDisconnected.homeoCompactToT2 ρ_cont ρ_surj E_min
   let π₂ : D → B := Prod.snd ∘ Subtype.val
   have π₂_cont : Continuous π₂ := continuous_snd.comp continuous_subtype_val
   refine ⟨E.restrict π₂ ∘ ρ'.symm, ⟨π₂_cont.continuousOn.restrict.comp ρ'.symm.continuous, ?_⟩⟩
   suffices f ∘ E.restrict π₂ = φ ∘ ρ' by
     rw [← comp.assoc, this, comp.assoc, Homeomorph.self_comp_symm, comp.right_id]
   ext x
-  exact x.val.property.symm
+  exact x.val.mem.symm

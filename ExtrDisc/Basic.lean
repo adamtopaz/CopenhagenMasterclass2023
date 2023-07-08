@@ -147,16 +147,12 @@ instance : Faithful toProfinite := sorry
 example : toProfinite ⋙ profiniteToCompHaus = toCompHaus :=
   rfl
 
--- TODO: Gleason's theorem.
 instance (X : ExtrDisc) : Projective X.compHaus where
   factors := by
-    intro B C φ f _
-    haveI : ExtremallyDisconnected X.compHaus.toTop := X.extrDisc
-    have hf : f.1.Surjective
-    · rwa [CompHaus.epi_iff_surjective] at *
-    use ⟨_, (gleason_diagram_commutes φ.continuous f.continuous hf).left⟩
-    ext
-    exact congr_fun (gleason_diagram_commutes φ.continuous f.continuous hf).right _
+    intro _ _ φ f hf
+    rcases CompactT2.ExtremallyDisconnected.projective (A := X) φ.continuous f.continuous <|
+      (CompHaus.epi_iff_surjective f).mp hf with ⟨f', ⟨f'_cont, f'_comm⟩⟩
+    exact ⟨⟨f', f'_cont⟩, by ext x; exact congr_fun f'_comm x⟩
 
 end ExtrDisc
 
